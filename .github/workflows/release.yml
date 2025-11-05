@@ -1,0 +1,211 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # Trigger on version tags like v1.0.0, v2.0.0-alpha.1, etc.
+
+permissions:
+  contents: write  # Need write permission to create releases
+
+jobs:
+  validate:
+    name: Validate Release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v24
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install Nickel and Just
+        run: |
+          nix-shell -p nickel just --run "nickel --version && just --version"
+
+      - name: Run full test suite
+        run: |
+          nix-shell -p nickel just --run "just test"
+
+      - name: Verify version matches tag
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          NICKEL_VERSION=$(nix-shell -p nickel --run "nickel query src/config.ncl version" 2>/dev/null | tr -d '"' || echo "unknown")
+
+          echo "Tag version: $TAG_VERSION"
+          echo "Nickel version: $NICKEL_VERSION"
+
+          if [ "$TAG_VERSION" != "$NICKEL_VERSION" ]; then
+            echo "❌ Version mismatch!"
+            echo "  Update src/config.ncl to version = \"$TAG_VERSION\""
+            exit 1
+          fi
+
+          echo "✅ Versions match"
+
+  generate-artifacts:
+    name: Generate Release Artifacts
+    runs-on: ubuntu-latest
+    needs: validate
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v24
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Install Nickel and Just
+        run: |
+          nix-shell -p nickel just --run "nickel --version && just --version"
+
+      - name: Generate all artifacts
+        run: |
+          nix-shell -p nickel just --run "just generate"
+
+      - name: Create release archives
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/}
+
+          # Create archives for each output
+          mkdir -p release-archives
+
+          if [ -d "output/typescript" ]; then
+            tar -czf release-archives/canonacle-typescript-${TAG_VERSION}.tar.gz -C output typescript/
+          fi
+
+          if [ -d "output/python" ]; then
+            tar -czf release-archives/canonacle-python-${TAG_VERSION}.tar.gz -C output python/
+          fi
+
+          if [ -d "output/java" ]; then
+            tar -czf release-archives/canonacle-java-${TAG_VERSION}.tar.gz -C output java/
+          fi
+
+          if [ -d "output/php" ]; then
+            tar -czf release-archives/canonacle-php-${TAG_VERSION}.tar.gz -C output php/
+          fi
+
+          if [ -f "output/openapi/openapi.yaml" ]; then
+            tar -czf release-archives/canonacle-openapi-${TAG_VERSION}.tar.gz -C output/openapi openapi.yaml
+          fi
+
+          if [ -f "output/mcp/tools.json" ]; then
+            tar -czf release-archives/canonacle-mcp-${TAG_VERSION}.tar.gz -C output/mcp tools.json
+          fi
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: release-archives/
+
+  create-release:
+    name: Create GitHub Release
+    runs-on: ubuntu-latest
+    needs: generate-artifacts
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-artifacts
+          path: release-archives/
+
+      - name: Extract version info
+        id: version
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$TAG_VERSION" >> $GITHUB_OUTPUT
+
+          # Determine if this is a pre-release
+          if [[ "$TAG_VERSION" =~ (alpha|beta|rc) ]]; then
+            echo "prerelease=true" >> $GITHUB_OUTPUT
+          else
+            echo "prerelease=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Extract changelog for this version
+        id: changelog
+        run: |
+          # Try to extract relevant section from CHANGELOG.md
+          if [ -f "CHANGELOG.md" ]; then
+            # Extract section for this version (between version headers)
+            VERSION="v${{ steps.version.outputs.version }}"
+            CHANGELOG=$(sed -n "/## \[$VERSION\]/,/## \[/p" CHANGELOG.md | sed '$ d' | tail -n +2)
+
+            if [ -z "$CHANGELOG" ]; then
+              CHANGELOG="See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details."
+            fi
+
+            # Save to file for multi-line output
+            echo "$CHANGELOG" > /tmp/changelog.txt
+            echo "file=/tmp/changelog.txt" >> $GITHUB_OUTPUT
+          else
+            echo "No CHANGELOG.md found" > /tmp/changelog.txt
+            echo "file=/tmp/changelog.txt" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ steps.version.outputs.version }}
+          body_path: ${{ steps.changelog.outputs.file }}
+          files: release-archives/*.tar.gz
+          prerelease: ${{ steps.changelog.outputs.prerelease }}
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  publish-notice:
+    name: Post-Release Notice
+    runs-on: ubuntu-latest
+    needs: create-release
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Post-release checklist
+        run: |
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+
+          echo "✅ Release $TAG_VERSION created successfully!"
+          echo ""
+          echo "Post-release checklist:"
+          echo "  1. Verify release on GitHub: https://github.com/${{ github.repository }}/releases"
+          echo "  2. Update project documentation if needed"
+          echo "  3. Announce release to community channels"
+          echo "  4. Monitor for issues"
+          echo "  5. Consider publishing to package managers:"
+          echo "     - npm (TypeScript/JavaScript)"
+          echo "     - PyPI (Python)"
+          echo "     - Maven Central (Java)"
+          echo "     - Packagist (PHP)"
+          echo ""
+          echo "Generated artifacts:"
+          ls -lh release-archives/ || echo "No artifacts in this step"

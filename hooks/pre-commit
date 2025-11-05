@@ -1,0 +1,108 @@
+#!/bin/bash
+# Circular Protocol Canonacle - Pre-Commit Hook
+# Runs validation checks before allowing a commit
+
+set -e
+
+echo "Running pre-commit checks..."
+echo ""
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Check if Nickel is installed
+if ! command -v nickel &> /dev/null; then
+    echo -e "${RED}✗ Nickel not found!${NC}"
+    echo "  Install: nix shell nixpkgs#nickel"
+    exit 1
+fi
+
+# Type check all Nickel files
+echo "1/2 Type checking Nickel files..."
+TYPECHECK_FAILED=0
+
+# Check src/ directory
+if [ -d "src" ]; then
+    while IFS= read -r -d '' file; do
+        if ! nickel typecheck "$file" 2>&1 | grep -q "error"; then
+            echo -e "  ${GREEN}✓${NC} $(basename "$file")"
+        else
+            echo -e "  ${RED}✗${NC} $(basename "$file")"
+            nickel typecheck "$file"
+            TYPECHECK_FAILED=1
+        fi
+    done < <(find src -name "*.ncl" -print0 2>/dev/null)
+fi
+
+# Check generators/ directory
+if [ -d "generators" ]; then
+    while IFS= read -r -d '' file; do
+        if ! nickel typecheck "$file" 2>&1 | grep -q "error"; then
+            echo -e "  ${GREEN}✓${NC} $(basename "$file")"
+        else
+            echo -e "  ${RED}✗${NC} $(basename "$file")"
+            nickel typecheck "$file"
+            TYPECHECK_FAILED=1
+        fi
+    done < <(find generators -name "*.ncl" -print0 2>/dev/null)
+fi
+
+if [ $TYPECHECK_FAILED -eq 1 ]; then
+    echo ""
+    echo -e "${RED}✗ Type checking failed!${NC}"
+    echo "  Fix the errors above before committing."
+    exit 1
+fi
+
+# Run contract tests if they exist
+echo ""
+echo "2/2 Running contract validation tests..."
+if [ -f "tests/run-contract-tests.sh" ]; then
+    if ./tests/run-contract-tests.sh; then
+        echo -e "  ${GREEN}✓${NC} Contract tests passed"
+    else
+        echo -e "  ${RED}✗${NC} Contract tests failed"
+        exit 1
+    fi
+else
+    # If no test script yet, try to run any .test.ncl files directly
+    if [ -d "tests/contracts" ]; then
+        TEST_FAILED=0
+        while IFS= read -r -d '' test_file; do
+            if nickel export "$test_file" > /dev/null 2>&1; then
+                echo -e "  ${GREEN}✓${NC} $(basename "$test_file")"
+            else
+                echo -e "  ${RED}✗${NC} $(basename "$test_file")"
+                TEST_FAILED=1
+            fi
+        done < <(find tests/contracts -name "*.test.ncl" -print0 2>/dev/null)
+
+        if [ $TEST_FAILED -eq 1 ]; then
+            echo -e "${RED}✗ Tests failed!${NC}"
+            exit 1
+        fi
+    else
+        echo -e "  ${YELLOW}⚠${NC} No tests found (tests/contracts/ doesn't exist yet)"
+    fi
+fi
+
+# Check for accidentally staged output/ files
+echo ""
+echo "Checking for accidentally staged generated files..."
+if git diff --cached --name-only | grep -q "^output/"; then
+    echo -e "${RED}✗ Generated files in output/ are staged!${NC}"
+    echo "  Generated files should not be committed."
+    echo "  Run: git reset HEAD output/"
+    exit 1
+else
+    echo -e "  ${GREEN}✓${NC} No generated files staged"
+fi
+
+# All checks passed
+echo ""
+echo -e "${GREEN}✓ All pre-commit checks passed!${NC}"
+echo ""
+exit 0

@@ -1,0 +1,178 @@
+name: Test Canonacle
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  contract-tests:
+    name: Contract Validation Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v24
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Install Nickel
+        run: |
+          nix-shell -p nickel --run "nickel --version"
+
+      - name: Run contract tests
+        run: |
+          nix-shell -p nickel --run "./tests/run-contract-tests.sh"
+
+  generator-tests:
+    name: Generator Output Tests
+    runs-on: ubuntu-latest
+    needs: contract-tests
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v24
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Install Nickel
+        run: |
+          nix-shell -p nickel --run "nickel --version"
+
+      - name: Install validation tools
+        run: |
+          npm install -g typescript @apidevtools/swagger-cli
+
+      - name: Run generator syntax validation
+        run: |
+          nix-shell -p nickel --run "./tests/generators/syntax-validation.sh"
+
+      - name: Run snapshot tests
+        run: |
+          nix-shell -p nickel --run "./tests/generators/snapshot-test.sh"
+        continue-on-error: true  # Snapshots may not exist yet
+
+  typecheck:
+    name: Type Check Nickel Files
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v24
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Install Nickel and Just
+        run: |
+          nix-shell -p nickel just --run "nickel --version && just --version"
+
+      - name: Type check all Nickel files
+        run: |
+          nix-shell -p nickel just --run "just validate"
+
+  regression-tests:
+    name: Regression Tests
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history for comparison
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v24
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Install Nickel
+        run: |
+          nix-shell -p nickel --run "nickel --version"
+
+      - name: Run regression tests
+        run: |
+          nix-shell -p nickel --run "./tests/regression/detect-breaking-changes.sh"
+        continue-on-error: true  # May not have previous version yet
+
+  integration-check:
+    name: Integration Check
+    runs-on: ubuntu-latest
+    needs: [contract-tests, generator-tests, typecheck]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v24
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Install Just
+        run: |
+          nix-shell -p just --run "just --version"
+
+      - name: Run full CI pipeline
+        run: |
+          nix-shell -p nickel just --run "just ci"
+
+      - name: Upload generated artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: generated-artifacts
+          path: output/
+          if-no-files-found: warn
+
+  summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs: [contract-tests, generator-tests, typecheck, integration-check]
+    if: always()
+
+    steps:
+      - name: Check test results
+        run: |
+          echo "Test Results:"
+          echo "  Contract Tests: ${{ needs.contract-tests.result }}"
+          echo "  Generator Tests: ${{ needs.generator-tests.result }}"
+          echo "  Type Check: ${{ needs.typecheck.result }}"
+          echo "  Integration: ${{ needs.integration-check.result }}"
+
+          if [[ "${{ needs.contract-tests.result }}" != "success" ]] || \
+             [[ "${{ needs.generator-tests.result }}" != "success" ]] || \
+             [[ "${{ needs.typecheck.result }}" != "success" ]] || \
+             [[ "${{ needs.integration-check.result }}" != "success" ]]; then
+            echo ""
+            echo "❌ Some tests failed"
+            exit 1
+          fi
+
+          echo ""
+          echo "✅ All tests passed!"

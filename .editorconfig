@@ -1,0 +1,86 @@
+# EditorConfig for Circular Protocol Canonacle
+# https://editorconfig.org
+
+root = true
+
+# Default for all files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# Nickel files - 2 space indentation
+[*.ncl]
+indent_style = space
+indent_size = 2
+max_line_length = 100
+
+# JavaScript/TypeScript - 2 space indentation
+[*.{js,ts,jsx,tsx,mjs,cjs}]
+indent_style = space
+indent_size = 2
+max_line_length = 100
+
+# Python - 4 space indentation (PEP 8)
+[*.py]
+indent_style = space
+indent_size = 4
+max_line_length = 88
+
+# Java - 4 space indentation
+[*.java]
+indent_style = space
+indent_size = 4
+max_line_length = 120
+
+# PHP - 4 space indentation
+[*.php]
+indent_style = space
+indent_size = 4
+max_line_length = 120
+
+# JSON - 2 space indentation
+[*.json]
+indent_style = space
+indent_size = 2
+
+# YAML - 2 space indentation
+[*.{yml,yaml}]
+indent_style = space
+indent_size = 2
+
+# Markdown - 2 space indentation, allow trailing whitespace (for line breaks)
+[*.md]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = false
+max_line_length = off
+
+# Shell scripts - 2 space indentation
+[*.sh]
+indent_style = space
+indent_size = 2
+
+# Makefiles and Justfiles - tab indentation
+[{Makefile,justfile,*.mk}]
+indent_style = tab
+
+# XML - 2 space indentation
+[*.xml]
+indent_style = space
+indent_size = 2
+
+# TOML - 2 space indentation
+[*.toml]
+indent_style = space
+indent_size = 2
+
+# Batch files - tab indentation
+[*.bat]
+end_of_line = crlf
+indent_style = tab
+
+# Git commit messages
+[COMMIT_EDITMSG]
+max_line_length = off

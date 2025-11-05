@@ -1,0 +1,161 @@
+# Circular Protocol Canonacle - Git Ignore
+
+# Generated artifacts (NEVER commit these!)
+output/
+*.generated.*
+
+# Nickel temporary files
+*.ncl.tmp
+*.ncl.bak
+
+# Language-specific artifacts
+
+## Node.js / JavaScript / TypeScript
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+*.tsbuildinfo
+dist/
+build/
+.npm/
+.yarn/
+
+## Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+## Java
+target/
+*.class
+*.jar
+*.war
+*.ear
+*.log
+.mvn/
+mvnw
+mvnw.cmd
+
+## PHP
+vendor/
+composer.lock
+.phpunit.result.cache
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+.project
+.classpath
+.settings/
+.externalToolBuilders/
+.buildpath
+.metadata/
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Test artifacts
+coverage/
+.nyc_output/
+test-results/
+junit.xml
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+*.bak
+*.backup
+*.orig
+
+# Build artifacts
+*.o
+*.exe
+*.dll
+*.dylib
+
+# Dependency directories
+jspm_packages/
+
+# Environment files (may contain secrets)
+.env
+.env.local
+.env.*.local
+.env.test
+.env.production
+credentials.json
+secrets.json
+*.pem
+*.key
+!*.key.example
+
+# Package manager lock files (decision: track or not)
+# Uncomment if you want to ignore lock files
+# package-lock.json
+# yarn.lock
+# Pipfile.lock
+# composer.lock
+
+# macOS
+*.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.directory
+.Trash-*
+
+# Documentation build artifacts
+docs/_build/
+docs/.doctrees/
+site/
+
+# Repomix output files (these are snapshots, not source)
+*.xml
+!tests/schemas/*.xml
+
+# Just command runner
+.just/
+
+# Nix
+result
+result-*
+
+# Local development overrides
+local.ncl
+*.local.ncl
