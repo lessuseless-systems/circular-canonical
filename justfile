@@ -83,37 +83,110 @@ test: test-contracts test-generators
 # Generate all artifacts from Nickel definitions
 generate:
     @echo "Generating artifacts from Nickel definitions..."
-    @mkdir -p output/{openapi,typescript,python,java,php,mcp}
+    @mkdir -p dist/{openapi,sdk}
     @echo "  → OpenAPI specification..."
-    @if [ -f generators/openapi.ncl ]; then \
-        nickel export generators/openapi.ncl --format yaml > output/openapi/openapi.yaml 2>&1 && \
-        echo "    ✓ output/openapi/openapi.yaml"; \
-    else \
-        echo "    ⚠ generators/openapi.ncl not found yet"; \
-    fi
+    @nickel export generators/openapi.ncl --format yaml > dist/openapi/openapi.yaml 2>&1 && \
+        echo "    ✓ dist/openapi/openapi.yaml"
+    @nickel export generators/openapi.ncl --format json > dist/openapi/openapi.json 2>&1 && \
+        echo "    ✓ dist/openapi/openapi.json"
     @echo "  → TypeScript SDK..."
-    @if [ -f generators/typescript-sdk.ncl ]; then \
-        nickel export generators/typescript-sdk.ncl > output/typescript/client.ts 2>&1 && \
-        echo "    ✓ output/typescript/client.ts"; \
-    else \
-        echo "    ⚠ generators/typescript-sdk.ncl not found yet"; \
-    fi
+    @nickel export generators/typescript.ncl --field sdk_code --format raw > dist/sdk/circular-protocol.ts 2>&1 && \
+        echo "    ✓ dist/sdk/circular-protocol.ts"
     @echo "  → Python SDK..."
-    @if [ -f generators/python-sdk.ncl ]; then \
-        nickel export generators/python-sdk.ncl > output/python/client.py 2>&1 && \
-        echo "    ✓ output/python/client.py"; \
-    else \
-        echo "    ⚠ generators/python-sdk.ncl not found yet"; \
-    fi
-    @echo "  → MCP server schema..."
-    @if [ -f generators/mcp-server.ncl ]; then \
-        nickel export generators/mcp-server.ncl --format json > output/mcp/tools.json 2>&1 && \
-        echo "    ✓ output/mcp/tools.json"; \
-    else \
-        echo "    ⚠ generators/mcp-server.ncl not found yet"; \
-    fi
+    @nickel export generators/python.ncl --field sdk_code --format raw > dist/sdk/circular_protocol.py 2>&1 && \
+        echo "    ✓ dist/sdk/circular_protocol.py"
     @echo ""
-    @echo "Generation complete!"
+    @echo "✓ Generation complete! Files in dist/"
+
+# Generate TypeScript SDK only
+generate-ts:
+    @echo "Generating TypeScript SDK..."
+    @mkdir -p dist/sdk
+    @nickel export generators/typescript.ncl --field sdk_code --format raw > dist/sdk/circular-protocol.ts
+    @echo "✓ Generated: dist/sdk/circular-protocol.ts"
+    @wc -l dist/sdk/circular-protocol.ts
+
+# Generate Python SDK only
+generate-py:
+    @echo "Generating Python SDK..."
+    @mkdir -p dist/sdk
+    @nickel export generators/python.ncl --field sdk_code --format raw > dist/sdk/circular_protocol.py
+    @echo "✓ Generated: dist/sdk/circular_protocol.py"
+    @wc -l dist/sdk/circular_protocol.py
+
+# Generate OpenAPI spec only
+generate-openapi:
+    @echo "Generating OpenAPI specification..."
+    @mkdir -p dist/openapi
+    @nickel export generators/openapi.ncl --format yaml > dist/openapi/openapi.yaml
+    @nickel export generators/openapi.ncl --format json > dist/openapi/openapi.json
+    @echo "✓ Generated: dist/openapi/openapi.{yaml,json}"
+
+# Start mock API server for SDK testing
+mock-server:
+    @echo "Starting mock API server on http://localhost:8080"
+    @python3 tests/mock-server/server.py
+
+# Generate SDK test files (integration tests)
+generate-tests:
+    @echo "Generating SDK integration test files..."
+    @mkdir -p dist/tests
+    @nickel export generators/typescript-tests.ncl --field test_code --format raw > dist/tests/sdk.test.ts
+    @echo "✓ Generated: dist/tests/sdk.test.ts"
+    @nickel export generators/python-tests.ncl --field test_code --format raw > dist/tests/test_sdk.py
+    @echo "✓ Generated: dist/tests/test_sdk.py"
+
+# Generate SDK unit test files
+generate-unit-tests:
+    @echo "Generating SDK unit test files..."
+    @mkdir -p dist/tests
+    @nickel export generators/typescript-unit-tests.ncl --field test_code --format raw > dist/tests/sdk.unit.test.ts
+    @echo "✓ Generated: dist/tests/sdk.unit.test.ts"
+    @nickel export generators/python-unit-tests.ncl --field test_code --format raw > dist/tests/test_sdk_unit.py
+    @echo "✓ Generated: dist/tests/test_sdk_unit.py"
+
+# Generate all tests (integration + unit)
+generate-all-tests: generate-tests generate-unit-tests
+
+# Run TypeScript SDK tests (requires mock server)
+test-sdk-ts:
+    @echo "Running TypeScript SDK tests..."
+    @echo "Note: Mock server must be running (just mock-server)"
+    @cd dist/tests && npm install --silent && npm test
+
+# Run Python SDK tests (requires mock server)
+test-sdk-py:
+    @echo "Running Python SDK tests..."
+    @echo "Note: Mock server must be running (just mock-server)"
+    @cd dist/tests && PYTHONPATH=../sdk:$$PYTHONPATH pytest test_sdk.py -v
+
+# Run all SDK tests (TypeScript + Python)
+test-sdk: test-sdk-ts test-sdk-py
+
+# Run TypeScript SDK unit tests (no mock server needed)
+test-sdk-unit-ts:
+    @echo "Running TypeScript SDK unit tests..."
+    @echo "Note: No mock server required"
+    @cd dist/tests && npm install --silent && npx jest --selectProjects=unit
+
+# Run Python SDK unit tests (no mock server needed)
+test-sdk-unit-py:
+    @echo "Running Python SDK unit tests..."
+    @echo "Note: No mock server required"
+    @cd dist/tests && PYTHONPATH=../sdk:$$PYTHONPATH pytest test_sdk_unit.py -v -m unit
+
+# Run all SDK unit tests (TypeScript + Python)
+test-sdk-unit: test-sdk-unit-ts test-sdk-unit-py
+
+# Run all tests (integration + unit, both languages)
+test-sdk-all:
+    @echo "Running all SDK tests (integration + unit)..."
+    @echo ""
+    @echo "=== Integration Tests (requires mock server) ==="
+    @just test-sdk
+    @echo ""
+    @echo "=== Unit Tests (standalone) ==="
+    @just test-sdk-unit
 
 # Generate JSON export for inspection (useful for debugging)
 generate-json file:
@@ -320,7 +393,10 @@ help:
     @echo "  just setup           - Initial project setup"
     @echo "  just dev             - Quick cycle: validate + generate"
     @echo "  just validate        - Type check all Nickel files"
-    @echo "  just generate        - Generate all artifacts"
+    @echo "  just generate        - Generate all artifacts (OpenAPI + SDKs)"
+    @echo "  just generate-ts     - Generate TypeScript SDK only"
+    @echo "  just generate-py     - Generate Python SDK only"
+    @echo "  just generate-openapi - Generate OpenAPI spec only"
     @echo "  just watch           - Auto-regenerate on changes"
     @echo "  just clean           - Remove generated files"
     @echo ""
@@ -330,6 +406,19 @@ help:
     @echo "  just test-generators - Run generator output tests"
     @echo "  just test-snapshots  - Run snapshot tests"
     @echo "  just regression      - Run regression tests"
+    @echo "  just mock-server     - Start mock API server (port 8080)"
+    @echo ""
+    @echo "SDK Testing:"
+    @echo "  just generate-tests       - Generate SDK integration tests"
+    @echo "  just generate-unit-tests  - Generate SDK unit tests"
+    @echo "  just generate-all-tests   - Generate all SDK tests"
+    @echo "  just test-sdk             - Run SDK integration tests (requires mock server)"
+    @echo "  just test-sdk-ts          - Run TypeScript integration tests"
+    @echo "  just test-sdk-py          - Run Python integration tests"
+    @echo "  just test-sdk-unit        - Run SDK unit tests (no server needed)"
+    @echo "  just test-sdk-unit-ts     - Run TypeScript unit tests"
+    @echo "  just test-sdk-unit-py     - Run Python unit tests"
+    @echo "  just test-sdk-all         - Run all SDK tests (integration + unit)"
     @echo ""
     @echo "Release:"
     @echo "  just release         - Full release preparation"
