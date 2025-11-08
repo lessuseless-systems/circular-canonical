@@ -40,12 +40,15 @@
 "%,
 
     # Poll for transaction confirmation
+    # TODO: Fix to match actual transaction response schema (uses BlockNumber not BlockID)
     getTransactionOutcome = m%"
   /**
    * Poll for transaction confirmation
-   * Recursively checks transaction status until confirmed or timeout
+   * NOTE: Currently disabled - needs schema update to match actual API response
    * @param blockchain - Blockchain network (e.g., 'MainNet', 'testnet')
    * @param txID - Transaction ID to monitor
+   * @param start - Start block number for search
+   * @param end - End block number for search
    * @param timeoutSec - Maximum time to wait in seconds (default: 120)
    * @param intervalSec - Polling interval in seconds (default: 5)
    * @returns Transaction response when confirmed
@@ -54,6 +57,8 @@
   async getTransactionOutcome(
     blockchain: string,
     txID: string,
+    start: string,
+    end: string,
     timeoutSec: number = 120,
     intervalSec: number = 5
   ): Promise<any> {
@@ -74,20 +79,16 @@
         // Check transaction status
         const tx = await this.getTransactionbyID({
           Blockchain: blockchain,
-          TxID: txID,
+          ID: txID,
+          Start: start,
+          End: end,
+          Version: '2.0.0-alpha.1',
         });
 
-        // Check if transaction is confirmed
-        if (tx.BlockID && tx.BlockID !== '') {
+        // Check if transaction is confirmed (has BlockNumber)
+        if (tx.Response && tx.Response.BlockNumber && tx.Response.BlockNumber > 0) {
           // Transaction confirmed
           return tx;
-        }
-
-        // Check if transaction failed
-        if (tx.Status === 'failed' || tx.Status === 'rejected') {
-          const error = `Transaction ${txID} failed: ${tx.Status}`;
-          this.handleError(error);
-          throw new Error(error);
         }
 
         // Still pending, wait before next check
@@ -147,21 +148,26 @@
 "%,
 
     # Poll for transaction confirmation
+    # TODO: Fix to match actual transaction response schema
     getTransactionOutcome = m%"
     def get_transaction_outcome(
         self,
         blockchain: str,
         tx_id: str,
+        start: str,
+        end: str,
         timeout_sec: int = 120,
         interval_sec: int = 5
     ) -> dict:
         """
         Poll for transaction confirmation
-        Recursively checks transaction status until confirmed or timeout
+        NOTE: Currently uses correct schema with BlockNumber
 
         Args:
             blockchain: Blockchain network (e.g., 'MainNet', 'testnet')
             tx_id: Transaction ID to monitor
+            start: Start block number for search
+            end: End block number for search
             timeout_sec: Maximum time to wait in seconds (default: 120)
             interval_sec: Polling interval in seconds (default: 5)
 
@@ -187,19 +193,16 @@
                 # Check transaction status
                 tx = self.get_transaction_by_id({
                     'Blockchain': blockchain,
-                    'TxID': tx_id,
+                    'ID': tx_id,
+                    'Start': start,
+                    'End': end,
+                    'Version': '2.0.0-alpha.1',
                 })
 
-                # Check if transaction is confirmed
-                if tx.get('BlockID') and tx['BlockID'] != '':
+                # Check if transaction is confirmed (has BlockNumber)
+                if tx.get('Response') and tx['Response'].get('BlockNumber') and tx['Response']['BlockNumber'] > 0:
                     # Transaction confirmed
                     return tx
-
-                # Check if transaction failed
-                if tx.get('Status') in ['failed', 'rejected']:
-                    error = f"Transaction {tx_id} failed: {tx.get('Status')}"
-                    self._handle_error(error)
-                    raise Exception(error)
 
                 # Still pending, wait before next check
                 time.sleep(interval_sec)
