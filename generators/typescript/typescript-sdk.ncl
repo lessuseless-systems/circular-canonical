@@ -159,7 +159,6 @@ let methods = std.array.map generate_method all_endpoints in
 export class CircularProtocolAPI {
   private readonly baseUrl: string;
   private readonly apiKey: string;
-  private readonly version: string;
 
   /**
    * Create a new Circular Protocol API client
@@ -170,7 +169,6 @@ export class CircularProtocolAPI {
   constructor(baseUrl?: string, apiKey?: string) {
     this.baseUrl = baseUrl || '%{config.api.base_url}';
     this.apiKey = apiKey || '';
-    this.version = '%{config.version}';
   }
 
   /**
@@ -199,7 +197,7 @@ export class CircularProtocolAPI {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      return await response.json();
+      return await response.json() as T;
     } catch (error) {
       if (error instanceof Error) {
         throw new Error(`API request failed: ${error.message}`);
