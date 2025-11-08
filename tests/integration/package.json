@@ -1,0 +1,27 @@
+{
+  "name": "circular-protocol-integration-tests",
+  "version": "1.0.0",
+  "description": "Integration tests for Circular Protocol SDKs",
+  "private": true,
+  "scripts": {
+    "test": "jest --verbose",
+    "test:ts": "jest typescript-integration.test.ts --verbose",
+    "test:watch": "jest --watch"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.0",
+    "@types/node": "^20.0.0",
+    "dotenv": "^16.0.0",
+    "jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "typescript": "^5.4.0"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "roots": ["<rootDir>"],
+    "testMatch": ["**/*.test.ts"],
+    "collectCoverage": false,
+    "verbose": true
+  }
+}
