@@ -10,6 +10,10 @@ let asset = import "../../src/api/asset.ncl" in
 let domain = import "../../src/api/domain.ncl" in
 let network = import "../../src/api/network.ncl" in
 let helpers = import "../shared/helpers.ncl" in
+let helpers_crypto = import "../shared/helpers-crypto.ncl" in
+let helpers_encoding = import "../shared/helpers-encoding.ncl" in
+let helpers_config = import "../shared/helpers-config.ncl" in
+let helpers_advanced = import "../shared/helpers-advanced.ncl" in
 
 # Helper: Convert Nickel type to Python type
 let rec nickel_type_to_python = fun type_str parent_name =>
@@ -252,6 +256,7 @@ Example:
 from typing import Dict, List, Optional, TypedDict
 import requests
 import json
+%{helpers_crypto.python.imports}
 
 
 # ============================================================================
@@ -298,40 +303,16 @@ class CircularProtocolAPI:
         self.api_key = api_key
         self.version = '%{config.version}'
         self.session = requests.Session()
+        self.headers = {}
 
         if self.api_key:
             self.session.headers['Authorization'] = f'Bearer {self.api_key}'
 
         self.session.headers['Content-Type'] = 'application/json'
+%{helpers_config.python.fields}
+%{helpers_advanced.python.errorField}
 
-    def _make_request(
-        self,
-        endpoint: str,
-        data: Optional[Dict[str, object]] = None
-    ) -> Dict[str, object]:
-        \"\"\"
-        Make an HTTP request to the API
-
-        Args:
-            endpoint: API endpoint path
-            data: Request payload
-
-        Returns:
-            Parsed JSON response
-
-        Raises:
-            requests.exceptions.RequestException: If the request fails
-        \"\"\"
-        url = f'{self.base_url}{endpoint}'
-
-        try:
-            response = self.session.post(url, json=data)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            raise requests.exceptions.RequestException(
-                f'API request failed: {e}'
-            ) from e
+%{helpers_config.python.makeRequestUpdate}
 
     def _build_url(self, endpoint: str) -> str:
         \"\"\"
@@ -350,6 +331,54 @@ class CircularProtocolAPI:
     # ============================================================================
 
 %{std.string.join "\n\n" methods}
+
+    # ============================================================================
+    # Helper Methods - Cryptography
+    # ============================================================================
+
+%{helpers_crypto.python.signMessage}
+
+%{helpers_crypto.python.verifySignature}
+
+%{helpers_crypto.python.getPublicKey}
+
+%{helpers_crypto.python.hashString}
+
+    # ============================================================================
+    # Helper Methods - Encoding
+    # ============================================================================
+
+%{helpers_encoding.python.hexFix}
+
+%{helpers_encoding.python.stringToHex}
+
+%{helpers_encoding.python.hexToString}
+
+%{helpers_encoding.python.padNumber}
+
+%{helpers_encoding.python.getFormattedTimestamp}
+
+    # ============================================================================
+    # Helper Methods - Configuration
+    # ============================================================================
+
+%{helpers_config.python.setNAGURL}
+
+%{helpers_config.python.getNAGURL}
+
+%{helpers_config.python.setNAGKey}
+
+%{helpers_config.python.getNAGKey}
+
+    # ============================================================================
+    # Helper Methods - Advanced
+    # ============================================================================
+
+%{helpers_advanced.python.GetError}
+
+%{helpers_advanced.python.handleError}
+
+%{helpers_advanced.python.getTransactionOutcome}
 
 
 # ============================================================================

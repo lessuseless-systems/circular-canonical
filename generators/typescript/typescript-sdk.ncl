@@ -9,6 +9,10 @@ let contract = import "../../src/api/contract.ncl" in
 let asset = import "../../src/api/asset.ncl" in
 let domain = import "../../src/api/domain.ncl" in
 let network = import "../../src/api/network.ncl" in
+let helpers_crypto = import "../shared/helpers-crypto.ncl" in
+let helpers_encoding = import "../shared/helpers-encoding.ncl" in
+let helpers_config = import "../shared/helpers-config.ncl" in
+let helpers_advanced = import "../shared/helpers-advanced.ncl" in
 
 # Helper: Convert Nickel type to TypeScript type
 let rec nickel_type_to_ts = fun type_str =>
@@ -124,6 +128,8 @@ let methods = std.array.map generate_method all_endpoints in
  * Version: %{config.version}
  */
 
+%{helpers_crypto.typescript.imports}
+
 // ============================================================================
 // Request Interfaces
 // ============================================================================
@@ -159,6 +165,9 @@ let methods = std.array.map generate_method all_endpoints in
 export class CircularProtocolAPI {
   private readonly baseUrl: string;
   private readonly apiKey: string;
+  private readonly headers: Record<string, string>;
+%{helpers_config.typescript.fields}
+%{helpers_advanced.typescript.errorField}
 
   /**
    * Create a new Circular Protocol API client
@@ -169,48 +178,64 @@ export class CircularProtocolAPI {
   constructor(baseUrl?: string, apiKey?: string) {
     this.baseUrl = baseUrl || '%{config.api.base_url}';
     this.apiKey = apiKey || '';
+    this.headers = {};
   }
 
-  /**
-   * Make an HTTP request to the API
-   * @private
-   */
-  private async _makeRequest<T>(endpoint: string, data: object): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
-
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-    };
-
-    if (this.apiKey) {
-      headers['Authorization'] = `Bearer ${this.apiKey}`;
-    }
-
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      return await response.json() as T;
-    } catch (error) {
-      if (error instanceof Error) {
-        throw new Error(`API request failed: ${error.message}`);
-      }
-      throw error;
-    }
-  }
+%{helpers_config.typescript.makeRequestUpdate}
 
   // ============================================================================
   // API Methods
   // ============================================================================
 
 %{std.string.join "\n\n" methods}
+
+  // ============================================================================
+  // Helper Methods - Cryptography
+  // ============================================================================
+
+%{helpers_crypto.typescript.signMessage}
+
+%{helpers_crypto.typescript.verifySignature}
+
+%{helpers_crypto.typescript.getPublicKey}
+
+%{helpers_crypto.typescript.hashString}
+
+  // ============================================================================
+  // Helper Methods - Encoding
+  // ============================================================================
+
+%{helpers_encoding.typescript.hexFix}
+
+%{helpers_encoding.typescript.stringToHex}
+
+%{helpers_encoding.typescript.hexToString}
+
+%{helpers_encoding.typescript.padNumber}
+
+%{helpers_encoding.typescript.getFormattedTimestamp}
+
+  // ============================================================================
+  // Helper Methods - Configuration
+  // ============================================================================
+
+%{helpers_config.typescript.setNAGURL}
+
+%{helpers_config.typescript.getNAGURL}
+
+%{helpers_config.typescript.setNAGKey}
+
+%{helpers_config.typescript.getNAGKey}
+
+  // ============================================================================
+  // Helper Methods - Advanced
+  // ============================================================================
+
+%{helpers_advanced.typescript.GetError}
+
+%{helpers_advanced.typescript.handleError}
+
+%{helpers_advanced.typescript.getTransactionOutcome}
 }
 
 // ============================================================================
