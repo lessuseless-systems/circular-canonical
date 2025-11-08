@@ -1,6 +1,6 @@
-# Development Workflow for Circular Protocol Canonacle
+# Development Workflow for Circular Protocol Canonical
 
-Day-to-day development process, tooling, and best practices for working with the Canonacle projects.
+Day-to-day development process, tooling, and best practices for working with the Canonical projects.
 
 ## Table of Contents
 
@@ -34,18 +34,20 @@ pip install black mypy
 sudo apt install openjdk-17-jdk  # or brew install openjdk@17
 
 # 4. Clone repositories
-git clone https://github.com/circular-protocol/circular-canonacle.git
-git clone https://github.com/circular-protocol/Canonacle-Enterprise-APIs.git
+git clone https://github.com/circular-protocol/circular-canonical.git
+git clone https://github.com/circular-protocol/Canonical-Enterprise-APIs.git
 
 # 5. Setup workspace
-cd circular-canonacle
+cd circular-canonical
 just setup  # Creates output directories, installs hooks
 ```
 
 ### Project Structure Orientation
 
+**Updated 2025-11-07**: Language-first organization
+
 ```
-circular-canonacle/
+circular-canonical/
 ├── src/
 │   ├── schemas/          # Type definitions, contracts
 │   │   ├── types.ncl
@@ -57,19 +59,30 @@ circular-canonacle/
 │   │   └── all.ncl
 │   └── config.ncl        # Base configuration
 │
-├── generators/           # Code generators
-│   ├── openapi.ncl
-│   ├── typescript-sdk.ncl
-│   ├── python-sdk.ncl
-│   └── mcp-server.ncl
+├── generators/           # Language-first organization
+│   ├── shared/           # Language-agnostic generators
+│   │   ├── openapi.ncl
+│   │   ├── helpers.ncl
+│   │   └── test-data.ncl
+│   ├── typescript/       # TypeScript SDK & tooling
+│   │   ├── typescript-sdk.ncl
+│   │   ├── tests/
+│   │   ├── config/
+│   │   ├── docs/
+│   │   └── package-manifest/
+│   └── python/           # Python SDK & tooling
+│       ├── python-sdk.ncl
+│       ├── tests/
+│       ├── config/
+│       └── package-manifest/
 │
 ├── tests/               # Test files
 │   ├── contracts/       # Contract validation tests
 │   ├── generators/      # Generator output tests
 │   └── integration/     # Integration tests
 │
-├── output/              # Generated artifacts (gitignored)
-│   ├── openapi.yaml
+├── dist/                # Generated artifacts (gitignored)
+│   ├── openapi/
 │   ├── typescript/
 │   ├── python/
 │   └── java/
@@ -80,7 +93,8 @@ circular-canonacle/
 │   ├── TESTING_STRATEGY.md
 │   └── DEVELOPMENT_WORKFLOW.md (this file)
 │
-└── justfile            # Build automation
+├── CLAUDE.md            # Root guidance
+└── justfile             # Build automation
 ```
 
 ### justfile Targets
@@ -90,7 +104,7 @@ circular-canonacle/
 .PHONY: all clean test generate validate watch help setup
 
 help:
-	@echo "Canonacle Development Commands:"
+	@echo "Canonical Development Commands:"
 	@echo "  just setup      - Initial project setup"
 	@echo "  just validate   - Type check all Nickel files"
 	@echo "  just test       - Run all tests"
@@ -823,15 +837,15 @@ jobs:
 
       - name: Create release archives
         run: |
-          tar -czf canonacle-typescript-${GITHUB_REF#refs/tags/}.tar.gz output/typescript/
-          tar -czf canonacle-python-${GITHUB_REF#refs/tags/}.tar.gz output/python/
-          tar -czf canonacle-openapi-${GITHUB_REF#refs/tags/}.tar.gz output/openapi.yaml
+          tar -czf canonical-typescript-${GITHUB_REF#refs/tags/}.tar.gz output/typescript/
+          tar -czf canonical-python-${GITHUB_REF#refs/tags/}.tar.gz output/python/
+          tar -czf canonical-openapi-${GITHUB_REF#refs/tags/}.tar.gz output/openapi.yaml
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
         with:
           files: |
-            canonacle-*.tar.gz
+            canonical-*.tar.gz
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

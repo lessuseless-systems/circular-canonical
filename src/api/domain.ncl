@@ -1,4 +1,4 @@
-# Circular Protocol Canonacle - Domain API Endpoints
+# Circular Protocol Canonical - Domain API Endpoints
 # Reference: docs/API_REFERENCE.md (Domains)
 
 let types = import "../schemas/types.ncl" in

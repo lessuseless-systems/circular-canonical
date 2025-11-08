@@ -1,4 +1,4 @@
-# Circular Protocol Canonacle
+# Circular Protocol Canonical
 
 Single source of truth for Circular Protocol standard APIs, defined in Nickel.
 
@@ -23,15 +23,18 @@ Nickel provides:
 ## Project Structure
 
 ```
-circular-canonacle/
+circular-canonical/
 ├── src/
 │   ├── api/              # API endpoint definitions
 │   ├── schemas/          # Type definitions and contracts
 │   └── config.ncl        # Base configuration
-├── generators/           # Code generators (OpenAPI, MCP, etc.)
-├── output/              # Generated artifacts
-├── tests/               # Validation tests
-└── examples/            # Usage examples
+├── generators/
+│   ├── shared/           # Language-agnostic generators (OpenAPI, helpers)
+│   ├── typescript/       # TypeScript SDK & tooling generators
+│   └── python/           # Python SDK & tooling generators
+├── dist/                 # Generated artifacts (gitignored)
+├── tests/                # Validation tests
+└── docs/                 # Documentation
 ```
 
 ## Getting Started
@@ -46,7 +49,7 @@ nix shell nixpkgs#nickel
 ### Generate OpenAPI Spec
 
 ```bash
-nickel export generators/openapi.ncl --format yaml > output/openapi.yaml
+nickel export generators/shared/openapi.ncl --format yaml > dist/openapi/openapi.yaml
 ```
 
 ### Validate Definitions
@@ -106,8 +109,9 @@ See [circular-js](https://github.com/circular-protocol/circular-js) for the refe
 1. Define the endpoint in `src/api/<category>.ncl`
 2. Add request/response schemas in `src/schemas/`
 3. Update generators to include the new endpoint
-4. Regenerate artifacts: `just generate`
-5. Test: `just test`
+4. Regenerate artifacts: `just generate-packages`
+5. Sync to forks: `just sync-all`
+6. Test: `just test`
 
 ### Common Commands
 
@@ -121,8 +125,14 @@ just validate
 # Run tests
 just test
 
-# Generate all artifacts
-just generate
+# Generate complete packages
+just generate-packages
+
+# Sync to fork submodules
+just sync-all
+
+# Push to lessuseless-systems
+just push-forks
 
 # Full development cycle
 just dev
@@ -130,6 +140,45 @@ just dev
 # See all available commands
 just --list
 ```
+
+### Multi-Repo Workflow
+
+This project uses a fork workflow to sync generated code to upstream repositories.
+
+#### One-Time Setup
+
+Install GitHub CLI and run automated setup:
+
+```bash
+# Install gh CLI (if needed)
+brew install gh  # macOS
+# or: sudo apt install gh  # Linux
+
+# Authenticate
+gh auth login
+
+# Automated setup (forks, branches, submodules)
+just setup-forks
+
+# Commit submodule configuration (NOT dist/ contents!)
+git add .gitmodules
+git commit -m "chore: add fork submodules"
+```
+
+#### Daily Workflow
+
+1. **Generate** - Create packages from Nickel source: `just generate-packages`
+2. **Sync** - Copy to fork submodules and commit: `just sync-all`
+3. **Push** - Push development branches: `just push-forks`
+4. **PR** - Create pull requests: `just create-prs`
+
+**Or all in one command:**
+
+```bash
+just generate-packages && just sync-all && just push-forks && just create-prs
+```
+
+See [FORK_WORKFLOW.md](FORK_WORKFLOW.md) for detailed documentation.
 
 ## License
 

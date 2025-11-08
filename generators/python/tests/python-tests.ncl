@@ -1,8 +1,8 @@
 # Python pytest Test Generator
 # Generates comprehensive SDK tests from Nickel endpoint test data
 
-let config = import "../src/config.ncl" in
-let helpers = import "./helpers.ncl" in
+let config = import "../../../src/config.ncl" in
+let helpers = import "../../shared/helpers.ncl" in
 
 {
   test_code = "\"\"\"

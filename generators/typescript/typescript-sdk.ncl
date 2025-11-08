@@ -1,14 +1,14 @@
 # TypeScript SDK Generator for Circular Protocol
 # Transforms Nickel API definitions into TypeScript SDK code
 
-let config = import "../src/config.ncl" in
-let wallet = import "../src/api/wallet.ncl" in
-let transaction = import "../src/api/transaction.ncl" in
-let block = import "../src/api/block.ncl" in
-let contract = import "../src/api/contract.ncl" in
-let asset = import "../src/api/asset.ncl" in
-let domain = import "../src/api/domain.ncl" in
-let network = import "../src/api/network.ncl" in
+let config = import "../../src/config.ncl" in
+let wallet = import "../../src/api/wallet.ncl" in
+let transaction = import "../../src/api/transaction.ncl" in
+let block = import "../../src/api/block.ncl" in
+let contract = import "../../src/api/contract.ncl" in
+let asset = import "../../src/api/asset.ncl" in
+let domain = import "../../src/api/domain.ncl" in
+let network = import "../../src/api/network.ncl" in
 
 # Helper: Convert Nickel type to TypeScript type
 let rec nickel_type_to_ts = fun type_str =>
@@ -19,8 +19,13 @@ let rec nickel_type_to_ts = fun type_str =>
     if std.record.has_field "type" type_str && type_str.type == "array" then
       "Array<%{nickel_type_to_ts type_str.items}>"
     else
-      # Nested object - will be defined as interface
-      "object"
+      # Generate inline object type with proper property types
+      let props = std.record.map
+        (fun field type => "%{field}: %{nickel_type_to_ts type}")
+        type_str
+      in
+      let props_str = std.string.join "; " (std.record.values props) in
+      "{ %{props_str} }"
   else "any"
 in
 
@@ -172,7 +177,7 @@ export class CircularProtocolAPI {
    * Make an HTTP request to the API
    * @private
    */
-  private async _makeRequest<T>(endpoint: string, data: any): Promise<T> {
+  private async _makeRequest<T>(endpoint: string, data: object): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
 
     const headers: Record<string, string> = {

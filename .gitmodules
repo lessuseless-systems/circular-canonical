@@ -1,0 +1,8 @@
+[submodule "dist/typescript"]
+	path = dist/typescript
+	url = git@github.com:lessuseless-systems/circular-js-npm.git
+	branch = development
+[submodule "dist/python"]
+	path = dist/python
+	url = git@github.com:lessuseless-systems/circular-py.git
+	branch = development

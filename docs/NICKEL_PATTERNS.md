@@ -1,6 +1,6 @@
 # Nickel Patterns and Best Practices
 
-Comprehensive guide to Nickel syntax, patterns, and idioms for the Circular Protocol Canonacle project.
+Comprehensive guide to Nickel syntax, patterns, and idioms for the Circular Protocol Canonical project.
 
 ## Table of Contents
 

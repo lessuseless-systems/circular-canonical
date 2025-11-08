@@ -1,4 +1,4 @@
-# Circular Protocol Canonacle - Endpoint Validators
+# Circular Protocol Canonical - Endpoint Validators
 # Provides validation functions that apply contracts to requests and responses
 
 let requests = import "../schemas/requests.ncl" in

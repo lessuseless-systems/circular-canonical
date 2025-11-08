@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Comprehensive Test Runner for Circular Protocol Canonacle
+# Comprehensive Test Runner for Circular Protocol Canonical
 # Runs all tests with detailed reporting and coverage statistics
 
 set -e  # Exit on error
@@ -23,7 +23,7 @@ else
   USE_NIX_SHELL=false
 fi
 
-echo "=== Circular Protocol Canonacle - Test Suite ==="
+echo "=== Circular Protocol Canonical - Test Suite ==="
 echo
 
 # Statistics

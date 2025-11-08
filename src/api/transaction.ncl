@@ -1,4 +1,4 @@
-# Circular Protocol Canonacle - Transaction API Endpoints
+# Circular Protocol Canonical - Transaction API Endpoints
 # Reference: docs/API_REFERENCE.md (Transactions)
 
 let types = import "../schemas/types.ncl" in

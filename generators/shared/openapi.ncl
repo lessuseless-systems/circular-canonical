@@ -1,14 +1,14 @@
-# OpenAPI 3.0 Generator for Circular Protocol Canonacle
+# OpenAPI 3.0 Generator for Circular Protocol Canonical
 # Transforms Nickel API definitions into OpenAPI specification
 
-let config = import "../src/config.ncl" in
-let wallet = import "../src/api/wallet.ncl" in
-let transaction = import "../src/api/transaction.ncl" in
-let block = import "../src/api/block.ncl" in
-let contract = import "../src/api/contract.ncl" in
-let asset = import "../src/api/asset.ncl" in
-let domain = import "../src/api/domain.ncl" in
-let network = import "../src/api/network.ncl" in
+let config = import "../../src/config.ncl" in
+let wallet = import "../../src/api/wallet.ncl" in
+let transaction = import "../../src/api/transaction.ncl" in
+let block = import "../../src/api/block.ncl" in
+let contract = import "../../src/api/contract.ncl" in
+let asset = import "../../src/api/asset.ncl" in
+let domain = import "../../src/api/domain.ncl" in
+let network = import "../../src/api/network.ncl" in
 
 # Helper function to convert type metadata to OpenAPI schema
 let rec type_to_schema = fun type_str =>

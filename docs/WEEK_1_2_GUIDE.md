@@ -1,4 +1,6 @@
-# Week 1-2 Implementation Guide: Canonacle Foundation
+# Week 1-2 Implementation Guide: Canonical Foundation
+
+> **📝 Note (2025-11-07)**: This guide reflects the initial project structure. The project has since been reorganized with a **language-first** approach (`generators/typescript/`, `generators/python/`, `generators/shared/`). For current structure, see `/CLAUDE.md` and the updated `CANONICAL_TODOs.md`.
 
 **Goal**: Go from empty directories to working PoC with 3-5 endpoints, validated generators, and first exports.
 
@@ -793,14 +795,14 @@ await server.connect(transport);
 
    # Extract methods from our OpenAPI
    cat output/openapi.yaml | grep operationId | \
-     sed 's/.*operationId: \(.*\)/\1/' > /tmp/canonacle-methods.txt
+     sed 's/.*operationId: \(.*\)/\1/' > /tmp/canonical-methods.txt
 
    # Compare
-   echo "Methods in circular-js but not in Canonacle:"
-   comm -23 <(sort /tmp/circular-js-methods.txt) <(sort /tmp/canonacle-methods.txt)
+   echo "Methods in circular-js but not in Canonical:"
+   comm -23 <(sort /tmp/circular-js-methods.txt) <(sort /tmp/canonical-methods.txt)
 
-   echo "Methods in Canonacle but not in circular-js:"
-   comm -13 <(sort /tmp/circular-js-methods.txt) <(sort /tmp/canonacle-methods.txt)
+   echo "Methods in Canonical but not in circular-js:"
+   comm -13 <(sort /tmp/circular-js-methods.txt) <(sort /tmp/canonical-methods.txt)
    ```
 
 2. **Run validation**
@@ -827,7 +829,7 @@ At the end of 2 weeks, you should have:
 
 ### Files Created:
 ```
-circular-canonacle/
+circular-canonical/
 ├── src/
 │   ├── schemas/
 │   │   ├── types.ncl              ✅ All core types
@@ -889,7 +891,7 @@ After completing this guide, proceed to:
    - Zod schemas
    - AGENTS.md
 
-2. **Build Canonacle-Enterprise-APIs**
+2. **Build Canonical-Enterprise-APIs**
    - CEP_Account class definition
    - Multi-language generators
 
@@ -937,4 +939,4 @@ See [DEVELOPMENT_WORKFLOW.md](./DEVELOPMENT_WORKFLOW.md) for ongoing practices.
 
 ---
 
-**Remember**: The goal is steady progress, not perfection. If you get stuck, reference the pattern files, and don't hesitate to iterate. By Day 14, you'll have a solid foundation for all future Canonacle work!
+**Remember**: The goal is steady progress, not perfection. If you get stuck, reference the pattern files, and don't hesitate to iterate. By Day 14, you'll have a solid foundation for all future Canonical work!

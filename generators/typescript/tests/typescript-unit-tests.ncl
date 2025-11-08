@@ -1,8 +1,8 @@
 # TypeScript Unit Test Generator
 # Generates Jest unit tests with mocked fetch API
 
-let config = import "../src/config.ncl" in
-let helpers = import "./helpers.ncl" in
+let config = import "../../../src/config.ncl" in
+let helpers = import "../../shared/helpers.ncl" in
 
 {
   test_code = "/**
@@ -15,7 +15,7 @@ let helpers = import "./helpers.ncl" in
  * No mock server required - tests run independently.
  */
 
-import { CircularProtocolAPI } from '../sdk/circular-protocol'
+import { CircularProtocolAPI } from '../src/index'
 
 // Mock fetch globally
 global.fetch = jest.fn()
@@ -218,7 +218,7 @@ describe('CircularProtocolAPI Unit Tests', () => {
           Version: API_VERSION
         })
 
-        expect((result.Response as any).Status).toBeDefined()
+        expect(result.Response.Status).toBeDefined()
       })
     })
 
@@ -286,7 +286,7 @@ describe('CircularProtocolAPI Unit Tests', () => {
           Version: API_VERSION
         })
 
-        expect(typeof (result.Response as any).BlockCount).toBe('number')
+        expect(typeof result.Response.BlockCount).toBe('number')
       })
     })
 
@@ -391,7 +391,7 @@ describe('CircularProtocolAPI Unit Tests', () => {
           Version: API_VERSION
         })
 
-        expect((result.Response as any).AssetName).toBe('CIRX')
+        expect(result.Response.AssetName).toBe('CIRX')
       })
     })
 
@@ -441,7 +441,7 @@ describe('CircularProtocolAPI Unit Tests', () => {
           Version: API_VERSION
         })
 
-        expect((result.Response as any).Domain).toBe('alice.cir')
+        expect(result.Response.Domain).toBe('alice.cir')
       })
     })
 

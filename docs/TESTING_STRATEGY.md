@@ -1,4 +1,4 @@
-# Testing Strategy for Circular Protocol Canonacle
+# Testing Strategy for Circular Protocol Canonical
 
 Comprehensive testing approach for ensuring quality, consistency, and reliability across all generated artifacts.
 
@@ -255,7 +255,7 @@ Document expected failures without breaking the build:
 
 ### Overview
 
-The Circular Protocol Canonacle implements a **dual-layer validation system**:
+The Circular Protocol Canonical implements a **dual-layer validation system**:
 
 1. **Compile-time validation**: Nickel contracts enforce type safety during export
 2. **Runtime validation**: Validation functions apply contracts to request/response data
@@ -862,22 +862,22 @@ const circularJs = require('circular-js');
 const { CircularClient } = require('../../output/typescript/client');
 
 const referenceClient = new circularJs.CircularClient();
-const canonacleClient = new CircularClient();
+const canonicalClient = new CircularClient();
 
 async function compareAPI(apiName, params) {
   console.log(`Testing ${apiName}...`);
 
   try {
     const referenceResult = await referenceClient[apiName](params);
-    const canonacleResult = await canonacleClient[apiName](params);
+    const canonicalResult = await canonicalClient[apiName](params);
 
-    if (JSON.stringify(referenceResult) === JSON.stringify(canonacleResult)) {
+    if (JSON.stringify(referenceResult) === JSON.stringify(canonicalResult)) {
       console.log(`  ✓ ${apiName} matches reference`);
       return true;
     } else {
       console.log(`  ✗ ${apiName} differs from reference`);
       console.log(`    Reference: ${JSON.stringify(referenceResult)}`);
-      console.log(`    Canonacle: ${JSON.stringify(canonacleResult)}`);
+      console.log(`    Canonical: ${JSON.stringify(canonicalResult)}`);
       return false;
     }
   } catch (error) {
@@ -927,10 +927,10 @@ CURRENT_VERSION="v1.0.8"
 echo "Comparing $PREVIOUS_VERSION with $CURRENT_VERSION..."
 
 # Checkout previous version
-git worktree add /tmp/canonacle-previous $PREVIOUS_VERSION
+git worktree add /tmp/canonical-previous $PREVIOUS_VERSION
 
 # Generate outputs from both versions
-cd /tmp/canonacle-previous
+cd /tmp/canonical-previous
 nickel export generators/openapi.ncl --format yaml > /tmp/openapi-previous.yaml
 
 cd -
@@ -942,7 +942,7 @@ node tests/regression/detect-breaking-changes.js \
   /tmp/openapi-current.yaml
 
 # Cleanup
-git worktree remove /tmp/canonacle-previous
+git worktree remove /tmp/canonical-previous
 ```
 
 ### Breaking Change Detection
@@ -1026,7 +1026,7 @@ main();
 
 ```yaml
 # .github/workflows/test.yml
-name: Test Canonacle
+name: Test Canonical
 
 on:
   push:

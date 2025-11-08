@@ -16,7 +16,7 @@ else
   USE_NIX_SHELL=false
 fi
 
-echo "=== Circular Protocol Canonacle - OpenAPI Generation ==="
+echo "=== Circular Protocol Canonical - OpenAPI Generation ==="
 echo
 
 # Helper function to run nickel export

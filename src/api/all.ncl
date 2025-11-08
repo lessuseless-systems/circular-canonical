@@ -1,4 +1,4 @@
-# Circular Protocol Canonacle - All API Endpoints
+# Circular Protocol Canonical - All API Endpoints
 # Aggregates all API definitions for use in generators
 
 let wallet = import "./wallet.ncl" in

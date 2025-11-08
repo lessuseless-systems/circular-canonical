@@ -1,4 +1,4 @@
-# Circular Protocol Canonacle - Wallet API Endpoints
+# Circular Protocol Canonical - Wallet API Endpoints
 # Reference: docs/API_REFERENCE.md (Wallet Operations)
 
 let types = import "../schemas/types.ncl" in

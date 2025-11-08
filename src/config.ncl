@@ -1,9 +1,9 @@
-# Circular Protocol Canonacle - Base Configuration
+# Circular Protocol Canonical - Base Configuration
 # Single source of truth for version and common settings
 
 {
   # Project metadata
-  name = "Circular Protocol Canonacle API",
+  name = "Circular Protocol Canonical API",
   description = "Official API specification for Circular Protocol blockchain operations",
   version = "2.0.0-alpha.1",
 

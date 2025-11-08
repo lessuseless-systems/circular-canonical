@@ -47,7 +47,7 @@ fi
 
 # Checkout previous version
 echo "Checking out previous version..."
-git worktree add /tmp/canonacle-previous $PREVIOUS_TAG 2>/dev/null || {
+git worktree add /tmp/canonical-previous $PREVIOUS_TAG 2>/dev/null || {
     echo -e "${YELLOW}⚠ Could not create worktree${NC}"
     echo "  Skipping regression tests"
     exit 0
@@ -55,11 +55,11 @@ git worktree add /tmp/canonacle-previous $PREVIOUS_TAG 2>/dev/null || {
 
 # Generate previous OpenAPI spec
 echo "Generating previous OpenAPI spec..."
-if [ -f "/tmp/canonacle-previous/generators/openapi.ncl" ]; then
-    (cd /tmp/canonacle-previous && nickel export generators/openapi.ncl --format yaml > /tmp/openapi-previous.yaml 2>/dev/null)
+if [ -f "/tmp/canonical-previous/generators/openapi.ncl" ]; then
+    (cd /tmp/canonical-previous && nickel export generators/openapi.ncl --format yaml > /tmp/openapi-previous.yaml 2>/dev/null)
 else
     echo -e "${YELLOW}⚠ Previous version has no OpenAPI generator${NC}"
-    git worktree remove /tmp/canonacle-previous 2>/dev/null
+    git worktree remove /tmp/canonical-previous 2>/dev/null
     exit 0
 fi
 
@@ -96,7 +96,7 @@ else
 fi
 
 # Cleanup
-git worktree remove /tmp/canonacle-previous 2>/dev/null
+git worktree remove /tmp/canonical-previous 2>/dev/null
 rm -f /tmp/openapi-previous.yaml /tmp/openapi-current.yaml
 
 echo ""

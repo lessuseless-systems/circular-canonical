@@ -1,4 +1,4 @@
-# Circular Protocol Canonacle - Smart Contract API Endpoints
+# Circular Protocol Canonical - Smart Contract API Endpoints
 # Reference: docs/API_REFERENCE.md (Smart Contracts)
 
 let types = import "../schemas/types.ncl" in

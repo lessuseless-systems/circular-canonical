@@ -1,4 +1,4 @@
-# Circular Protocol Canonacle - Block API Endpoints
+# Circular Protocol Canonical - Block API Endpoints
 # Reference: docs/API_REFERENCE.md (Blocks)
 
 let types = import "../schemas/types.ncl" in

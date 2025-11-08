@@ -1,5 +1,5 @@
 {
-  description = "Circular Protocol Canonacle - API Specification & SDK Generators";
+  description = "Circular Protocol Canonical - API Specification & SDK Generators";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -52,7 +52,7 @@
           ];
 
           shellHook = ''
-            echo "🔵 Circular Protocol Canonacle Development Environment"
+            echo "🔵 Circular Protocol Canonical Development Environment"
             echo ""
             echo "Available tools:"
             echo "  nickel:     $(nickel --version)"
@@ -77,7 +77,7 @@
         packages = {
           # OpenAPI specification
           openapi-spec = pkgs.stdenv.mkDerivation {
-            name = "circular-canonacle-openapi";
+            name = "circular-canonical-openapi";
             version = "1.0.8";
             src = ./.;
 
@@ -99,7 +99,7 @@
         checks = {
           # Type contract tests
           test-contracts = pkgs.stdenv.mkDerivation {
-            name = "canonacle-contract-tests";
+            name = "canonical-contract-tests";
             src = ./.;
             buildInputs = [ pkgs.nickel ];
             buildPhase = ''
@@ -114,7 +114,7 @@
 
           # Validate Nickel files typecheck
           validate-nickel = pkgs.stdenv.mkDerivation {
-            name = "canonacle-validate";
+            name = "canonical-validate";
             src = ./.;
             buildInputs = [ pkgs.nickel ];
             buildPhase = ''

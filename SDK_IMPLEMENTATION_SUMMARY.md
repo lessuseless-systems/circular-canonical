@@ -205,7 +205,7 @@ api.check_wallet(...)
 ## File Structure
 
 ```
-circular-canonacle/
+circular-canonical/
 ├── flake.nix                          # Nix development environment
 ├── flake.lock                         # Locked dependencies
 ├── justfile                           # Build automation (enhanced)

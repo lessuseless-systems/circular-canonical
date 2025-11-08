@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to the Circular Protocol Canonacle project will be documented in this file.
+All notable changes to the Circular Protocol Canonical project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Initial project scaffolding
-- Complete directory structure for Canonacle project
+- Complete directory structure for Canonical project
 - Nickel type system with core contracts (Address, Amount, Blockchain, etc.)
 - API skeleton files for all domains:
   - Wallet operations (6 endpoints)
@@ -66,7 +66,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Contract validation for all core types
 - First working generated artifacts
 
-**Note:** This version represents the first milestone of the Canonacle project.
+**Note:** This version represents the first milestone of the Canonical project.
 See docs/WEEK_1_2_GUIDE.md for implementation timeline.
 
 ---
@@ -91,9 +91,9 @@ See docs/WEEK_1_2_GUIDE.md for implementation timeline.
 
 ## Migration from circular-js
 
-The Canonacle project represents a complete redesign of the Circular Protocol SDK:
+The Canonical project represents a complete redesign of the Circular Protocol SDK:
 
-**circular-js v1.0.8** → **Canonacle v2.0.0**
+**circular-js v1.0.8** → **Canonical v2.0.0**
 
 Key improvements:
 - Single source of truth (Nickel definitions)
@@ -117,5 +117,5 @@ See [MIGRATION_PATH.md](docs/MIGRATION_PATH.md) for detailed migration guide.
 
 ---
 
-[Unreleased]: https://github.com/circular-protocol/circular-canonacle/compare/v2.0.0-alpha.1...HEAD
-[2.0.0-alpha.1]: https://github.com/circular-protocol/circular-canonacle/releases/tag/v2.0.0-alpha.1
+[Unreleased]: https://github.com/circular-protocol/circular-canonical/compare/v2.0.0-alpha.1...HEAD
+[2.0.0-alpha.1]: https://github.com/circular-protocol/circular-canonical/releases/tag/v2.0.0-alpha.1

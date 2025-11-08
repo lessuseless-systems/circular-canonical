@@ -1,4 +1,4 @@
-# Circular Protocol Canonacle - Core Type Definitions
+# Circular Protocol Canonical - Core Type Definitions
 # Defines all custom types and contracts used across the API
 
 {

@@ -225,9 +225,10 @@ let network = import "../../src/api/network.ncl" in
       ],
 
       # Common response structure
+      # All responses have Result (number) and Response (typed per endpoint)
       common_response = {
         Result = "number",
-        Response = "any",
+        # Response field is typed based on response_schema for each endpoint
       },
     },
 

@@ -1,4 +1,4 @@
-# Circular Protocol Canonacle - Response Schemas
+# Circular Protocol Canonical - Response Schemas
 # Defines all API response schemas with contract validation applied
 
 let types = import "./types.ncl" in

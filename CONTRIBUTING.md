@@ -1,6 +1,6 @@
-# Contributing to Circular Protocol Canonacle
+# Contributing to Circular Protocol Canonical
 
-Thank you for your interest in contributing! This document provides guidelines for contributing to the Canonacle project.
+Thank you for your interest in contributing! This document provides guidelines for contributing to the Canonical project.
 
 ## Getting Started
 
@@ -15,8 +15,8 @@ Thank you for your interest in contributing! This document provides guidelines f
 
 ```bash
 # Clone the repository
-git clone https://github.com/circular-protocol/circular-canonacle.git
-cd circular-canonacle
+git clone https://github.com/circular-protocol/circular-canonical.git
+cd circular-canonical
 
 # Install Nickel via Nix
 nix shell nixpkgs#nickel

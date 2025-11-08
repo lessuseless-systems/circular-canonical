@@ -1,6 +1,6 @@
-# Migration Path to Circular Protocol Canonacle
+# Migration Path to Circular Protocol Canonical
 
-Comprehensive transition strategy from existing manual SDKs to Canonacle-generated implementations.
+Comprehensive transition strategy from existing manual SDKs to Canonical-generated implementations.
 
 ## Table of Contents
 
@@ -74,7 +74,7 @@ Comprehensive transition strategy from existing manual SDKs to Canonacle-generat
 
 We will NOT do a big-bang replacement. Instead:
 
-1. **Build Canonacle in parallel** (Weeks 1-8)
+1. **Build Canonical in parallel** (Weeks 1-8)
 2. **Achieve feature parity** (Weeks 9-12)
 3. **Run both systems side-by-side** (Weeks 13-16)
 4. **Gradual migration** (Weeks 17-24)
@@ -82,7 +82,7 @@ We will NOT do a big-bang replacement. Instead:
 
 ### Key Principles
 
-- **Backward Compatibility**: Canonacle SDKs must be drop-in replacements
+- **Backward Compatibility**: Canonical SDKs must be drop-in replacements
 - **No Breaking Changes**: Existing code continues to work
 - **Opt-In Migration**: Users migrate at their own pace
 - **Clear Communication**: Transparent timeline and process
@@ -94,16 +94,16 @@ We will NOT do a big-bang replacement. Instead:
 
 ### Phase 0: Preparation (Weeks 1-2)
 
-**Goal**: Establish Canonacle foundation
+**Goal**: Establish Canonical foundation
 
 **Tasks**:
-- ✅ Create circular-canonacle repository
-- ✅ Create Canonacle-Enterprise-APIs repository
+- ✅ Create circular-canonical repository
+- ✅ Create Canonical-Enterprise-APIs repository
 - ✅ Set up development workflow
 - ✅ Create documentation (WEEK_1_2_GUIDE, NICKEL_PATTERNS, etc.)
 
 **Deliverables**:
-- Empty Canonacle repositories with structure
+- Empty Canonical repositories with structure
 - Documentation for implementation
 - Development environment setup
 
@@ -120,7 +120,7 @@ We will NOT do a big-bang replacement. Instead:
 
 **Week 3-4: Type System and Core Endpoints**
 ```bash
-# Implement in circular-canonacle
+# Implement in circular-canonical
 src/schemas/types.ncl          # Address, Amount, Blockchain, etc.
 src/schemas/requests.ncl        # Request schemas
 src/schemas/responses.ncl       # Response schemas
@@ -210,7 +210,7 @@ generators/examples.ncl        # Code examples
 **Week 13: Prepare Alpha Release**
 ```bash
 # Version 2.0.0-alpha.1
-- Tag Canonacle repositories
+- Tag Canonical repositories
 - Publish to package managers with alpha tag
   - npm: @circular-protocol/sdk@2.0.0-alpha.1
   - PyPI: circular-sdk==2.0.0a1
@@ -244,7 +244,7 @@ const wallet = await client.checkWallet({
   address: '0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb'
 });
 
-// NEW (Canonacle)
+// NEW (Canonical)
 import { CircularClient } from '@circular-protocol/sdk';
 
 const client = new CircularClient({
@@ -279,14 +279,14 @@ const wallet = await client.checkWallet({
 ```bash
 # Version 2.0.0-beta.1
 - Address all alpha feedback
-- Complete enterprise APIs in Canonacle-Enterprise-APIs
+- Complete enterprise APIs in Canonical-Enterprise-APIs
 - Finalize documentation
 - Set up support channels
 ```
 
 **Week 18-19: Public Beta**
 - Announce beta on all channels
-- Publish blog post about Canonacle
+- Publish blog post about Canonical
 - Update circular-protocol website
 - Provide migration examples for common use cases
 
@@ -301,10 +301,10 @@ const wallet = await client.checkWallet({
 ```markdown
 # Beta Announcement
 
-## Circular Protocol SDK 2.0 Beta - Canonacle
+## Circular Protocol SDK 2.0 Beta - Canonical
 
 We're excited to announce the beta release of the Circular Protocol SDK 2.0,
-generated from our new Canonacle (Canonical + Oracle) system.
+generated from our new Canonical (Canonical + Oracle) system.
 
 ### What's New?
 
@@ -334,7 +334,7 @@ See MIGRATION.md for step-by-step migration from circular-js.
 
 ### Feedback
 
-Report issues: https://github.com/circular-protocol/circular-canonacle/issues
+Report issues: https://github.com/circular-protocol/circular-canonical/issues
 Join discussion: https://discord.gg/circular-protocol
 ```
 
@@ -424,7 +424,7 @@ Update old repositories with deprecation notice:
 ```markdown
 # ⚠️ DEPRECATED: This repository is deprecated
 
-Please migrate to the new Canonacle-generated SDK:
+Please migrate to the new Canonical-generated SDK:
 
 - **Replacement**: @circular-protocol/sdk
 - **Migration Guide**: https://docs.circular.money/migration
@@ -446,7 +446,7 @@ npm install @circular-protocol/sdk
 
 **Month 7-12: Transition Period**
 - Both SDKs maintained (bug fixes only in old)
-- New features only in Canonacle SDK
+- New features only in Canonical SDK
 - Regular reminders to migrate
 - Support for migration questions
 
@@ -474,7 +474,7 @@ Month 6
 ├─ Migration guide finalized
 │
 Month 12
-├─ New features only in Canonacle
+├─ New features only in Canonical
 ├─ Bug fixes only in old SDKs
 │
 Month 15
@@ -493,7 +493,7 @@ Month 18
 
 ### API Surface Compatibility
 
-**Guarantee**: Canonacle SDKs are drop-in replacements
+**Guarantee**: Canonical SDKs are drop-in replacements
 
 ```typescript
 // These are IDENTICAL
@@ -510,8 +510,8 @@ const wallet = await client.checkWallet({ address: '0x...' });
 **Guarantee**: Same inputs produce same outputs
 
 ```python
-# circular-js and Canonacle produce identical results
-assert circular_js_result == canonacle_result
+# circular-js and Canonical produce identical results
+assert circular_js_result == canonical_result
 
 # Verified by cross-language validation tests
 ```
@@ -526,12 +526,12 @@ assert circular_js_result == canonacle_result
 
 ### Performance Compatibility
 
-**Guarantee**: Canonacle SDKs are at least as fast
+**Guarantee**: Canonical SDKs are at least as fast
 
 ```bash
 # Benchmark results
 circular-js:    100 req/s
-Canonacle TS:   120 req/s  (20% faster due to optimizations)
+Canonical TS:   120 req/s  (20% faster due to optimizations)
 ```
 
 ---
@@ -596,7 +596,7 @@ Canonacle TS:   120 req/s  (20% faster due to optimizations)
 ```markdown
 # Circular Protocol SDK 2.0 Released!
 
-We're excited to announce SDK 2.0, generated from our new Canonacle system.
+We're excited to announce SDK 2.0, generated from our new Canonical system.
 
 ## What You Need to Know
 
@@ -615,7 +615,7 @@ That's it! Your code continues to work.
 ## Questions?
 
 - Migration Guide: docs.circular.money/migration
-- Issues: github.com/circular-protocol/circular-canonacle/issues
+- Issues: github.com/circular-protocol/circular-canonical/issues
 - Discussion: discord.gg/circular-protocol
 ```
 
@@ -667,7 +667,7 @@ We're here to help ensure a smooth transition!
 
 ### If Migration Issues Arise
 
-**Scenario**: Critical bug discovered in Canonacle SDK after GA
+**Scenario**: Critical bug discovered in Canonical SDK after GA
 
 **Response**:
 

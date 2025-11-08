@@ -1,4 +1,4 @@
-# Circular Protocol Canonacle - Build Automation
+# Circular Protocol Canonical - Build Automation
 # Just is a command runner - similar to Make but simpler
 # Install: https://github.com/casey/just
 # Usage: just <recipe>
@@ -9,72 +9,72 @@ default:
 
 # Initial project setup
 setup:
-    @echo "Setting up Canonacle development environment..."
+    @echo "Setting up Canonical development environment"
     @mkdir -p output/{typescript,python,java,openapi}
     @chmod +x tests/*.sh 2>/dev/null || true
     @chmod +x tests/**/*.sh 2>/dev/null || true
     @if [ -f .git/hooks/pre-commit ]; then rm .git/hooks/pre-commit; fi
     @if [ -d .git ]; then ln -sf ../../hooks/pre-commit .git/hooks/pre-commit 2>/dev/null || true; fi
-    @echo "✓ Output directories created"
-    @echo "✓ Test scripts made executable"
-    @echo "✓ Git hooks configured"
+    @echo "[OK] Output directories created"
+    @echo "[OK] Test scripts made executable"
+    @echo "[OK] Git hooks configured"
     @echo ""
-    @echo "Setup complete! Next steps:"
-    @echo "  1. Install Nickel: nix shell nixpkgs#nickel"
-    @echo "  2. Verify: nickel --version"
-    @echo "  3. Start implementing: See docs/WEEK_1_2_GUIDE.md"
+    @echo "Setup complete. Next steps:"
+    @echo "  *Install Nickel: nix shell nixpkgs#nickel"
+    @echo "  *Verify: nickel --version"
+    @echo "  *Start implementing: See implementation guide in docs"
 
 # Type check all Nickel files (fast, run frequently)
 validate:
-    @echo "Type checking Nickel files..."
-    @find src -name "*.ncl" -exec echo "  Checking: {}" \; -exec nickel typecheck {} \; 2>&1
-    @find generators -name "*.ncl" -exec echo "  Checking: {}" \; -exec nickel typecheck {} \; 2>&1
-    @echo "✓ All files type checked successfully"
+    @echo "Type checking Nickel files"
+    @find src -name '*.ncl' -exec echo "  Checking: {}" \; -exec nickel typecheck {} \; 2>&1
+    @find generators -name '*.ncl' -exec echo "  Checking: {}" \; -exec nickel typecheck {} \; 2>&1
+    @echo "[OK] All files type checked successfully"
 
 # Run contract validation tests only (Layer 1: fastest)
 test-contracts:
-    @echo "Running contract validation tests..."
+    @echo "Running contract validation tests"
     @if [ -f tests/run-contract-tests.sh ]; then \
         ./tests/run-contract-tests.sh; \
     else \
-        echo "⚠ tests/run-contract-tests.sh not found yet"; \
-        echo "  Run contract tests manually: nickel export tests/contracts/*.test.ncl"; \
+        echo "[WARNING] contract test script not found yet"; \
+        echo "  Run contract tests manually"; \
     fi
 
 # Run generator output validation tests (Layer 2: syntax validation)
 test-generators:
-    @echo "Running generator output tests..."
+    @echo "Running generator output tests"
     @if [ -f tests/generators/syntax-validation.sh ]; then \
         ./tests/generators/syntax-validation.sh; \
     else \
-        echo "⚠ tests/generators/syntax-validation.sh not found yet"; \
+        echo "[WARNING] syntax validation script not found yet"; \
     fi
 
 # Run snapshot tests (compare generator output against snapshots)
 test-snapshots:
-    @echo "Running snapshot tests..."
+    @echo "Running snapshot tests"
     @if [ -f tests/generators/snapshot-test.sh ]; then \
         ./tests/generators/snapshot-test.sh; \
     else \
-        echo "⚠ tests/generators/snapshot-test.sh not found yet"; \
+        echo "[WARNING] snapshot test script not found yet"; \
     fi
 
 # Run cross-language validation tests (Layer 3: behavioral consistency)
 test-cross-lang:
-    @echo "Running cross-language validation..."
+    @echo "Running cross-language validation"
     @if [ -f tests/cross-lang/run-tests.py ]; then \
         python3 tests/cross-lang/run-tests.py; \
     else \
-        echo "⚠ tests/cross-lang/run-tests.py not found yet"; \
+        echo "[WARNING] tests/cross-lang/run-tests.py not found yet"; \
     fi
 
 # Run integration tests (Layer 4: against mock/live server)
 test-integration:
-    @echo "Running integration tests..."
+    @echo "Running integration tests"
     @if [ -f tests/integration/sdk.test.ts ]; then \
         cd tests/integration && npm test; \
     else \
-        echo "⚠ Integration tests not yet implemented"; \
+        echo "[WARNING] Integration tests not yet implemented"; \
     fi
 
 # Run all tests (full suite)
@@ -82,81 +82,294 @@ test: test-contracts test-generators
 
 # Generate all artifacts from Nickel definitions
 generate:
-    @echo "Generating artifacts from Nickel definitions..."
+    @echo "Generating artifacts from Nickel definitions"
     @mkdir -p dist/{openapi,sdk}
-    @echo "  → OpenAPI specification..."
-    @nickel export generators/openapi.ncl --format yaml > dist/openapi/openapi.yaml 2>&1 && \
-        echo "    ✓ dist/openapi/openapi.yaml"
-    @nickel export generators/openapi.ncl --format json > dist/openapi/openapi.json 2>&1 && \
-        echo "    ✓ dist/openapi/openapi.json"
-    @echo "  → TypeScript SDK..."
-    @nickel export generators/typescript.ncl --field sdk_code --format raw > dist/sdk/circular-protocol.ts 2>&1 && \
-        echo "    ✓ dist/sdk/circular-protocol.ts"
-    @echo "  → Python SDK..."
-    @nickel export generators/python.ncl --field sdk_code --format raw > dist/sdk/circular_protocol.py 2>&1 && \
-        echo "    ✓ dist/sdk/circular_protocol.py"
+    @echo "OpenAPI specification"
+    @nickel export generators/shared/openapi.ncl --format yaml > dist/openapi/openapi.yaml 2>&1 && \
+        echo "    [OK] OpenAPI YAML generated"
+    @nickel export generators/shared/openapi.ncl --format json > dist/openapi/openapi.json 2>&1 && \
+        echo "    [OK] OpenAPI JSON generated"
+    @echo "TypeScript SDK"
+    @nickel export generators/typescript/typescript-sdk.ncl --field sdk_code --format raw > dist/sdk/circular-protocol.ts 2>&1 && \
+        echo "    [OK] TypeScript SDK generated"
+    @echo "Python SDK"
+    @nickel export generators/python/python-sdk.ncl --field sdk_code --format raw > dist/sdk/circular_protocol.py 2>&1 && \
+        echo "    [OK] Python SDK generated"
     @echo ""
-    @echo "✓ Generation complete! Files in dist/"
+    @echo "[OK] Generation complete"
 
 # Generate TypeScript SDK only
 generate-ts:
-    @echo "Generating TypeScript SDK..."
+    @echo "Generating TypeScript SDK"
     @mkdir -p dist/sdk
-    @nickel export generators/typescript.ncl --field sdk_code --format raw > dist/sdk/circular-protocol.ts
-    @echo "✓ Generated: dist/sdk/circular-protocol.ts"
+    @nickel export generators/typescript/typescript-sdk.ncl --field sdk_code --format raw > dist/sdk/circular-protocol.ts
+    @echo "[OK] Generated TypeScript SDK"
     @wc -l dist/sdk/circular-protocol.ts
 
 # Generate Python SDK only
 generate-py:
-    @echo "Generating Python SDK..."
+    @echo "Generating Python SDK"
     @mkdir -p dist/sdk
-    @nickel export generators/python.ncl --field sdk_code --format raw > dist/sdk/circular_protocol.py
-    @echo "✓ Generated: dist/sdk/circular_protocol.py"
+    @nickel export generators/python/python-sdk.ncl --field sdk_code --format raw > dist/sdk/circular_protocol.py
+    @echo "[OK] Generated Python SDK"
     @wc -l dist/sdk/circular_protocol.py
+
+# Generate complete Python package
+generate-py-package:
+    @echo "Generating complete Python package"
+    @mkdir -p dist/python/src/circular_protocol_api
+    @echo "pyproject.toml"
+    @nickel export generators/python/package-manifest/python-pyproject-toml.ncl --format toml > dist/python/pyproject.toml
+    @echo "setup.py"
+    @nickel export generators/python/package-manifest/python-setup-py.ncl --field setup_code --format raw > dist/python/setup.py
+    @echo "README file"
+    @nickel export generators/python/docs/python-readme.ncl --format raw > dist/python/README.md
+    @echo "pytest.ini"
+    @nickel export generators/python/config/python-pytest-ini.ncl --field pytest_ini_content --format raw > dist/python/pytest.ini
+    @echo ".gitignore"
+    @nickel export generators/python/metadata/python-gitignore.ncl --field gitignore_content --format raw > dist/python/.gitignore
+    @echo "SDK code (src/circular_protocol_api/__init__.py)"
+    @nickel export generators/python/python-sdk.ncl --field sdk_code --format raw > dist/python/src/circular_protocol_api/__init__.py
+    @echo "Unit tests"
+    @mkdir -p dist/python/tests
+    @nickel export generators/python/tests/python-unit-tests.ncl --field test_code --format raw > dist/python/tests/test_unit.py
+    @echo "GitHub Actions workflow"
+    @mkdir -p dist/python/.github/workflows
+    @nickel export generators/python/ci-cd/python-github-actions-test.ncl --field workflow_yaml --format raw > dist/python/.github/workflows/test.yml
+    @echo ""
+    @echo "[OK] Python package generated in dist/python/"
+    @ls -lh dist/python/
+
+# Generate complete TypeScript package
+generate-ts-package:
+    @echo "Generating complete TypeScript package"
+    @mkdir -p dist/typescript/src
+    @echo "package.json"
+    @nickel export generators/typescript/package-manifest/typescript-package-json.ncl --format json > dist/typescript/package.json
+    @echo "tsconfig.json"
+    @nickel export generators/typescript/config/typescript-tsconfig.ncl --format json > dist/typescript/tsconfig.json
+    @echo "jest.config.cjs"
+    @nickel export generators/typescript/config/typescript-jest.ncl --format raw > dist/typescript/jest.config.cjs
+    @echo "webpack.config.cjs.js"
+    @nickel export generators/typescript/config/typescript-webpack-cjs.ncl --format raw > dist/typescript/webpack.config.cjs.js
+    @echo "webpack.config.esm.js"
+    @nickel export generators/typescript/config/typescript-webpack-esm.ncl --format raw > dist/typescript/webpack.config.esm.js
+    @echo "README file"
+    @nickel export generators/typescript/docs/typescript-readme.ncl --format raw > dist/typescript/README.md
+    @echo "SDK code (src/index.ts)"
+    @nickel export generators/typescript/typescript-sdk.ncl --field sdk_code --format raw > dist/typescript/src/index.ts
+    @echo "Unit tests"
+    @mkdir -p dist/typescript/tests
+    @nickel export generators/typescript/tests/typescript-unit-tests.ncl --field test_code --format raw > dist/typescript/tests/index.test.ts
+    @echo "GitHub Actions workflow"
+    @mkdir -p dist/typescript/.github/workflows
+    @nickel export generators/typescript/ci-cd/typescript-github-actions-test.ncl --field workflow_yaml --format raw > dist/typescript/.github/workflows/test.yml
+    @echo ""
+    @echo "[OK] TypeScript package generated in dist/typescript/"
+    @ls -lh dist/typescript/
+
+# Generate both complete packages
+generate-packages: generate-ts-package generate-py-package
+    @echo ""
+    @echo "================================================================"
+    @echo "  [OK] Complete packages generated for TypeScript and Python"
+    @echo "================================================================"
+
+# ===========================================================================
+# Multi-Repo Workflow: Fork setup and sync to submodules
+# ===========================================================================
+
+# Setup forks: Create forks on GitHub and add as submodules (ONE-TIME SETUP)
+setup-forks:
+    @echo "Setting up lessuseless-systems forks"
+    @echo ""
+    @echo "Step 1: Fork upstream repositories to lessuseless-systems"
+    @if ! command -v gh >/dev/null 2>&1; then \
+        echo "[ERROR] GitHub CLI (gh) not found"; \
+        echo "  Install gh CLI first"; \
+        exit 1; \
+    fi
+    @echo "Forking circular-protocol/circular-js-npm"
+    @gh repo fork circular-protocol/circular-js-npm --org lessuseless-systems --clone=false --remote=false || \
+        echo "  [WARNING] Fork may already exist, continuing"
+    @echo "Forking circular-protocol/circular-py"
+    @gh repo fork circular-protocol/circular-py --org lessuseless-systems --clone=false --remote=false || \
+        echo "  [WARNING] Fork may already exist, continuing"
+    @echo ""
+    @echo "Step 2: Clone forks and create development branches"
+    @rm -rf /tmp/circular-forks
+    @mkdir -p /tmp/circular-forks
+    @cd /tmp/circular-forks && \
+        gh repo clone lessuseless-systems/circular-js-npm && \
+        cd circular-js-npm && \
+        git checkout -b development 2>/dev/null || git checkout development && \
+        git push -u origin development 2>/dev/null || echo "  [OK] development branch exists"
+    @cd /tmp/circular-forks && \
+        gh repo clone lessuseless-systems/circular-py && \
+        cd circular-py && \
+        git checkout -b development 2>/dev/null || git checkout development && \
+        git push -u origin development 2>/dev/null || echo "  [OK] development branch exists"
+    @echo ""
+    @echo "Step 3: Remove existing dist/ contents and add submodules"
+    @rm -rf dist/typescript/* dist/python/* 2>/dev/null || true
+    @git submodule add -b development git@github.com:lessuseless-systems/circular-js-npm.git dist/typescript 2>/dev/null || \
+        echo "  [WARNING] Submodule dist/typescript already exists"
+    @git submodule add -b development git@github.com:lessuseless-systems/circular-py.git dist/python 2>/dev/null || \
+        echo "  [WARNING] Submodule dist/python already exists"
+    @git submodule init
+    @git submodule update
+    @echo ""
+    @echo "Step 4: Generate initial packages in submodules"
+    @just generate-packages
+    @echo ""
+    @echo "================================================================"
+    @echo "  [OK] Fork setup complete"
+    @echo "================================================================"
+    @echo ""
+    @echo "Next steps:"
+    @echo "  *Review submodules: just check-submodules"
+    @echo "  *Commit submodule config: git add .gitmodules && git commit -m 'chore: add fork submodules'"
+    @echo "  *Start using workflow: just sync-all"
+    @echo ""
+    @echo "[WARNING] IMPORTANT: Do NOT use git add dist - submodules are tracked via gitmodules"
+    @echo ""
+    @echo "Clean up temp directory:"
+    @echo "  rm -rf /tmp/circular-forks"
+
+# ===========================================================================
+# Multi-Repo Workflow: Sync generated code to fork submodules
+# ===========================================================================
+
+# Sync TypeScript package to submodule (lessuseless-systems/circular-js-npm fork)
+sync-typescript:
+    @echo "Syncing TypeScript package to dist/typescript/ submodule"
+    @if [ ! -e dist/typescript/.git ]; then \
+        echo "[ERROR] dist/typescript/ is not a git submodule"; \
+        echo "  Run setup-forks to configure submodules"; \
+        exit 1; \
+    fi
+    @echo "Generating TypeScript package"
+    @just generate-ts-package
+    @echo "Skipping LICENSE and gitignore (generators not yet implemented)"
+    @cd dist/typescript && \
+        git add -A && \
+        git diff --cached --quiet || \
+        git commit -m "chore: sync generated TypeScript SDK from circular-canonical"
+    @echo "[OK] TypeScript package synced to dist/typescript/"
+    @echo "  Branch: development"
+    @cd dist/typescript && git log -1 --oneline
+
+# Sync Python package to submodule (lessuseless-systems/circular-py fork)
+sync-python:
+    @echo "Syncing Python package to dist/python/ submodule"
+    @if [ ! -e dist/python/.git ]; then \
+        echo "[ERROR] dist/python/ is not a git submodule"; \
+        echo "  Run setup-forks to configure submodules"; \
+        exit 1; \
+    fi
+    @echo "Generating Python package"
+    @just generate-py-package
+    @echo "Skipping LICENSE (generator not yet implemented)"
+    @cd dist/python && \
+        git add -A && \
+        git diff --cached --quiet || \
+        git commit -m "chore: sync generated Python SDK from circular-canonical"
+    @echo "[OK] Python package synced to dist/python/"
+    @echo "  Branch: development"
+    @cd dist/python && git log -1 --oneline
+
+# Sync both TypeScript and Python packages
+sync-all: sync-typescript sync-python
+    @echo ""
+    @echo "================================================================"
+    @echo "  [OK] Both packages synced to submodules"
+    @echo "================================================================"
+    @echo ""
+    @echo "Next steps:"
+    @echo "  *Review changes: cd dist/typescript && git status"
+    @echo "  *Push to fork: just push-forks"
+    @echo "  *Create PRs to upstream circular-protocol repos"
+
+# Push development branches to lessuseless-systems forks
+push-forks:
+    @echo "Pushing development branches to lessuseless-systems forks"
+    @if [ -e dist/typescript/.git ]; then \
+        echo "Pushing TypeScript (dist/typescript)"; \
+        cd dist/typescript && git push origin development; \
+    else \
+        echo "  [WARNING] Skipping TypeScript: not a submodule"; \
+    fi
+    @if [ -e dist/python/.git ]; then \
+        echo "Pushing Python (dist/python)"; \
+        cd dist/python && git push origin development; \
+    else \
+        echo "  [WARNING] Skipping Python: not a submodule"; \
+    fi
+    @echo "[OK] Pushed to lessuseless-systems forks"
+    @echo ""
+    @echo "Next: Create PRs from lessuseless-systems tocircular-protocol"
+
+# Check status of all submodules
+check-submodules:
+    @echo "Checking submodule status"
+    @echo ""
+    @if [ -e dist/typescript/.git ]; then \
+        echo "TypeScript (dist/typescript):"; \
+        cd dist/typescript && git status -sb; \
+    else \
+        echo "TypeScript: Not a submodule"; \
+    fi
+    @echo ""
+    @if [ -e dist/python/.git ]; then \
+        echo "Python (dist/python):"; \
+        cd dist/python && git status -sb; \
+    else \
+        echo "Python: Not a submodule"; \
+    fi
 
 # Generate OpenAPI spec only
 generate-openapi:
-    @echo "Generating OpenAPI specification..."
+    @echo "Generating OpenAPI specification"
     @mkdir -p dist/openapi
-    @nickel export generators/openapi.ncl --format yaml > dist/openapi/openapi.yaml
-    @nickel export generators/openapi.ncl --format json > dist/openapi/openapi.json
-    @echo "✓ Generated: dist/openapi/openapi.{yaml,json}"
+    @nickel export generators/shared/openapi.ncl --format yaml > dist/openapi/openapi.yaml
+    @nickel export generators/shared/openapi.ncl --format json > dist/openapi/openapi.json
+    @echo "[OK] Generated OpenAPI spec in yaml and json formats"
 
 # Start mock API server for SDK testing
 mock-server:
-    @echo "Starting mock API server on http://localhost:8080"
+    @echo "Starting mock API server"
     @python3 tests/mock-server/server.py
 
 # Generate SDK test files (integration tests)
 generate-tests:
-    @echo "Generating SDK integration test files..."
+    @echo "Generating SDK integration test files"
     @mkdir -p dist/tests
-    @nickel export generators/typescript-tests.ncl --field test_code --format raw > dist/tests/sdk.test.ts
-    @echo "✓ Generated: dist/tests/sdk.test.ts"
-    @nickel export generators/python-tests.ncl --field test_code --format raw > dist/tests/test_sdk.py
-    @echo "✓ Generated: dist/tests/test_sdk.py"
+    @nickel export generators/typescript/tests/typescript-tests.ncl --field test_code --format raw > dist/tests/sdk.test.ts
+    @echo "[OK] Generated test files in dist/tests"
+    @nickel export generators/python/tests/python-tests.ncl --field test_code --format raw > dist/tests/test_sdk.py
+    @echo "[OK] Generated Python test files"
 
 # Generate SDK unit test files
 generate-unit-tests:
-    @echo "Generating SDK unit test files..."
+    @echo "Generating SDK unit test files"
     @mkdir -p dist/tests
-    @nickel export generators/typescript-unit-tests.ncl --field test_code --format raw > dist/tests/sdk.unit.test.ts
-    @echo "✓ Generated: dist/tests/sdk.unit.test.ts"
-    @nickel export generators/python-unit-tests.ncl --field test_code --format raw > dist/tests/test_sdk_unit.py
-    @echo "✓ Generated: dist/tests/test_sdk_unit.py"
+    @nickel export generators/typescript/tests/typescript-unit-tests.ncl --field test_code --format raw > dist/tests/sdk.unit.test.ts
+    @echo "[OK] Generated TypeScript unit tests"
+    @nickel export generators/python/tests/python-unit-tests.ncl --field test_code --format raw > dist/tests/test_sdk_unit.py
+    @echo "[OK] Generated Python unit tests"
 
 # Generate all tests (integration + unit)
 generate-all-tests: generate-tests generate-unit-tests
 
 # Run TypeScript SDK tests (requires mock server)
 test-sdk-ts:
-    @echo "Running TypeScript SDK tests..."
+    @echo "Running TypeScript SDK tests"
     @echo "Note: Mock server must be running (just mock-server)"
     @cd dist/tests && npm install --silent && npm test
 
 # Run Python SDK tests (requires mock server)
 test-sdk-py:
-    @echo "Running Python SDK tests..."
+    @echo "Running Python SDK tests"
     @echo "Note: Mock server must be running (just mock-server)"
     @cd dist/tests && PYTHONPATH=../sdk:$$PYTHONPATH pytest test_sdk.py -v
 
@@ -165,13 +378,13 @@ test-sdk: test-sdk-ts test-sdk-py
 
 # Run TypeScript SDK unit tests (no mock server needed)
 test-sdk-unit-ts:
-    @echo "Running TypeScript SDK unit tests..."
+    @echo "Running TypeScript SDK unit tests"
     @echo "Note: No mock server required"
     @cd dist/tests && npm install --silent && npx jest --selectProjects=unit
 
 # Run Python SDK unit tests (no mock server needed)
 test-sdk-unit-py:
-    @echo "Running Python SDK unit tests..."
+    @echo "Running Python SDK unit tests"
     @echo "Note: No mock server required"
     @cd dist/tests && PYTHONPATH=../sdk:$$PYTHONPATH pytest test_sdk_unit.py -v -m unit
 
@@ -180,7 +393,7 @@ test-sdk-unit: test-sdk-unit-ts test-sdk-unit-py
 
 # Run all tests (integration + unit, both languages)
 test-sdk-all:
-    @echo "Running all SDK tests (integration + unit)..."
+    @echo "Running all SDK tests (integration + unit)"
     @echo ""
     @echo "=== Integration Tests (requires mock server) ==="
     @just test-sdk
@@ -190,105 +403,105 @@ test-sdk-all:
 
 # Generate JSON export for inspection (useful for debugging)
 generate-json file:
-    @echo "Exporting {{file}} to JSON..."
+    @echo "Exporting {{file}} to JSON"
     @nickel export {{file}} --format json | jq .
 
 # Generate YAML export for inspection
 generate-yaml file:
-    @echo "Exporting {{file}} to YAML..."
+    @echo "Exporting {{file}} to YAML"
     @nickel export {{file}} --format yaml
 
 # Query specific field in Nickel file (for inspection)
 query file field:
-    @echo "Querying {{file}}.{{field}}..."
+    @echo "Querying field in file"
     @nickel query {{file}} {{field}}
 
 # Watch for changes and regenerate (requires inotifywait)
 watch:
-    @echo "Watching for changes (Ctrl+C to stop)..."
+    @echo "Watching for changes (Ctrl+C to stop)"
     @echo "Watching: src/ generators/"
     @while true; do \
-        inotifywait -qre modify src/ generators/ 2>/dev/null || { echo "⚠ inotifywait not found. Install: apt install inotify-tools"; exit 1; }; \
+        inotifywait -qre modify src/ generators/ 2>/dev/null || { echo "[WARNING] inotifywait not found"; exit 1; }; \
         clear; \
-        echo "Change detected, regenerating..."; \
+        echo "Change detected, regenerating"; \
         just validate && just generate; \
         echo ""; \
-        echo "Waiting for next change..."; \
+        echo "Waiting for next change"; \
     done
 
 # Clean all generated files
 clean:
-    @echo "Cleaning generated files..."
+    @echo "Cleaning generated files"
     @rm -rf output/*
-    @echo "✓ Cleaned output/ directory"
+    @echo "[OK] Cleaned output/ directory"
 
 # Update snapshots (after verifying generator output is correct)
 update-snapshots:
-    @echo "Updating generator snapshots..."
+    @echo "Updating generator snapshots"
     @mkdir -p tests/generators/snapshots
     @just generate
     @cp -r output/* tests/generators/snapshots/
-    @echo "✓ Snapshots updated from current output"
-    @echo "⚠ Remember to commit the updated snapshots!"
+    @echo "[OK] Snapshots updated from current output"
+    @echo "[WARNING] Remember to commit the updated snapshots"
 
 # Validate against OpenAPI schema
 validate-openapi:
-    @echo "Validating OpenAPI specification..."
+    @echo "Validating OpenAPI specification"
     @if [ -f output/openapi/openapi.yaml ]; then \
         npx @apidevtools/swagger-cli validate output/openapi/openapi.yaml; \
     else \
-        echo "⚠ Generate OpenAPI spec first: just generate"; \
+        echo "[WARNING] Generate OpenAPI spec first: just generate"; \
     fi
 
 # Validate against MCP schema
 validate-mcp:
-    @echo "Validating MCP server schema..."
+    @echo "Validating MCP server schema"
     @if [ -f output/mcp/tools.json ] && [ -f tests/schemas/mcp-schema.json ]; then \
         npx ajv validate -s tests/schemas/mcp-schema.json -d output/mcp/tools.json; \
     else \
-        echo "⚠ Generate MCP schema first: just generate"; \
+        echo "[WARNING] Generate MCP schema first: just generate"; \
     fi
 
 # Run regression tests (detect breaking changes)
 regression:
-    @echo "Running regression tests..."
+    @echo "Running regression tests"
     @if [ -f tests/regression/detect-breaking-changes.sh ]; then \
         ./tests/regression/detect-breaking-changes.sh; \
     else \
-        echo "⚠ tests/regression/detect-breaking-changes.sh not found yet"; \
+        echo "[WARNING] breaking changes detection script not found yet"; \
     fi
 
 # Interactive Nickel REPL
 repl:
-    @echo "Starting Nickel REPL..."
-    @echo "Tip: Try 'import \"src/schemas/types.ncl\"'"
+    @echo "Starting Nickel REPL"
+    @echo "Tip: Try importing schemas/types file"
     @nickel repl
 
 # Format all Nickel files (if nickel format becomes available)
 format:
-    @echo "Formatting Nickel files..."
-    @echo "⚠ Nickel formatter not yet available"
-    @echo "  Manually ensure consistent indentation (2 spaces)"
+    @echo "Formatting Nickel files"
+    @echo "[WARNING] Nickel formatter not yet available"
+    @echo "  Manually ensure consistent indentation"
 
 # Lint all Nickel files (basic checks)
 lint:
-    @echo "Linting Nickel files..."
+    @echo "Linting Nickel files"
     @just validate
-    @echo "✓ Lint complete (type checking passed)"
+    @echo "[OK] Lint complete (type checking passed)"
 
 # Prepare for release (run all checks)
 release: clean validate test generate
     @echo ""
     @echo "==================================="
-    @echo "Release preparation complete!"
+    @echo "Release preparation complete"
     @echo "==================================="
     @echo ""
     @echo "Next steps:"
-    @echo "  1. Update version in src/config.ncl"
-    @echo "  2. Update CHANGELOG.md"
-    @echo "  3. Commit: git commit -m 'chore(release): prepare vX.Y.Z'"
-    @echo "  4. Tag: git tag -a vX.Y.Z -m 'Release vX.Y.Z'"
-    @echo "  5. Push: git push origin develop && git push origin vX.Y.Z"
+    @echo "  *Update version in config file"
+    @echo "  *Update CHANGELOG"
+    @echo "  *Commit with release message"
+    @echo "  *Tag with version number"
+    @echo "  *Push to origin"
 
 # Show current Nickel version
 version-nickel:
@@ -298,50 +511,49 @@ version-nickel:
 version-project:
     @echo "Project version:"
     @if [ -f src/config.ncl ]; then \
-        nickel query src/config.ncl version 2>/dev/null || echo "  ⚠ Could not read version from src/config.ncl"; \
+        nickel query src/config.ncl version 2>/dev/null || echo "  [WARNING] Could not read version from config file"; \
     else \
-        echo "  ⚠ src/config.ncl not found yet"; \
+        echo "  [WARNING] config file not found yet"; \
     fi
 
 # Check development environment
 check-env:
-    @echo "Checking development environment..."
+    @echo "Checking development environment"
     @echo ""
     @echo "Required tools:"
-    @command -v nickel >/dev/null 2>&1 && echo "  ✓ nickel: $(nickel --version)" || echo "  ✗ nickel: NOT FOUND"
-    @command -v node >/dev/null 2>&1 && echo "  ✓ node: $(node --version)" || echo "  ✗ node: NOT FOUND (needed for TypeScript validation)"
-    @command -v python3 >/dev/null 2>&1 && echo "  ✓ python3: $(python3 --version)" || echo "  ✗ python3: NOT FOUND (needed for Python validation)"
-    @command -v java >/dev/null 2>&1 && echo "  ✓ java: $(java --version | head -1)" || echo "  ✗ java: NOT FOUND (needed for Java validation)"
-    @command -v jq >/dev/null 2>&1 && echo "  ✓ jq: $(jq --version)" || echo "  ✗ jq: NOT FOUND (helpful for JSON processing)"
+    @command -v nickel >/dev/null 2>&1 && echo "  [OK] nickel found" || echo "  [ERROR] nickel NOT FOUND"
+    @command -v node >/dev/null 2>&1 && echo "  [OK] node found" || echo "  [ERROR] node NOT FOUND"
+    @command -v python3 >/dev/null 2>&1 && echo "  [OK] python3 found" || echo "  [ERROR] python3 NOT FOUND"
+    @command -v java >/dev/null 2>&1 && echo "  [OK] java found" || echo "  [ERROR] java NOT FOUND"
+    @command -v jq >/dev/null 2>&1 && echo "  [OK] jq found" || echo "  [ERROR] jq NOT FOUND"
     @echo ""
     @echo "Optional tools:"
-    @command -v inotifywait >/dev/null 2>&1 && echo "  ✓ inotifywait: available (for 'just watch')" || echo "  ○ inotifywait: not found (install inotify-tools for watch mode)"
-    @command -v gh >/dev/null 2>&1 && echo "  ✓ gh: $(gh --version | head -1) (for GitHub CLI)" || echo "  ○ gh: not found (install for GitHub integration)"
+    @command -v inotifywait >/dev/null 2>&1 && echo "  [OK] inotifywait found" || echo "  [INFO] inotifywait not found"
+    @command -v gh >/dev/null 2>&1 && echo "  [OK] gh found" || echo "  [INFO] gh not found"
 
 # Show statistics about the project
 stats:
-    @echo "Canonacle Project Statistics"
+    @echo "Canonical Project Statistics"
     @echo "============================="
     @echo ""
     @echo "Nickel files:"
-    @find src generators -name "*.ncl" 2>/dev/null | wc -l | xargs echo "  Total:" || echo "  Total: 0"
-    @find src/schemas -name "*.ncl" 2>/dev/null | wc -l | xargs echo "  Schemas:" || echo "  Schemas: 0"
-    @find src/api -name "*.ncl" 2>/dev/null | wc -l | xargs echo "  API definitions:" || echo "  API definitions: 0"
-    @find generators -name "*.ncl" 2>/dev/null | wc -l | xargs echo "  Generators:" || echo "  Generators: 0"
+    @find src generators -name '*.ncl' 2>/dev/null | wc -l | xargs echo "  Total"
+    @find src/schemas -name '*.ncl' 2>/dev/null | wc -l | xargs echo "  Schemas"
+    @find src/api -name '*.ncl' 2>/dev/null | wc -l | xargs echo "  API definitions"
+    @find generators -name '*.ncl' 2>/dev/null | wc -l | xargs echo "  Generators"
     @echo ""
     @echo "Test files:"
-    @find tests -name "*.test.ncl" 2>/dev/null | wc -l | xargs echo "  Contract tests:" || echo "  Contract tests: 0"
-    @find tests -name "*.sh" 2>/dev/null | wc -l | xargs echo "  Test scripts:" || echo "  Test scripts: 0"
+    @find tests -name '*.test.ncl' 2>/dev/null | wc -l | xargs echo "  Contract tests"
+    @find tests -name '*.sh' 2>/dev/null | wc -l | xargs echo "  Test scripts count"
     @echo ""
     @echo "Documentation:"
-    @find docs -name "*.md" 2>/dev/null | wc -l | xargs echo "  Markdown files:" || echo "  Markdown files: 0"
-
+    @find docs -name '*.md' 2>/dev/null | wc -l | xargs echo "  Markdown files"
 # Quick development cycle: validate + generate
 dev: validate generate
 
 # Full CI/CD simulation: clean + validate + test + generate
 ci: clean validate test generate
-    @echo "✓ CI pipeline complete"
+    @echo "[OK] CI pipeline complete"
 
 # Create a new API endpoint template
 new-endpoint name:
@@ -365,7 +577,7 @@ new-endpoint name:
     @echo "    }," >> src/api/{{name}}.ncl
     @echo "  }," >> src/api/{{name}}.ncl
     @echo "}" >> src/api/{{name}}.ncl
-    @echo "✓ Created src/api/{{name}}.ncl"
+    @echo "[OK] Created API definition file"
     @echo "  Edit the file to implement the endpoint"
 
 # Create a new test file template
@@ -381,54 +593,64 @@ new-test name:
     @echo "    # TODO: Add valid test cases" >> tests/contracts/{{name}}.test.ncl
     @echo "  }," >> tests/contracts/{{name}}.test.ncl
     @echo "}" >> tests/contracts/{{name}}.test.ncl
-    @echo "✓ Created tests/contracts/{{name}}.test.ncl"
+    @echo "[OK] Created contract test file"
     @echo "  Edit the file to add test cases"
 
 # Help text (extended)
 help:
-    @echo "Circular Protocol Canonacle - Build Commands"
+    @echo "Circular Protocol Canonical - Build Commands"
     @echo "==========================================="
     @echo ""
     @echo "Development:"
-    @echo "  just setup           - Initial project setup"
-    @echo "  just dev             - Quick cycle: validate + generate"
-    @echo "  just validate        - Type check all Nickel files"
-    @echo "  just generate        - Generate all artifacts (OpenAPI + SDKs)"
-    @echo "  just generate-ts     - Generate TypeScript SDK only"
-    @echo "  just generate-py     - Generate Python SDK only"
+    @echo "  just setup           *Initial project setup"
+    @echo "  just dev             *Quick cycle: validate + generate"
+    @echo "  just validate        *Type check all Nickel files"
+    @echo "  just generate        *Generate all artifacts (OpenAPI + SDKs)"
+    @echo "  just generate-ts     *Generate TypeScript SDK only"
+    @echo "  just generate-py     *Generate Python SDK only"
+    @echo "  just generate-packages - Generate complete TS + Python packages"
     @echo "  just generate-openapi - Generate OpenAPI spec only"
-    @echo "  just watch           - Auto-regenerate on changes"
-    @echo "  just clean           - Remove generated files"
+    @echo "  just watch           *Auto-regenerate on changes"
+    @echo "  just clean           *Remove generated files"
+    @echo ""
+    @echo "Multi-Repo Workflow (Fork Sync):"
+    @echo "  just setup-forks      *ONE-TIME: Fork repos, create dev branches, add submodules"
+    @echo "  just sync-typescript  *Sync generated TS to dist/typescript submodule"
+    @echo "  just sync-python      *Sync generated Python to dist/python submodule"
+    @echo "  just sync-all         *Sync both packages to submodules"
+    @echo "  just push-forks       *Push development branches to lessuseless-systems"
+    @echo "  just create-prs       *Create pull requests to upstream circular-protocol"
+    @echo "  just check-submodules - Check status of all submodules"
     @echo ""
     @echo "Testing:"
-    @echo "  just test            - Run all tests"
-    @echo "  just test-contracts  - Run contract validation tests"
+    @echo "  just test            *Run all tests"
+    @echo "  just test-contracts  *Run contract validation tests"
     @echo "  just test-generators - Run generator output tests"
-    @echo "  just test-snapshots  - Run snapshot tests"
-    @echo "  just regression      - Run regression tests"
-    @echo "  just mock-server     - Start mock API server (port 8080)"
+    @echo "  just test-snapshots  *Run snapshot tests"
+    @echo "  just regression      *Run regression tests"
+    @echo "  just mock-server     *Start mock API server (port 8080)"
     @echo ""
     @echo "SDK Testing:"
-    @echo "  just generate-tests       - Generate SDK integration tests"
-    @echo "  just generate-unit-tests  - Generate SDK unit tests"
-    @echo "  just generate-all-tests   - Generate all SDK tests"
-    @echo "  just test-sdk             - Run SDK integration tests (requires mock server)"
-    @echo "  just test-sdk-ts          - Run TypeScript integration tests"
-    @echo "  just test-sdk-py          - Run Python integration tests"
-    @echo "  just test-sdk-unit        - Run SDK unit tests (no server needed)"
-    @echo "  just test-sdk-unit-ts     - Run TypeScript unit tests"
-    @echo "  just test-sdk-unit-py     - Run Python unit tests"
-    @echo "  just test-sdk-all         - Run all SDK tests (integration + unit)"
+    @echo "  just generate-tests       *Generate SDK integration tests"
+    @echo "  just generate-unit-tests  *Generate SDK unit tests"
+    @echo "  just generate-all-tests   *Generate all SDK tests"
+    @echo "  just test-sdk             *Run SDK integration tests (requires mock server)"
+    @echo "  just test-sdk-ts          *Run TypeScript integration tests"
+    @echo "  just test-sdk-py          *Run Python integration tests"
+    @echo "  just test-sdk-unit        *Run SDK unit tests (no server needed)"
+    @echo "  just test-sdk-unit-ts     *Run TypeScript unit tests"
+    @echo "  just test-sdk-unit-py     *Run Python unit tests"
+    @echo "  just test-sdk-all         *Run all SDK tests (integration + unit)"
     @echo ""
     @echo "Release:"
-    @echo "  just release         - Full release preparation"
-    @echo "  just ci              - Simulate CI/CD pipeline"
+    @echo "  just release         *Full release preparation"
+    @echo "  just ci              *Simulate CI/CD pipeline"
     @echo ""
     @echo "Utilities:"
-    @echo "  just repl            - Start Nickel REPL"
-    @echo "  just check-env       - Check development environment"
-    @echo "  just stats           - Show project statistics"
+    @echo "  just repl            *Start Nickel REPL"
+    @echo "  just check-env       *Check development environment"
+    @echo "  just stats           *Show project statistics"
     @echo "  just new-endpoint <name> - Create new API endpoint template"
-    @echo "  just new-test <name>     - Create new test template"
+    @echo "  just new-test <name>     *Create new test template"
     @echo ""
     @echo "For more details: just --list"

@@ -1,8 +1,8 @@
 # Python Unit Test Generator
 # Generates pytest unit tests with mocked requests library
 
-let config = import "../src/config.ncl" in
-let helpers = import "./helpers.ncl" in
+let config = import "../../../src/config.ncl" in
+let helpers = import "../../shared/helpers.ncl" in
 
 {
   test_code = "\"\"\"

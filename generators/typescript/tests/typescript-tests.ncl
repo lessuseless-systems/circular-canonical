@@ -1,8 +1,8 @@
 # TypeScript Jest Test Generator
 # Generates comprehensive SDK tests from Nickel endpoint test data
 
-let config = import "../src/config.ncl" in
-let helpers = import "./helpers.ncl" in
+let config = import "../../../src/config.ncl" in
+let helpers = import "../../shared/helpers.ncl" in
 
 {
   test_code = "/**
@@ -17,7 +17,7 @@ let helpers = import "./helpers.ncl" in
  * - Start with: just mock-server
  */
 
-import { CircularProtocolAPI } from '../sdk/circular-protocol'
+import { CircularProtocolAPI } from '../src/index'
 
 describe('Circular Protocol SDK Tests', () => {
   let api: CircularProtocolAPI

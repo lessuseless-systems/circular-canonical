@@ -2,7 +2,7 @@
 
 Comprehensive reference for all 24+ API endpoints extracted from circular-js v1.0.8.
 
-This document serves as the authoritative source for implementing Nickel definitions in the Canonacle project.
+This document serves as the authoritative source for implementing Nickel definitions in the Canonical project.
 
 ## Table of Contents
 
@@ -1216,20 +1216,20 @@ All API endpoints use POST method with JSON body, despite many being read operat
 
 ---
 
-## Implementation Notes for Nickel Canonacle
+## Implementation Notes for Nickel Canonical
 
 1. **Parameter Names**: Note inconsistencies:
    - Most use lowercase: `blockchain`, `address`
    - `getTransactionbyDate` uses capital: `Blockchain`, `Address`, `StartDate`, `EndDate`
-   - Should normalize to camelCase in Canonacle
+   - Should normalize to camelCase in Canonical
 
 2. **Endpoint Naming**:
    - `getTransactionbyID` (lowercase 'by') in actual API
-   - Could normalize to `getTransactionByID` in Canonacle
+   - Could normalize to `getTransactionByID` in Canonical
 
 3. **Optional Parameters**:
    - Most blockchains default to "MainNet" if not specified
-   - Consider making blockchain optional with default in Canonacle
+   - Consider making blockchain optional with default in Canonical
 
 4. **Type Conversions**:
    - Numbers converted to strings in request bodies (block numbers, nonces)

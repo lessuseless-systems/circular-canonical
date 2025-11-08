@@ -282,4 +282,4 @@ For issues with the SDKs:
 
 Current SDK version: **2.0.0-alpha.1**
 
-Generated from: `circular-canonacle` Nickel specification
+Generated from: `circular-canonical` Nickel specification

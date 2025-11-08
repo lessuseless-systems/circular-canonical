@@ -1,5 +1,5 @@
 #!/bin/bash
-# Circular Protocol Canonacle - Pre-Commit Hook
+# Circular Protocol Canonical - Pre-Commit Hook
 # Runs validation checks before allowing a commit
 
 set -e

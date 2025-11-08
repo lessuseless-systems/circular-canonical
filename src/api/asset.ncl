@@ -1,4 +1,4 @@
-# Circular Protocol Canonacle - Asset API Endpoints
+# Circular Protocol Canonical - Asset API Endpoints
 # Reference: docs/API_REFERENCE.md (Assets)
 
 let types = import "../schemas/types.ncl" in
