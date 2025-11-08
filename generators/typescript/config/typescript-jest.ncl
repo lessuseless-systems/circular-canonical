@@ -10,6 +10,7 @@ let js_config = {
 
   # Root directory
   rootDir = ".",
+  roots = ["<rootDir>"],
 
   # Test match patterns
   testMatch = [
@@ -59,11 +60,10 @@ let js_config = {
     "lcov",
   ],
 
-  # Ignore patterns
+  # Ignore patterns (relative to project root, not absolute paths)
   testPathIgnorePatterns = [
     "/node_modules/",
-    "/lib/",
-    "/dist/",
+    "<rootDir>/lib/",
   ],
 
   # Verbose output
@@ -76,16 +76,7 @@ let js_config = {
         esModuleInterop = true,
         allowSyntheticDefaultImports = true,
       },
-      useESM = true,
     },
-  },
-
-  # ESM support
-  extensionsToTreatAsEsm = [".ts"],
-
-  # Use node --experimental-vm-modules
-  testEnvironmentOptions = {
-    url = "http://localhost",
   },
 } in
 
