@@ -53,7 +53,7 @@ let workflow = {
         },
         {
           name = "Run tests",
-          run = "npm test -- --passWithNoTests",
+          run = "npm test",
         },
         {
           name = "Build package",
