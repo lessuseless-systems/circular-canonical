@@ -4,12 +4,13 @@
 {
   # Project metadata
   name = "Circular Protocol Canonical API",
-  description = "Official API specification for Circular Protocol blockchain operations",
+  description = "Official API specification for Circular Protocol blockchain operations and wallet management",
   version = "2.0.0-alpha.1",
 
   # API Configuration
   api = {
     # Base URL (will be overridden by user's node selection)
+    # Note: This is a placeholder URL for testing and development
     base_url = "https://api.circular.example",
     # Base protocol (http/https)
     protocol = "https",
