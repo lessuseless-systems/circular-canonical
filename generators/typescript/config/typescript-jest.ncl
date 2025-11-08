@@ -18,9 +18,17 @@ let js_config = {
     "**/?(*.)+(spec|test).ts",
   ],
 
-  # Transform TypeScript files
+  # Transform TypeScript files with ts-jest config
   transform = {
-    "^.+\\.ts$" = "ts-jest",
+    "^.+\\.ts$" = [
+      "ts-jest",
+      {
+        tsconfig = {
+          esModuleInterop = true,
+          allowSyntheticDefaultImports = true,
+        },
+      },
+    ],
   },
 
   # Module file extensions
@@ -68,16 +76,6 @@ let js_config = {
 
   # Verbose output
   verbose = true,
-
-  # TypeScript-specific configurations
-  globals = {
-    "ts-jest" = {
-      tsconfig = {
-        esModuleInterop = true,
-        allowSyntheticDefaultImports = true,
-      },
-    },
-  },
 } in
 
 # Format as JavaScript module.exports
