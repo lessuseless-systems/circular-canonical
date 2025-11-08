@@ -1678,6 +1678,63 @@ Before proceeding to other sections, these must be complete:
   - Include administrators (no exceptions)
   - Restrict pushes (maintainers only)
 
+- [ ] **Configure branch protection for development**
+  - Require pull request before merging
+  - Require at least 1 approving review
+  - Require status checks to pass (same as main)
+  - Allow force pushes (for rebasing)
+  - Require linear history
+
+- [ ] **Set up PR templates** (`.github/PULL_REQUEST_TEMPLATE.md`)
+  ``markdown
+  ## Description
+  <!-- Brief description of changes -->
+
+  ## Type of Change
+  - [ ] Bug fix (non-breaking change which fixes an issue)
+  - [ ] New feature (non-breaking change which adds functionality)
+  - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
+  - [ ] Documentation update
+  - [ ] Nickel definition update (regenerates SDKs)
+
+  ## Changes Made
+  <!-- Detailed list of changes -->
+
+  ## Testing
+  - [ ] Unit tests pass (`npm test`)
+  - [ ] Type checking passes (`npm run type-check`)
+  - [ ] Linting passes (`npm run lint`)
+  - [ ] All automated checks pass
+  - [ ] Manual testing completed
+
+  ## Breaking Changes
+  <!-- If applicable, describe breaking changes and migration path -->
+
+  ## Checklist
+  - [ ] Code follows project style guidelines
+  - [ ] Self-review completed
+  - [ ] Comments added for complex logic
+  - [ ] Documentation updated (if needed)
+  - [ ] No new warnings generated
+  - [ ] Tests added/updated for changes
+  - [ ] All tests passing
+  - [ ] CHANGELOG.md updated (if user-facing change)
+  ``
+
+- [ ] **Set up issue templates** (`.github/ISSUE_TEMPLATE/`)
+  - **Bug Report**: Reproduction steps, expected vs actual behavior, environment
+  - **Feature Request**: Use case, proposed solution, alternatives considered
+  - **Documentation**: What's missing/unclear, suggested improvements
+  - **Security Vulnerability**: Private reporting instructions
+
+- [ ] **Configure PR checks and automation**
+  - **Automatic labeling**: Based on files changed, PR title
+  - **Stale PR management**: Close PRs inactive >30 days after warning
+  - **Auto-assign reviewers**: Based on CODEOWNERS
+  - **Size labeling**: XS/S/M/L/XL based on lines changed
+  - **Dependency updates**: Dependabot for automated dependency PRs
+  - **Semantic PR titles**: Enforce conventional commit format in PR titles
+
 - [ ] **Create CODEOWNERS file**
   ``
   # Default owners
@@ -1693,6 +1750,28 @@ Before proceeding to other sections, these must be complete:
   # Documentation
   /docs/ @doc-team
   ``
+
+- [ ] **Configure GitHub repository settings**
+  - **General**:
+    - Disable wiki (use docs/ instead)
+    - Disable projects (use GitHub Projects or external tool)
+    - Enable discussions for community Q&A
+    - Set default branch to `main`
+    - Allow squash merging only (clean history)
+    - Auto-delete head branches after merge
+  - **Security**:
+    - Enable Dependabot alerts
+    - Enable Dependabot security updates
+    - Enable secret scanning
+    - Enable push protection (prevent secret commits)
+  - **Collaborators**:
+    - Define clear team permissions (read/triage/write/maintain/admin)
+    - Minimum 2 maintainers with admin access
+    - Use teams instead of individual collaborators
+  - **Branch Rules**:
+    - Naming convention: `feature/*`, `fix/*`, `docs/*`, `refactor/*`
+    - Auto-link references in PRs (link to issues)
+    - Require linear history on main
 
 ### Automated Quality Gates 🔴
 
