@@ -335,6 +335,14 @@ generate-openapi:
     @nickel export generators/shared/openapi.ncl --format json > dist/openapi/openapi.json
     @echo "[OK] Generated OpenAPI spec in yaml and json formats"
 
+# Generate AGENTS.md documentation for AI agents
+generate-agents-md:
+    @echo "Generating AGENTS.md for AI agent consumption"
+    @mkdir -p docs
+    @nickel export generators/shared/agents-md.ncl --field agents_md --format raw > docs/AGENTS.md
+    @echo "[OK] Generated AGENTS.md in docs/"
+    @wc -l docs/AGENTS.md
+
 # Start mock API server for SDK testing
 mock-server:
     @echo "Starting mock API server"
