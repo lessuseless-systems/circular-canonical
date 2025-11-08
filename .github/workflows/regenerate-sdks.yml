@@ -1,0 +1,87 @@
+name: Regenerate SDKs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'src/**/*.ncl'
+      - 'generators/**/*.ncl'
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install Nix
+        uses: cachix/install-nix-action@v24
+        with:
+          nix_path: nixpkgs=channel:nixos-unstable
+
+      - name: Setup Nix development environment
+        run: |
+          nix develop --command bash -c "nickel --version"
+          nix develop --command bash -c "just --version"
+
+      - name: Validate Nickel source
+        run: |
+          nix develop --command bash -c "just validate"
+
+      - name: Generate packages
+        run: |
+          nix develop --command bash -c "just generate-packages"
+
+      - name: Check for changes
+        id: check_changes
+        run: |
+          cd dist/typescript
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "typescript_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "typescript_changed=false" >> $GITHUB_OUTPUT
+          fi
+          cd ../python
+          if [[ -n $(git status --porcelain) ]]; then
+            echo "python_changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "python_changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Sync to submodules
+        if: steps.check_changes.outputs.typescript_changed == 'true' || steps.check_changes.outputs.python_changed == 'true'
+        run: |
+          nix develop --command bash -c "just sync-all"
+
+      - name: Push to forks
+        if: steps.check_changes.outputs.typescript_changed == 'true' || steps.check_changes.outputs.python_changed == 'true'
+        run: |
+          nix develop --command bash -c "just push-forks"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create summary
+        if: steps.check_changes.outputs.typescript_changed == 'true' || steps.check_changes.outputs.python_changed == 'true'
+        run: |
+          echo "## SDKs Regenerated" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          if [[ "${{ steps.check_changes.outputs.typescript_changed }}" == "true" ]]; then
+            echo "✅ TypeScript SDK updated and synced" >> $GITHUB_STEP_SUMMARY
+          fi
+          if [[ "${{ steps.check_changes.outputs.python_changed }}" == "true" ]]; then
+            echo "✅ Python SDK updated and synced" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Changes pushed to lessuseless-systems forks on development branch." >> $GITHUB_STEP_SUMMARY
+
+      - name: No changes detected
+        if: steps.check_changes.outputs.typescript_changed == 'false' && steps.check_changes.outputs.python_changed == 'false'
+        run: |
+          echo "## No SDK Changes" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "No changes detected in generated SDKs. Packages are up to date." >> $GITHUB_STEP_SUMMARY
