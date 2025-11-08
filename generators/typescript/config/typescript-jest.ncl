@@ -76,7 +76,16 @@ let js_config = {
         esModuleInterop = true,
         allowSyntheticDefaultImports = true,
       },
+      useESM = true,
     },
+  },
+
+  # ESM support
+  extensionsToTreatAsEsm = [".ts"],
+
+  # Use node --experimental-vm-modules
+  testEnvironmentOptions = {
+    url = "http://localhost",
   },
 } in
 
