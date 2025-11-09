@@ -176,9 +176,9 @@ let types = import "../../../src/schemas/types.ncl" in
 ### Layer 4: Cross-Language & Regression (Slow)
 **Location**: `tests/L4-crosslang/*.test.ncl`, `tests/L4-regression/*.test.ncl`
 **Purpose**: Verify SDK parity across languages, detect breaking changes
-**Run**: `./tests/infrastructure/e2e/test-pipeline.sh full`
+**Run**: `./dist/tests/run-crosslang-tests.py` (cross-lang), regression TBD
 **Speed**: < 5 minutes
-**Status**: Deferred to Phase 5 (cross-lang) and Phase 6 (regression)
+**Status**: Phase 5 complete (cross-lang ✅), Phase 6 pending (regression)
 
 ## Sprint 3: Test Infrastructure Transformation
 
@@ -238,8 +238,27 @@ Created integration test specifications and generator:
 
 **Result**: Integration tests generated from Nickel specs, fully aligned with mock server
 
-### Phase 5: Cross-Language Validator
-Generate from `tests/cross-lang/*.test.ncl`.
+### Phase 5: Cross-Language Validator ✅ COMPLETE
+Created cross-language parity validation system:
+- ✅ `tests/L4-crosslang/crosslang-parity.test.ncl` (141 lines) - Parity test specs for 9 endpoints
+- ✅ `generators/shared/test-runners/crosslang-validator.ncl` (305 lines) - Validator generator
+- ✅ `dist/tests/run-crosslang-tests.py` (505 lines, 9 parity tests generated)
+
+**Test Coverage**:
+Tests that TypeScript and Python SDKs produce **identical** results for:
+- Wallet API: checkWallet, getWallet, getWalletBalance, getWalletNonce, getLatestTransactions
+- Network API: getBlockchains
+- Block API: getBlockCount
+- Asset API: getAsset
+- Block API: getBlock
+
+**Validation Logic**:
+- Runs same test in both TypeScript and Python SDKs
+- Compares specific fields in responses (Result, Response.*, etc.)
+- Reports any discrepancies with detailed diff
+- Automatically starts/stops mock server
+
+**Result**: Cross-language validator generated from Nickel specs, ensures SDK behavioral parity
 
 ### Phase 6: Regression Test Generator
 Generate from `tests/regression/*.test.ncl`.
