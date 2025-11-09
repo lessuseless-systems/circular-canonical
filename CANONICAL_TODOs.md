@@ -2967,22 +2967,26 @@ See [FORK_WORKFLOW.md](FORK_WORKFLOW.md) for complete documentation.
   - ⏸️ Future sprint: Generate tests for 15 crypto/utility helpers
   - ⏸️ Test: hex_fix, get_public_key, sign_message, verify_signature, etc.
 
-#### Phase 4: Integration Test Migration 🟢
+#### Phase 4: Integration Test Migration ✅ **VERIFIED COMPLETE**
 
-- [ ] **Verify existing integration test generators**
-  - ✅ `generators/typescript/tests/typescript-tests.ncl` exists
-  - ✅ `generators/python/tests/python-tests.ncl` exists
-  - These already generate integration tests (with HTTP against mock server)!
+- [x] **Verify existing integration test generators** ✅ VERIFIED
+  - ✅ `generators/typescript/tests/typescript-tests.ncl` exists (397 lines)
+  - ✅ `generators/python/tests/python-tests.ncl` exists (345 lines)
+  - ✅ Generates 381-line TypeScript test (against mock server)
+  - ✅ Generates 329-line Python test (against mock server)
+  - ✅ Already integrated in justfile: `generate-tests` command
 
-- [ ] **Use generated integration tests**
-  - Archive `tests/integration/test-python-real-api.py`
-  - Use generated version from `generators/python/tests/python-tests.ncl`
-  - Update justfile to point to generated tests
+- [x] **Use generated integration tests** ✅ COMPLETE
+  - ✅ Archived `tests/integration/test-python-real-api.py` (201 lines)
+  - ✅ Created `archive/tests/README.md` explaining archival
+  - ✅ Generated tests already in use: `dist/tests/sdk.test.ts`, `dist/tests/test_sdk.py`
+  - ✅ Justfile already points to generated tests
 
-- [ ] **Separate unit vs integration clearly**
-  - Unit tests: `dist/*/tests/unit.test.*` (no HTTP, pure logic)
-  - Integration tests: `dist/*/tests/integration.test.*` (with mock server)
-  - Both generated from Nickel specs
+- [x] **Separate unit vs integration clearly** ✅ VERIFIED
+  - ✅ Unit tests: `sdk.unit.test.ts`, `test_sdk_unit.py` (no HTTP, mock fetch/requests)
+  - ✅ Integration tests: `sdk.test.ts`, `test_sdk.py` (with mock server)
+  - ✅ Both generated from Nickel specs
+  - ✅ Clear documentation in file headers distinguishing the two
 
 #### Phase 5: Cross-Language Validator Generator 🟢
 
