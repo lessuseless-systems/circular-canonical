@@ -2870,11 +2870,134 @@ See [FORK_WORKFLOW.md](FORK_WORKFLOW.md) for complete documentation.
 
 ---
 
-### Sprint 3 Buffer: ~~MCP~~ & Documentation (Week 4: Nov 28+)
+### Sprint 3: Test Infrastructure "Nickel-First" Transformation 🔴 (Week 4: Nov 28+)
+
+**Objective**: Eliminate 1,554 lines of manual test code by generating from Nickel
+
+**Problem Identified**: tests/ directory contains manual Python/shell code that duplicates API definitions, violating DRY and the "Nickel as single source of truth" principle.
+
+**Current Violations**:
+- `tests/mock-server/server.py` (410 lines) - 24 endpoint handlers manually coded
+- `tests/integration/test-python-real-api.py` - Integration tests manually coded
+- `tests/*/*.sh` (939 lines) - Test runners manually coded
+- Manual test code: **1,554 lines total**
+
+**Vision**: tests/ contains ONLY .ncl files → all test infrastructure generated to dist/tests/
+
+#### Phase 1: Mock Server Generator (CRITICAL) 🔴
+
+- [ ] **Create `generators/shared/mock-server.ncl`**
+  - Input: `src/api/*.ncl` (8 API files, 24 endpoints)
+  - Output: `dist/tests/mock-server.py` (replaces manual 410-line file)
+  - Generate Flask/FastAPI routes from API definitions
+  - Generate mock responses from endpoint schemas
+  - **Benefit**: Add endpoint to src/api → mock server auto-updates
+
+- [ ] **Archive manual mock server**
+  - Move `tests/mock-server/server.py` → `archive/manual-mock-server.py.old`
+  - Keep as reference during generator development
+
+#### Phase 2: Test Runner Generators 🟡
+
+- [ ] **Create `generators/shared/test-runners/contract-runner.ncl`**
+  - Input: `tests/contracts/*.test.ncl`
+  - Output: `dist/tests/contract-test-runner.sh`
+  - Replaces: `tests/run-contract-tests.sh` (66 lines)
+
+- [ ] **Create `generators/shared/test-runners/syntax-validator.ncl`**
+  - Input: List of active generators (auto-detected from generators/)
+  - Output: `dist/tests/syntax-validator.sh`
+  - Replaces: `tests/generators/syntax-validation.sh` (205 lines)
+
+- [ ] **Create test specs in `tests/specs/`**
+  - `tests/specs/e2e-pipeline.ncl` - E2E test phase definitions
+  - `tests/specs/integration.ncl` - Integration test specs
+  - `tests/specs/regression.ncl` - Regression test specs
+
+- [ ] **Create `generators/shared/test-runners/e2e-pipeline.ncl`**
+  - Input: `tests/specs/e2e-pipeline.ncl`
+  - Output: `dist/tests/e2e-pipeline.sh` + `dist/tests/e2e-pipeline-fast.sh`
+  - Replaces: `tests/e2e/test-pipeline*.sh` (668 lines)
+
+- [ ] **Archive manual test runners**
+  - Move shell scripts to `archive/manual-test-runners/`
+
+#### Phase 3: Integration Test Migration 🟢
+
+- [ ] **Verify existing generators**
+  - ✅ `generators/typescript/tests/typescript-tests.ncl` exists
+  - ✅ `generators/python/tests/python-tests.ncl` exists
+  - These already generate integration tests!
+
+- [ ] **Use generated integration tests**
+  - Archive `tests/integration/test-python-real-api.py`
+  - Use generated version from `generators/python/tests/python-tests.ncl`
+  - Update justfile to point to generated tests
+
+#### Phase 4: Cross-Language Validator Generator 🟢
+
+- [ ] **Create `generators/shared/test-runners/cross-lang-validator.ncl`**
+  - Input: `tests/endpoints/*.test.ncl` (24 endpoint test specs)
+  - Output: `dist/tests/cross-lang-validator.py`
+  - Implements differential testing across TypeScript/Python SDKs
+  - Replaces: Manual implementation in `tests/cross-lang/run-tests.py`
+
+#### Phase 5: Regression Test Generator 🟢
+
+- [ ] **Create `generators/shared/test-runners/regression-detector.ncl`**
+  - Generate snapshot exporter (API signatures)
+  - Generate diff script (old vs new comparison)
+  - Replaces: `tests/regression/detect-breaking-changes.sh`
+
+#### Phase 6: Justfile & Documentation Updates
+
+- [ ] **Update `justfile`**
+  - Add `generate-test-infrastructure` command
+  - Update `test` command to use generated infrastructure
+  - Update `mock-server` command to use generated server
+  - Example:
+    ```makefile
+    generate-test-infrastructure:
+        @nickel export generators/shared/mock-server.ncl > dist/tests/mock-server.py
+        @nickel export generators/shared/test-runners/contract-runner.ncl > dist/tests/contract-runner.sh
+        @chmod +x dist/tests/*.sh
+    ```
+
+- [ ] **Update documentation**
+  - Update `docs/TESTING_STRATEGY.md` - Explain Nickel-first test approach
+  - Create `tests/README.md` - Explain test directory structure
+  - Update this file (CANONICAL_TODOs.md) - Mark completion
+
+- [ ] **Create archive/ directory**
+  - Move all manual test code for reference
+  - Add README explaining why code was archived
+
+#### Success Criteria ✅
+
+- [ ] tests/ contains ONLY .ncl files (and README.md)
+- [ ] All test infrastructure generated to dist/tests/
+- [ ] Mock server auto-updates when src/api/ changes
+- [ ] No manual duplication of API definitions
+- [ ] 1,554 lines of manual code eliminated
+- [ ] All existing tests still pass
+
+#### Benefits
+
+1. **DRY Enforcement**: API defined once in `src/api/*.ncl`
+2. **No Drift**: Mock server can't get out of sync
+3. **Type Safety**: Test specs validated by Nickel contracts
+4. **Single Source of Truth**: All test infrastructure flows from Nickel
+5. **Automatic Updates**: Add endpoint → all tests auto-include it
+
+**Estimated Effort**: 2-3 weeks for complete transformation
+
+---
+
+### Sprint 4 Buffer: ~~MCP~~ & Documentation (Week 7+)
 
 **Objective**: If ahead of schedule, start on ~~MCP server and~~ documentation generators
 
-#### Optional Tasks (if Sprints 1-2 complete early)
+#### Optional Tasks (if Sprints 1-3 complete early)
 - [ ] ~~Create `generators/mcp-server.ncl` (5-7 core tools)~~ **DEFERRED**
 - [ ] Create `generators/agents-md.ncl`
 - [x] Create CI/CD workflow generators for npm/PyPI publishing ✅ COMPLETED
