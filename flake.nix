@@ -69,15 +69,15 @@
                   exit 1
                 fi
 
-                # Check for typo: canonical vs canonicle
-                if [[ "$url" =~ canonicle ]]; then
+                # Check for typo: canonical vs canonicle/canonacle
+                if [[ "$url" =~ canon(icle|acle) ]]; then
                   echo "════════════════════════════════════════════════════════════════"
                   echo "❌ ERROR: Repository name typo detected!"
                   echo "════════════════════════════════════════════════════════════════"
                   echo ""
                   echo "Remote URL: $url"
                   echo ""
-                  echo "Typo: 'canonicle' should be 'canonical'"
+                  echo "Typo: 'canonicle' or 'canonacle' should be 'canonical'"
                   echo ""
                   echo "Fix: git remote set-url origin git@github.com:lessuseless-systems/circular-canonical.git"
                   echo "════════════════════════════════════════════════════════════════"
