@@ -62,7 +62,7 @@ circular-canonical/
 │   │   ├── config/               # Build configs (tsconfig, webpack, jest) ✅
 │   │   ├── docs/                 # README generator ✅
 │   │   ├── package-manifest/     # package.json generator ✅
-│   │   └── ci-cd/                # GitHub Actions (TODO)
+│   │   └── ci-cd/                # GitHub Actions ✅
 │   └── python/                   # Python SDK & tooling ✅ REORGANIZED
 │       ├── python-sdk.ncl        # Main SDK generator ✅
 │       ├── tests/                # Test generators ✅
@@ -70,7 +70,7 @@ circular-canonical/
 │       ├── docs/                 # README generator ✅
 │       ├── package-manifest/     # pyproject.toml, setup.py ✅
 │       ├── metadata/             # .gitignore ✅
-│       └── ci-cd/                # GitHub Actions (TODO - Sprint 2)
+│       └── ci-cd/                # GitHub Actions ✅
 ├── dist/                         # Generated artifacts (gitignored) ✅ RENAMED from output/
 │   ├── openapi/                  # OpenAPI specs ✅
 │   ├── typescript/               # Complete TypeScript package ✅ (100% - Sprint 1 COMPLETE)
@@ -285,10 +285,10 @@ circular-canonical/
   - ✅ Add badges (version, license, build status)
   - ✅ Auto-generate usage examples for all 24 endpoints
 
-- [ ] **Create CI/CD workflow generators** (DEFERRED to Sprint 2)
-  - **`generators/typescript/ci-cd/typescript-github-actions-test.todo.ncl`**: GitHub Actions for npm testing
-  - **`generators/python/ci-cd/python-github-actions-test.todo.ncl`**: GitHub Actions for PyPI testing
-  - Match structure of existing .github/workflows/
+- [x] **Create CI/CD workflow generators** ✅ COMPLETED
+  - **`generators/typescript/ci-cd/typescript-github-actions-test.ncl`**: GitHub Actions for npm testing ✅
+  - **`generators/python/ci-cd/python-github-actions-test.ncl`**: GitHub Actions for PyPI testing ✅
+  - Generates test, lint, build, and publish workflows (alpha + production) ✅
 
 - [x] **Create LICENSE and metadata generators** ✅ COMPLETED
   - ✅ **`generators/shared/templates/license.ncl`**: MIT license from config (20 lines)
@@ -631,19 +631,20 @@ Before proceeding to other sections, these must be complete:
 - [ ] ~~🔴 **MCP server generator**~~ - **DEFERRED**
 - [ ] 🔴 **AI tool schemas** (Anthropic, OpenAI, Zod) - Not yet implemented
 - [ ] 🔴 **AGENTS.md generator** - Not yet implemented
-- [ ] 🔴 **CI/CD pipelines** - Not yet set up for auto-generation
+- [x] ✅ **CI/CD pipelines** - Generators complete, workflows auto-generated
 - [ ] 🔴 **Canonical-Enterprise-APIs project** - Not yet started (CEP_Account, C_CERTIFICATE classes)
 
 #### 📊 Progress Breakdown by Category
 - **Foundation (Types, Schemas, APIs)**: 100% ✅ (24/24 endpoints, all types, all schemas)
 - **Core SDK Generation**: 60% 🟡 (TypeScript + Python SDKs done, ~~MCP~~/tools/agents pending)
 - **Test Generation**: 100% ✅ (Unit tests for TypeScript and Python)
-- **Package Infrastructure**: 0% 🔴 (Critical gap - cannot publish without this)
-- **Git Submodule Integration**: 0% 🔴 (Multi-repo workflow not yet implemented)
+- **Package Infrastructure**: 100% ✅ (All manifests, configs, docs generators complete)
+- **CI/CD Workflows**: 100% ✅ (Test, build, publish workflows for both TS & Python)
+- **Git Submodule Integration**: 100% ✅ (Multi-repo workflow implemented with regenerate-sdks.yml)
 - **Enterprise APIs**: 0% 🔴 (Separate Canonical-Enterprise-APIs project)
 
-**Next Critical Tasks (Sprint 1)**: Package infrastructure generators (Week 1-2)
-**Estimated Timeline to 100%**: 6-8 weeks from current state
+**Next Critical Tasks**: MCP server generator, AI tool schemas, AGENTS.md generator
+**Estimated Timeline to 100%**: 2-4 weeks from current state
 
 ---
 
@@ -2528,13 +2529,13 @@ Before proceeding to other sections, these must be complete:
 - [x] ✅ TypeScript SDK generated (100%)
 - [x] ✅ Python SDK generated (100%)
 - [ ] 🔴 Package manifests generated (0% - CRITICAL GAP)
-- [ ] 🔴 CI/CD auto-generating on Nickel changes (0%)
+- [x] ✅ CI/CD auto-generating on Nickel changes (100%)
 - [ ] 🔴 Canonical-Enterprise-APIs operational (0%)
 
 ### Short-term (3 months from now)
 - [ ] Test coverage > 80%
 - [ ] All critical documentation complete (from Nickel)
-- [ ] CI/CD pipeline running
+- [x] CI/CD pipeline running
 - [ ] 50+ GitHub stars
 - [ ] 10+ community members
 - [ ] 5+ contributors
@@ -2590,7 +2591,7 @@ Before proceeding to other sections, these must be complete:
 2. ✅ **Build all generators (OpenAPI, MCP, schemas, SDK)**
 3. ✅ **Create Canonical-Enterprise-APIs**
 4. ✅ **Generate and validate all multi-language SDKs**
-5. ✅ **Set up CI/CD for auto-generation**
+5. ✅ **Set up CI/CD for auto-generation** ✅ COMPLETED
 
 ### High Priority (Weeks 7-10)
 1. Configure TypeScript strict mode
@@ -2876,7 +2877,7 @@ See [FORK_WORKFLOW.md](FORK_WORKFLOW.md) for complete documentation.
 #### Optional Tasks (if Sprints 1-2 complete early)
 - [ ] ~~Create `generators/mcp-server.ncl` (5-7 core tools)~~ **DEFERRED**
 - [ ] Create `generators/agents-md.ncl`
-- [ ] Create CI/CD workflow generators for npm/PyPI publishing
+- [x] Create CI/CD workflow generators for npm/PyPI publishing ✅ COMPLETED
 - [ ] Test end-to-end workflow: Nickel change → regenerate → test → publish
 
 ---
@@ -2892,7 +2893,7 @@ See [FORK_WORKFLOW.md](FORK_WORKFLOW.md) for complete documentation.
 - [x] Both packages build successfully locally
 - [x] Git submodules set up and working
 - [x] Regeneration scripts functional
-- [x] Basic CI/CD workflows running
+- [x] Basic CI/CD workflows running ✅ COMPLETED
 
 #### Nice to Have (Stretch Goals)
 - [ ] ~~MCP server generator~~ **DEFERRED**
@@ -2905,7 +2906,7 @@ See [FORK_WORKFLOW.md](FORK_WORKFLOW.md) for complete documentation.
 - Python package can be built: `python -m build`
 - All unit tests pass in both packages
 - Regeneration script successfully updates submodules
-- CI/CD runs on every Nickel file change
+- CI/CD runs on every Nickel file change ✅ COMPLETED
 
 ---
 
