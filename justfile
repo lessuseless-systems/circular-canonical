@@ -408,8 +408,24 @@ generate-unit-tests:
     @nickel export generators/python/tests/python-unit-tests.ncl --field test_code --format raw > dist/tests/test_sdk_unit.py
     @echo "[OK] Generated Python unit tests"
 
-# Generate all test infrastructure (mock server + integration + unit tests)
-generate-all-tests: generate-mock-server generate-tests generate-unit-tests
+# Generate contract test runner (Layer 1: Nickel contract validation)
+generate-contract-runner:
+    @echo "Generating contract test runner"
+    @mkdir -p dist/tests
+    @nickel export generators/shared/test-runners/contract-runner.ncl --field runner_script --format raw > dist/tests/run-contract-tests.sh
+    @chmod +x dist/tests/run-contract-tests.sh
+    @echo "[OK] Generated contract test runner (25 tests)"
+
+# Generate syntax validator (Layer 2: Generated code syntax validation)
+generate-syntax-validator:
+    @echo "Generating syntax validator"
+    @mkdir -p dist/tests
+    @nickel export generators/shared/test-runners/syntax-validator.ncl --field validator_script --format raw > dist/tests/syntax-validation.sh
+    @chmod +x dist/tests/syntax-validation.sh
+    @echo "[OK] Generated syntax validator (TypeScript, Python)"
+
+# Generate all test infrastructure (mock server + test runners + integration + unit tests)
+generate-all-tests: generate-mock-server generate-contract-runner generate-syntax-validator generate-tests generate-unit-tests
 
 # Run TypeScript SDK tests (requires mock server)
 test-sdk-ts:
