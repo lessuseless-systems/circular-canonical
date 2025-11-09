@@ -2922,19 +2922,51 @@ See [FORK_WORKFLOW.md](FORK_WORKFLOW.md) for complete documentation.
 - [ ] **Archive manual test runners**
   - Move shell scripts to `archive/manual-test-runners/`
 
-#### Phase 3: Integration Test Migration 🟢
+#### Phase 3: Unit Test Generators 🟡
 
-- [ ] **Verify existing generators**
+- [ ] **Create `generators/typescript/tests/typescript-unit-tests.ncl` (verify/enhance)**
+  - ✅ Already exists! Verify it's complete
+  - Input: `src/api/*.ncl` endpoint definitions
+  - Output: `dist/typescript/tests/unit.test.ts`
+  - Generate unit tests for each SDK method (no HTTP, pure logic)
+  - Test input validation, parameter handling, type checking
+
+- [ ] **Create `generators/python/tests/python-unit-tests.ncl` (verify/enhance)**
+  - ✅ Already exists! Verify it's complete
+  - Input: `src/api/*.ncl` endpoint definitions
+  - Output: `dist/python/tests/test_unit.py`
+  - Generate pytest unit tests for each SDK method
+  - Test input validation, type hints, error handling
+
+- [ ] **Create unit test specs in Nickel**
+  - `tests/unit/sdk-methods.test.ncl` - Test specs for SDK method logic
+  - `tests/unit/helpers.test.ncl` - Test specs for helper functions
+  - Define expected behavior without implementation details
+
+- [ ] **Generate helper function unit tests**
+  - Input: `generators/shared/helpers-crypto.ncl` definitions
+  - Output: Unit tests for 15 crypto/utility helpers
+  - Test: hex_fix, get_public_key, sign_message, verify_signature, etc.
+  - Ensure tests are generated alongside helpers
+
+#### Phase 4: Integration Test Migration 🟢
+
+- [ ] **Verify existing integration test generators**
   - ✅ `generators/typescript/tests/typescript-tests.ncl` exists
   - ✅ `generators/python/tests/python-tests.ncl` exists
-  - These already generate integration tests!
+  - These already generate integration tests (with HTTP against mock server)!
 
 - [ ] **Use generated integration tests**
   - Archive `tests/integration/test-python-real-api.py`
   - Use generated version from `generators/python/tests/python-tests.ncl`
   - Update justfile to point to generated tests
 
-#### Phase 4: Cross-Language Validator Generator 🟢
+- [ ] **Separate unit vs integration clearly**
+  - Unit tests: `dist/*/tests/unit.test.*` (no HTTP, pure logic)
+  - Integration tests: `dist/*/tests/integration.test.*` (with mock server)
+  - Both generated from Nickel specs
+
+#### Phase 5: Cross-Language Validator Generator 🟢
 
 - [ ] **Create `generators/shared/test-runners/cross-lang-validator.ncl`**
   - Input: `tests/endpoints/*.test.ncl` (24 endpoint test specs)
@@ -2942,14 +2974,14 @@ See [FORK_WORKFLOW.md](FORK_WORKFLOW.md) for complete documentation.
   - Implements differential testing across TypeScript/Python SDKs
   - Replaces: Manual implementation in `tests/cross-lang/run-tests.py`
 
-#### Phase 5: Regression Test Generator 🟢
+#### Phase 6: Regression Test Generator 🟢
 
 - [ ] **Create `generators/shared/test-runners/regression-detector.ncl`**
   - Generate snapshot exporter (API signatures)
   - Generate diff script (old vs new comparison)
   - Replaces: `tests/regression/detect-breaking-changes.sh`
 
-#### Phase 6: Justfile & Documentation Updates
+#### Phase 7: Justfile & Documentation Updates
 
 - [ ] **Update `justfile`**
   - Add `generate-test-infrastructure` command
@@ -2977,9 +3009,13 @@ See [FORK_WORKFLOW.md](FORK_WORKFLOW.md) for complete documentation.
 - [ ] tests/ contains ONLY .ncl files (and README.md)
 - [ ] All test infrastructure generated to dist/tests/
 - [ ] Mock server auto-updates when src/api/ changes
+- [ ] Unit tests generated for all SDK methods
+- [ ] Unit tests generated for all 15 helper functions
+- [ ] Integration tests clearly separated from unit tests
 - [ ] No manual duplication of API definitions
 - [ ] 1,554 lines of manual code eliminated
 - [ ] All existing tests still pass
+- [ ] Test pyramid complete: unit → integration → e2e → regression
 
 #### Benefits
 
