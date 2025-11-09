@@ -12,12 +12,33 @@ This test verifies:
 
 import sys
 import os
+from pathlib import Path
 
 # Add the SDK to the path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../dist/python/src'))
 
 from circular_protocol_api import CircularProtocolAPI
 import asyncio
+
+# Load environment variables from .env file
+def load_env():
+    """Load environment variables from .env file"""
+    env_path = Path(__file__).parent.parent.parent / '.env'
+    env_vars = {}
+
+    if env_path.exists():
+        with open(env_path, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    key, value = line.split('=', 1)
+                    # Remove quotes if present
+                    value = value.strip().strip("'").strip('"')
+                    env_vars[key] = value
+
+    return env_vars
+
+ENV = load_env()
 
 
 async def test_real_api():
@@ -130,17 +151,31 @@ async def test_real_api():
     # Test 5: Test a real wallet query (if we have a test wallet)
     print('\nTest 5: Real Wallet Query')
 
-    # Use a known mainnet address for testing (read-only operation)
-    test_address = 'ac290cf3a33e6888c016926455b9e864d2d1cb0189e85d88f1d60790a5a21c6e3394e48391201efaf9b56d6b16f9e414e82ecd9a3ce280b559c83af563871dec'
+    # Use test address from .env file (read-only operation)
+    test_address = ENV.get('CIRCULAR_STANDARD_ADDRESS', '').replace('0x', '')
 
-    try:
-        wallet_exists = api.check_wallet(test_address, 'MainNet')
-        print(f'  Test wallet check: {wallet_exists}')
-        print('  ✅ checkWallet works')
+    if test_address:
+        print(f'  Using test address: {test_address[:40]}...')
 
-    except Exception as error:
-        print(f'  ⚠️  Wallet check failed: {error}')
-        print('  Note: May require valid NAG key or proper parameters')
+        try:
+            wallet_result = api.check_wallet(test_address, 'MainNet')
+            print(f'  Wallet check result: {wallet_result}')
+            print('  ✅ checkWallet works')
+
+            # Try to get wallet details
+            try:
+                wallet_info = api.get_wallet(test_address, 'MainNet')
+                print(f'  Wallet info: {wallet_info}')
+                print('  ✅ getWallet works')
+            except Exception as e:
+                print(f'  ⚠️  getWallet failed: {e}')
+
+        except Exception as error:
+            print(f'  ⚠️  Wallet check failed: {error}')
+            print('  Note: May require valid NAG key or proper parameters')
+
+    else:
+        print('  ⚠️  No test address in .env file, skipping wallet tests')
 
     print('\n🎉 Python SDK Test Suite Complete!')
     print('\nSummary:')
