@@ -137,7 +137,7 @@ import hashlib
             public_key_bytes = bytes.fromhex(self.hex_fix(public_key))
             # Add uncompressed point prefix if needed (0x04)
             if len(public_key_bytes) == 64:
-                public_key_bytes = b'\\x04' + public_key_bytes
+                public_key_bytes = b'\x04' + public_key_bytes
 
             vk = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256K1(), public_key_bytes)
 
