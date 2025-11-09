@@ -177,7 +177,7 @@ log_section "Phase 4: Integration Tests"
 cd "$PROJECT_ROOT"
 
 log_info "Starting mock API server..."
-python3 tests/infrastructure/mock-server/server.py &
+python3 dist/tests/mock-server.py &
 SERVER_PID=$!
 sleep 2
 

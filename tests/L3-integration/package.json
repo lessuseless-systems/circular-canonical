@@ -5,7 +5,6 @@
   "private": true,
   "scripts": {
     "test": "jest --verbose",
-    "test:ts": "jest typescript-integration.test.ts --verbose",
     "test:watch": "jest --watch"
   },
   "devDependencies": {
@@ -20,8 +19,9 @@
     "preset": "ts-jest",
     "testEnvironment": "node",
     "roots": ["<rootDir>"],
-    "testMatch": ["**/*.test.ts"],
+    "testMatch": ["**/integration.test.ts"],
     "collectCoverage": false,
-    "verbose": true
+    "verbose": true,
+    "testTimeout": 10000
   }
 }

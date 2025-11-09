@@ -224,8 +224,19 @@ Generated unit tests for 21 helper functions across both languages:
 
 **Note**: Tests generated but require SDK implementation to run. Generate full packages with `just generate-packages`.
 
-### Phase 4: Integration Test Migration
-Convert manual `tests/integration/*.py` to `.ncl` specs.
+### Phase 4: Integration Test Specs ✅ COMPLETE
+Created integration test specifications and generator:
+- ✅ `tests/L3-integration/integration-tests.test.ncl` (157 lines) - Test specs for 9 core endpoints
+- ✅ `generators/typescript/tests/typescript-integration-tests.ncl` (140 lines) - Generator
+- ✅ `tests/L3-integration/integration.test.ts` (147 lines, 9 tests generated)
+
+**Test Coverage**:
+- Wallet API (5 tests): checkWallet, getWallet, getWalletBalance, getWalletNonce, getLatestTransactions
+- Network API (1 test): getBlockchains
+- Block API (1 test): getBlockCount
+- Error Handling (2 tests): invalid address, connection error
+
+**Result**: Integration tests generated from Nickel specs, fully aligned with mock server
 
 ### Phase 5: Cross-Language Validator
 Generate from `tests/cross-lang/*.test.ncl`.
