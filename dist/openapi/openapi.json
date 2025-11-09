@@ -19,7 +19,7 @@
     }
   },
   "info": {
-    "description": "Official API specification for Circular Protocol blockchain operations",
+    "description": "Official API specification for Circular Protocol blockchain operations and wallet management",
     "title": "Circular Protocol Canonical API",
     "version": "2.0.0-alpha.1"
   },
