@@ -2907,7 +2907,7 @@ See [FORK_WORKFLOW.md](FORK_WORKFLOW.md) for complete documentation.
 #### Phase 2: Test Runner Generators ✅ **PARTIALLY COMPLETED**
 
 - [x] **Create `generators/shared/test-runners/contract-runner.ncl`** ✅ COMPLETED
-  - ✅ Input: Hardcoded list of 25 test files (tests/contracts/ + tests/endpoints/)
+  - ✅ Input: Hardcoded list of 25 test files (tests/contracts/ including endpoints/)
   - ✅ Output: `dist/tests/run-contract-tests.sh` (~180 lines)
   - ✅ Generates shell script with color-coded output, pass/fail counters
   - ✅ Layer 1 testing: Validates Nickel contracts at export time
@@ -2999,7 +2999,7 @@ See [FORK_WORKFLOW.md](FORK_WORKFLOW.md) for complete documentation.
 #### Phase 5: Cross-Language Validator Generator 🟢
 
 - [ ] **Create `generators/shared/test-runners/cross-lang-validator.ncl`**
-  - Input: `tests/endpoints/*.test.ncl` (24 endpoint test specs)
+  - Input: `tests/contracts/endpoints/*.test.ncl` (24 endpoint test specs)
   - Output: `dist/tests/cross-lang-validator.py`
   - Implements differential testing across TypeScript/Python SDKs
   - Replaces: Manual implementation in `tests/cross-lang/run-tests.py`

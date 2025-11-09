@@ -1,39 +1,35 @@
-# getBlockRange Endpoint Contract Tests
+# getWallet Endpoint Contract Tests
 # Tests that complete request/response objects conform to contracts
 
-let types = import "../../src/schemas/types.ncl" in
-let config = import "../../src/config.ncl" in
+let types = import "../../../src/schemas/types.ncl" in
+let config = import "../../../src/config.ncl" in
 
 {
-  test_name = "getBlockRange Endpoint Validation",
+  test_name = "getWallet Endpoint Validation",
 
   # Valid complete request bodies
   valid_requests = {
-    range_query = {
+    mainnet_request = {
       request | {
         Blockchain | types.Blockchain,
-        Start | String,
-        End | String,
+        Address | types.Address,
         Version | String,
       } = {
         Blockchain = 'MainNet,
-        Start = "100",
-        End = "200",
+        Address = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         Version = config.version,
       },
       expected = "valid",
     },
 
-    backward_count = {
+    testnet_request = {
       request | {
         Blockchain | types.Blockchain,
-        Start | String,
-        End | String,
+        Address | types.Address,
         Version | String,
       } = {
         Blockchain = 'TestNet,
-        Start = "10",
-        End = "0",
+        Address = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         Version = config.version,
       },
       expected = "valid",
@@ -42,35 +38,40 @@ let config = import "../../src/config.ncl" in
 
   # Valid success responses
   valid_success_responses = {
-    multiple_blocks = {
+    wallet_info = {
       response | {
         Result | types.ResultCode,
-        Response,
+        Response | {
+          Address | types.Address,
+          Balance | types.Amount,
+          Nonce | types.Nonce,
+        },
       } = {
         Result = 200,
-        Response = [
-          {
-            BlockNumber = 100,
-            Timestamp = "2024-01-15:10:30:00",
-            Transactions = [],
-          },
-          {
-            BlockNumber = 101,
-            Timestamp = "2024-01-15:10:31:00",
-            Transactions = [],
-          },
-        ],
+        Response = {
+          Address = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          Balance = 1000000,
+          Nonce = 42,
+        },
       },
       expected = "valid",
     },
 
-    empty_range = {
+    zero_balance = {
       response | {
         Result | types.ResultCode,
-        Response,
+        Response | {
+          Address | types.Address,
+          Balance | types.Amount,
+          Nonce | types.Nonce,
+        },
       } = {
         Result = 200,
-        Response = [],
+        Response = {
+          Address = "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+          Balance = 0,
+          Nonce = 0,
+        },
       },
       expected = "valid",
     },
@@ -78,13 +79,13 @@ let config = import "../../src/config.ncl" in
 
   # Valid error responses
   valid_error_responses = {
-    invalid_range = {
+    not_found = {
       response | {
         Result | types.ResultCode,
         Response | String,
       } = {
-        Result = 400,
-        Response = "Invalid block range",
+        Result = 404,
+        Response = "Wallet not found",
       },
       expected = "valid",
     },

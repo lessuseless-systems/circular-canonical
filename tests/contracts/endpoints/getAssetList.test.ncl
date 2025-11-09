@@ -1,43 +1,31 @@
-# testContract Endpoint Contract Tests
+# getAssetList Endpoint Contract Tests
 # Tests that complete request/response objects conform to contracts
 
-let types = import "../../src/schemas/types.ncl" in
-let config = import "../../src/config.ncl" in
+let types = import "../../../src/schemas/types.ncl" in
+let config = import "../../../src/config.ncl" in
 
 {
-  test_name = "testContract Endpoint Validation",
+  test_name = "getAssetList Endpoint Validation",
 
   # Valid complete request bodies
   valid_requests = {
-    mainnet_test = {
+    mainnet_list = {
       request | {
         Blockchain | types.Blockchain,
-        From | types.Address,
-        Project | String,
-        Timestamp | types.Timestamp,
         Version | String,
       } = {
         Blockchain = 'MainNet,
-        From = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-        Project = "0x636f6e74726163745f636f6465...",
-        Timestamp = "2024-01-15:10:30:00",
         Version = config.version,
       },
       expected = "valid",
     },
 
-    testnet_test = {
+    testnet_list = {
       request | {
         Blockchain | types.Blockchain,
-        From | types.Address,
-        Project | String,
-        Timestamp | types.Timestamp,
         Version | String,
       } = {
         Blockchain = 'TestNet,
-        From = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        Project = "0x70726f6a6563745f636f6465...",
-        Timestamp = "2024-02-20:15:45:30",
         Version = config.version,
       },
       expected = "valid",
@@ -46,24 +34,28 @@ let config = import "../../src/config.ncl" in
 
   # Valid success responses
   valid_success_responses = {
-    test_successful = {
+    multiple_assets = {
       response | {
         Result | types.ResultCode,
-        Response | String,
+        Response,
       } = {
         Result = 200,
-        Response = "Contract execution successful",
+        Response = [
+          { AssetName = "CIRX" },
+          { AssetName = "BTC" },
+          { AssetName = "ETH" },
+        ],
       },
       expected = "valid",
     },
 
-    test_with_output = {
+    empty_list = {
       response | {
         Result | types.ResultCode,
-        Response | String,
+        Response,
       } = {
         Result = 200,
-        Response = "{\"result\": \"test passed\", \"gas_used\": 21000}",
+        Response = [],
       },
       expected = "valid",
     },
@@ -71,13 +63,13 @@ let config = import "../../src/config.ncl" in
 
   # Valid error responses
   valid_error_responses = {
-    contract_error = {
+    blockchain_not_found = {
       response | {
         Result | types.ResultCode,
         Response | String,
       } = {
-        Result = 400,
-        Response = "Contract execution failed: invalid bytecode",
+        Result = 404,
+        Response = "Blockchain not found",
       },
       expected = "valid",
     },

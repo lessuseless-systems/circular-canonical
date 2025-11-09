@@ -1,35 +1,43 @@
-# getAssetSupply Endpoint Contract Tests
+# testContract Endpoint Contract Tests
 # Tests that complete request/response objects conform to contracts
 
-let types = import "../../src/schemas/types.ncl" in
-let config = import "../../src/config.ncl" in
+let types = import "../../../src/schemas/types.ncl" in
+let config = import "../../../src/config.ncl" in
 
 {
-  test_name = "getAssetSupply Endpoint Validation",
+  test_name = "testContract Endpoint Validation",
 
   # Valid complete request bodies
   valid_requests = {
-    cirx_supply = {
+    mainnet_test = {
       request | {
         Blockchain | types.Blockchain,
-        AssetName | types.AssetName,
+        From | types.Address,
+        Project | String,
+        Timestamp | types.Timestamp,
         Version | String,
       } = {
         Blockchain = 'MainNet,
-        AssetName = "CIRX",
+        From = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        Project = "0x636f6e74726163745f636f6465...",
+        Timestamp = "2024-01-15:10:30:00",
         Version = config.version,
       },
       expected = "valid",
     },
 
-    btc_supply = {
+    testnet_test = {
       request | {
         Blockchain | types.Blockchain,
-        AssetName | types.AssetName,
+        From | types.Address,
+        Project | String,
+        Timestamp | types.Timestamp,
         Version | String,
       } = {
         Blockchain = 'TestNet,
-        AssetName = "BTC",
+        From = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        Project = "0x70726f6a6563745f636f6465...",
+        Timestamp = "2024-02-20:15:45:30",
         Version = config.version,
       },
       expected = "valid",
@@ -38,40 +46,24 @@ let config = import "../../src/config.ncl" in
 
   # Valid success responses
   valid_success_responses = {
-    supply_metrics = {
+    test_successful = {
       response | {
         Result | types.ResultCode,
-        Response | {
-          TotalSupply | Number,
-          CirculatingSupply | Number,
-          ResidualSupply | Number,
-        },
+        Response | String,
       } = {
         Result = 200,
-        Response = {
-          TotalSupply = 1000000000,
-          CirculatingSupply = 750000000,
-          ResidualSupply = 250000000,
-        },
+        Response = "Contract execution successful",
       },
       expected = "valid",
     },
 
-    zero_supply = {
+    test_with_output = {
       response | {
         Result | types.ResultCode,
-        Response | {
-          TotalSupply | Number,
-          CirculatingSupply | Number,
-          ResidualSupply | Number,
-        },
+        Response | String,
       } = {
         Result = 200,
-        Response = {
-          TotalSupply = 0,
-          CirculatingSupply = 0,
-          ResidualSupply = 0,
-        },
+        Response = "{\"result\": \"test passed\", \"gas_used\": 21000}",
       },
       expected = "valid",
     },
@@ -79,13 +71,13 @@ let config = import "../../src/config.ncl" in
 
   # Valid error responses
   valid_error_responses = {
-    asset_not_found = {
+    contract_error = {
       response | {
         Result | types.ResultCode,
         Response | String,
       } = {
-        Result = 404,
-        Response = "Asset not found",
+        Result = 400,
+        Response = "Contract execution failed: invalid bytecode",
       },
       expected = "valid",
     },

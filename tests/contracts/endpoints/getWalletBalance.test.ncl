@@ -1,35 +1,39 @@
-# getWalletNonce Endpoint Contract Tests
+# getWalletBalance Endpoint Contract Tests
 # Tests that complete request/response objects conform to contracts
 
-let types = import "../../src/schemas/types.ncl" in
-let config = import "../../src/config.ncl" in
+let types = import "../../../src/schemas/types.ncl" in
+let config = import "../../../src/config.ncl" in
 
 {
-  test_name = "getWalletNonce Endpoint Validation",
+  test_name = "getWalletBalance Endpoint Validation",
 
   # Valid complete request bodies
   valid_requests = {
-    mainnet_request = {
+    cirx_balance_request = {
       request | {
         Blockchain | types.Blockchain,
         Address | types.Address,
+        Asset | types.AssetName,
         Version | String,
       } = {
         Blockchain = 'MainNet,
         Address = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        Asset = "CIRX",
         Version = config.version,
       },
       expected = "valid",
     },
 
-    testnet_request = {
+    btc_balance_request = {
       request | {
         Blockchain | types.Blockchain,
         Address | types.Address,
+        Asset | types.AssetName,
         Version | String,
       } = {
         Blockchain = 'TestNet,
         Address = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        Asset = "BTC",
         Version = config.version,
       },
       expected = "valid",
@@ -38,46 +42,35 @@ let config = import "../../src/config.ncl" in
 
   # Valid success responses
   valid_success_responses = {
-    zero_nonce = {
+    with_balance = {
       response | {
         Result | types.ResultCode,
         Response | {
-          Nonce | types.Nonce,
+          Balance | types.Amount,
+          Asset | types.AssetName,
         },
       } = {
         Result = 200,
         Response = {
-          Nonce = 0,
+          Balance = 1000000,
+          Asset = "CIRX",
         },
       },
       expected = "valid",
     },
 
-    active_wallet = {
+    zero_balance = {
       response | {
         Result | types.ResultCode,
         Response | {
-          Nonce | types.Nonce,
+          Balance | types.Amount,
+          Asset | types.AssetName,
         },
       } = {
         Result = 200,
         Response = {
-          Nonce = 42,
-        },
-      },
-      expected = "valid",
-    },
-
-    high_activity = {
-      response | {
-        Result | types.ResultCode,
-        Response | {
-          Nonce | types.Nonce,
-        },
-      } = {
-        Result = 200,
-        Response = {
-          Nonce = 99999,
+          Balance = 0,
+          Asset = "ETH",
         },
       },
       expected = "valid",
@@ -93,6 +86,17 @@ let config = import "../../src/config.ncl" in
       } = {
         Result = 404,
         Response = "Wallet not found",
+      },
+      expected = "valid",
+    },
+
+    asset_not_found = {
+      response | {
+        Result | types.ResultCode,
+        Response | String,
+      } = {
+        Result = 404,
+        Response = "Asset not found",
       },
       expected = "valid",
     },

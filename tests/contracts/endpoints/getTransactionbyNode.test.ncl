@@ -1,31 +1,35 @@
-# getBlockCount Endpoint Contract Tests
+# getTransactionbyNode Endpoint Contract Tests
 # Tests that complete request/response objects conform to contracts
 
-let types = import "../../src/schemas/types.ncl" in
-let config = import "../../src/config.ncl" in
+let types = import "../../../src/schemas/types.ncl" in
+let config = import "../../../src/config.ncl" in
 
 {
-  test_name = "getBlockCount Endpoint Validation",
+  test_name = "getTransactionbyNode Endpoint Validation",
 
   # Valid complete request bodies
   valid_requests = {
-    mainnet_count = {
+    mainnet_node = {
       request | {
         Blockchain | types.Blockchain,
+        Node | String,
         Version | String,
       } = {
         Blockchain = 'MainNet,
+        Node = "node1.circular.network",
         Version = config.version,
       },
       expected = "valid",
     },
 
-    testnet_count = {
+    testnet_node = {
       request | {
         Blockchain | types.Blockchain,
+        Node | String,
         Version | String,
       } = {
         Blockchain = 'TestNet,
+        Node = "node2.circular.test",
         Version = config.version,
       },
       expected = "valid",
@@ -34,32 +38,37 @@ let config = import "../../src/config.ncl" in
 
   # Valid success responses
   valid_success_responses = {
-    blockchain_height = {
+    multiple_transactions = {
       response | {
         Result | types.ResultCode,
-        Response | {
-          BlockCount | types.BlockNumber,
-        },
+        Response,
       } = {
         Result = 200,
-        Response = {
-          BlockCount = 123456,
-        },
+        Response = [
+          {
+            ID = "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+            From = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            To = "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            BlockNumber = 100,
+          },
+          {
+            ID = "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+            From = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            To = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            BlockNumber = 101,
+          },
+        ],
       },
       expected = "valid",
     },
 
-    zero_blocks = {
+    empty_result = {
       response | {
         Result | types.ResultCode,
-        Response | {
-          BlockCount | types.BlockNumber,
-        },
+        Response,
       } = {
         Result = 200,
-        Response = {
-          BlockCount = 0,
-        },
+        Response = [],
       },
       expected = "valid",
     },
@@ -67,13 +76,13 @@ let config = import "../../src/config.ncl" in
 
   # Valid error responses
   valid_error_responses = {
-    blockchain_not_found = {
+    node_not_found = {
       response | {
         Result | types.ResultCode,
         Response | String,
       } = {
         Result = 404,
-        Response = "Blockchain not found",
+        Response = "Node not found",
       },
       expected = "valid",
     },

@@ -1,35 +1,31 @@
-# getWallet Endpoint Contract Tests
+# getBlockCount Endpoint Contract Tests
 # Tests that complete request/response objects conform to contracts
 
-let types = import "../../src/schemas/types.ncl" in
-let config = import "../../src/config.ncl" in
+let types = import "../../../src/schemas/types.ncl" in
+let config = import "../../../src/config.ncl" in
 
 {
-  test_name = "getWallet Endpoint Validation",
+  test_name = "getBlockCount Endpoint Validation",
 
   # Valid complete request bodies
   valid_requests = {
-    mainnet_request = {
+    mainnet_count = {
       request | {
         Blockchain | types.Blockchain,
-        Address | types.Address,
         Version | String,
       } = {
         Blockchain = 'MainNet,
-        Address = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         Version = config.version,
       },
       expected = "valid",
     },
 
-    testnet_request = {
+    testnet_count = {
       request | {
         Blockchain | types.Blockchain,
-        Address | types.Address,
         Version | String,
       } = {
         Blockchain = 'TestNet,
-        Address = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         Version = config.version,
       },
       expected = "valid",
@@ -38,39 +34,31 @@ let config = import "../../src/config.ncl" in
 
   # Valid success responses
   valid_success_responses = {
-    wallet_info = {
+    blockchain_height = {
       response | {
         Result | types.ResultCode,
         Response | {
-          Address | types.Address,
-          Balance | types.Amount,
-          Nonce | types.Nonce,
+          BlockCount | types.BlockNumber,
         },
       } = {
         Result = 200,
         Response = {
-          Address = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-          Balance = 1000000,
-          Nonce = 42,
+          BlockCount = 123456,
         },
       },
       expected = "valid",
     },
 
-    zero_balance = {
+    zero_blocks = {
       response | {
         Result | types.ResultCode,
         Response | {
-          Address | types.Address,
-          Balance | types.Amount,
-          Nonce | types.Nonce,
+          BlockCount | types.BlockNumber,
         },
       } = {
         Result = 200,
         Response = {
-          Address = "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-          Balance = 0,
-          Nonce = 0,
+          BlockCount = 0,
         },
       },
       expected = "valid",
@@ -79,13 +67,13 @@ let config = import "../../src/config.ncl" in
 
   # Valid error responses
   valid_error_responses = {
-    not_found = {
+    blockchain_not_found = {
       response | {
         Result | types.ResultCode,
         Response | String,
       } = {
         Result = 404,
-        Response = "Wallet not found",
+        Response = "Blockchain not found",
       },
       expected = "valid",
     },

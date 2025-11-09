@@ -1,39 +1,35 @@
-# getTransactionbyDate Endpoint Contract Tests
+# getTransactionbyAddress Endpoint Contract Tests
 # Tests that complete request/response objects conform to contracts
 
-let types = import "../../src/schemas/types.ncl" in
-let config = import "../../src/config.ncl" in
+let types = import "../../../src/schemas/types.ncl" in
+let config = import "../../../src/config.ncl" in
 
 {
-  test_name = "getTransactionbyDate Endpoint Validation",
+  test_name = "getTransactionbyAddress Endpoint Validation",
 
   # Valid complete request bodies
   valid_requests = {
-    date_range_query = {
+    mainnet_address = {
       request | {
         Blockchain | types.Blockchain,
-        InitialDate | types.Timestamp,
-        FinalDate | types.Timestamp,
+        Address | types.Address,
         Version | String,
       } = {
         Blockchain = 'MainNet,
-        InitialDate = "2024-01-01:00:00:00",
-        FinalDate = "2024-01-31:23:59:59",
+        Address = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         Version = config.version,
       },
       expected = "valid",
     },
 
-    single_day_query = {
+    testnet_address = {
       request | {
         Blockchain | types.Blockchain,
-        InitialDate | types.Timestamp,
-        FinalDate | types.Timestamp,
+        Address | types.Address,
         Version | String,
       } = {
         Blockchain = 'TestNet,
-        InitialDate = "2024-02-15:00:00:00",
-        FinalDate = "2024-02-15:23:59:59",
+        Address = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         Version = config.version,
       },
       expected = "valid",
@@ -53,20 +49,20 @@ let config = import "../../src/config.ncl" in
             ID = "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd",
             From = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
             To = "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-            Timestamp = "2024-01-15:10:30:00",
+            BlockNumber = 12345,
           },
           {
             ID = "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-            From = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            To = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-            Timestamp = "2024-01-20:14:22:33",
+            From = "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+            To = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            BlockNumber = 12350,
           },
         ],
       },
       expected = "valid",
     },
 
-    empty_result = {
+    empty_transactions = {
       response | {
         Result | types.ResultCode,
         Response,
@@ -80,13 +76,13 @@ let config = import "../../src/config.ncl" in
 
   # Valid error responses
   valid_error_responses = {
-    invalid_date_range = {
+    address_not_found = {
       response | {
         Result | types.ResultCode,
         Response | String,
       } = {
-        Result = 400,
-        Response = "Invalid date range",
+        Result = 404,
+        Response = "Address not found",
       },
       expected = "valid",
     },

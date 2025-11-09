@@ -1,31 +1,35 @@
-# getAssetList Endpoint Contract Tests
+# getAsset Endpoint Contract Tests
 # Tests that complete request/response objects conform to contracts
 
-let types = import "../../src/schemas/types.ncl" in
-let config = import "../../src/config.ncl" in
+let types = import "../../../src/schemas/types.ncl" in
+let config = import "../../../src/config.ncl" in
 
 {
-  test_name = "getAssetList Endpoint Validation",
+  test_name = "getAsset Endpoint Validation",
 
   # Valid complete request bodies
   valid_requests = {
-    mainnet_list = {
+    cirx_asset = {
       request | {
         Blockchain | types.Blockchain,
+        AssetName | types.AssetName,
         Version | String,
       } = {
         Blockchain = 'MainNet,
+        AssetName = "CIRX",
         Version = config.version,
       },
       expected = "valid",
     },
 
-    testnet_list = {
+    btc_asset = {
       request | {
         Blockchain | types.Blockchain,
+        AssetName | types.AssetName,
         Version | String,
       } = {
         Blockchain = 'TestNet,
+        AssetName = "BTC",
         Version = config.version,
       },
       expected = "valid",
@@ -34,28 +38,23 @@ let config = import "../../src/config.ncl" in
 
   # Valid success responses
   valid_success_responses = {
-    multiple_assets = {
+    asset_details = {
       response | {
         Result | types.ResultCode,
-        Response,
+        Response | {
+          AssetName | types.AssetName,
+          TotalSupply | Number,
+          Decimals | Number,
+          Owner | types.Address,
+        },
       } = {
         Result = 200,
-        Response = [
-          { AssetName = "CIRX" },
-          { AssetName = "BTC" },
-          { AssetName = "ETH" },
-        ],
-      },
-      expected = "valid",
-    },
-
-    empty_list = {
-      response | {
-        Result | types.ResultCode,
-        Response,
-      } = {
-        Result = 200,
-        Response = [],
+        Response = {
+          AssetName = "CIRX",
+          TotalSupply = 1000000000,
+          Decimals = 8,
+          Owner = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        },
       },
       expected = "valid",
     },
@@ -63,13 +62,13 @@ let config = import "../../src/config.ncl" in
 
   # Valid error responses
   valid_error_responses = {
-    blockchain_not_found = {
+    asset_not_found = {
       response | {
         Result | types.ResultCode,
         Response | String,
       } = {
         Result = 404,
-        Response = "Blockchain not found",
+        Response = "Asset not found",
       },
       expected = "valid",
     },

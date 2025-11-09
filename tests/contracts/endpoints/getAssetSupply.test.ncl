@@ -1,35 +1,35 @@
-# getTransactionbyNode Endpoint Contract Tests
+# getAssetSupply Endpoint Contract Tests
 # Tests that complete request/response objects conform to contracts
 
-let types = import "../../src/schemas/types.ncl" in
-let config = import "../../src/config.ncl" in
+let types = import "../../../src/schemas/types.ncl" in
+let config = import "../../../src/config.ncl" in
 
 {
-  test_name = "getTransactionbyNode Endpoint Validation",
+  test_name = "getAssetSupply Endpoint Validation",
 
   # Valid complete request bodies
   valid_requests = {
-    mainnet_node = {
+    cirx_supply = {
       request | {
         Blockchain | types.Blockchain,
-        Node | String,
+        AssetName | types.AssetName,
         Version | String,
       } = {
         Blockchain = 'MainNet,
-        Node = "node1.circular.network",
+        AssetName = "CIRX",
         Version = config.version,
       },
       expected = "valid",
     },
 
-    testnet_node = {
+    btc_supply = {
       request | {
         Blockchain | types.Blockchain,
-        Node | String,
+        AssetName | types.AssetName,
         Version | String,
       } = {
         Blockchain = 'TestNet,
-        Node = "node2.circular.test",
+        AssetName = "BTC",
         Version = config.version,
       },
       expected = "valid",
@@ -38,37 +38,40 @@ let config = import "../../src/config.ncl" in
 
   # Valid success responses
   valid_success_responses = {
-    multiple_transactions = {
+    supply_metrics = {
       response | {
         Result | types.ResultCode,
-        Response,
+        Response | {
+          TotalSupply | Number,
+          CirculatingSupply | Number,
+          ResidualSupply | Number,
+        },
       } = {
         Result = 200,
-        Response = [
-          {
-            ID = "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd",
-            From = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-            To = "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-            BlockNumber = 100,
-          },
-          {
-            ID = "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
-            From = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-            To = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-            BlockNumber = 101,
-          },
-        ],
+        Response = {
+          TotalSupply = 1000000000,
+          CirculatingSupply = 750000000,
+          ResidualSupply = 250000000,
+        },
       },
       expected = "valid",
     },
 
-    empty_result = {
+    zero_supply = {
       response | {
         Result | types.ResultCode,
-        Response,
+        Response | {
+          TotalSupply | Number,
+          CirculatingSupply | Number,
+          ResidualSupply | Number,
+        },
       } = {
         Result = 200,
-        Response = [],
+        Response = {
+          TotalSupply = 0,
+          CirculatingSupply = 0,
+          ResidualSupply = 0,
+        },
       },
       expected = "valid",
     },
@@ -76,13 +79,13 @@ let config = import "../../src/config.ncl" in
 
   # Valid error responses
   valid_error_responses = {
-    node_not_found = {
+    asset_not_found = {
       response | {
         Result | types.ResultCode,
         Response | String,
       } = {
         Result = 404,
-        Response = "Node not found",
+        Response = "Asset not found",
       },
       expected = "valid",
     },

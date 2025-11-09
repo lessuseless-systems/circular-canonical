@@ -11,7 +11,7 @@ Successfully implemented comprehensive test harness generators that transform Ni
 **File**: `generators/test-data.ncl`
 
 Aggregates all 24 endpoint test files into a unified structure:
-- Imports all endpoint tests from `tests/endpoints/`
+- Imports all endpoint tests from `tests/contracts/endpoints/`
 - Provides centralized access to test data
 - Metadata about categories and counts
 

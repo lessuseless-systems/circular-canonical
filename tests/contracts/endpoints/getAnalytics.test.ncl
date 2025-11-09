@@ -1,35 +1,31 @@
-# getBlock Endpoint Contract Tests
+# getAnalytics Endpoint Contract Tests
 # Tests that complete request/response objects conform to contracts
 
-let types = import "../../src/schemas/types.ncl" in
-let config = import "../../src/config.ncl" in
+let types = import "../../../src/schemas/types.ncl" in
+let config = import "../../../src/config.ncl" in
 
 {
-  test_name = "getBlock Endpoint Validation",
+  test_name = "getAnalytics Endpoint Validation",
 
   # Valid complete request bodies
   valid_requests = {
-    mainnet_block = {
+    mainnet_analytics = {
       request | {
         Blockchain | types.Blockchain,
-        BlockNumber | String,
         Version | String,
       } = {
         Blockchain = 'MainNet,
-        BlockNumber = "12345",
         Version = config.version,
       },
       expected = "valid",
     },
 
-    testnet_block = {
+    testnet_analytics = {
       request | {
         Blockchain | types.Blockchain,
-        BlockNumber | String,
         Version | String,
       } = {
         Blockchain = 'TestNet,
-        BlockNumber = "100",
         Version = config.version,
       },
       expected = "valid",
@@ -38,45 +34,43 @@ let config = import "../../src/config.ncl" in
 
   # Valid success responses
   valid_success_responses = {
-    block_with_transactions = {
+    full_analytics = {
       response | {
         Result | types.ResultCode,
         Response | {
-          BlockNumber | types.BlockNumber,
-          Timestamp | types.Timestamp,
-          Transactions,
-          Hash | String,
+          TotalTransactions | Number,
+          TotalWallets | Number,
+          TotalAssets | Number,
+          BlockHeight | types.BlockNumber,
         },
       } = {
         Result = 200,
         Response = {
-          BlockNumber = 12345,
-          Timestamp = "2024-01-15:10:30:00",
-          Transactions = [
-            { ID = "0xabcdef...", From = "0x742d35...", To = "0x987654..." },
-          ],
-          Hash = "0xblock123...",
+          TotalTransactions = 1000000,
+          TotalWallets = 50000,
+          TotalAssets = 100,
+          BlockHeight = 123456,
         },
       },
       expected = "valid",
     },
 
-    empty_block = {
+    zero_analytics = {
       response | {
         Result | types.ResultCode,
         Response | {
-          BlockNumber | types.BlockNumber,
-          Timestamp | types.Timestamp,
-          Transactions,
-          Hash | String,
+          TotalTransactions | Number,
+          TotalWallets | Number,
+          TotalAssets | Number,
+          BlockHeight | types.BlockNumber,
         },
       } = {
         Result = 200,
         Response = {
-          BlockNumber = 100,
-          Timestamp = "2024-01-15:10:31:00",
-          Transactions = [],
-          Hash = "0xblock456...",
+          TotalTransactions = 0,
+          TotalWallets = 0,
+          TotalAssets = 0,
+          BlockHeight = 0,
         },
       },
       expected = "valid",
@@ -85,13 +79,13 @@ let config = import "../../src/config.ncl" in
 
   # Valid error responses
   valid_error_responses = {
-    block_not_found = {
+    blockchain_not_found = {
       response | {
         Result | types.ResultCode,
         Response | String,
       } = {
         Result = 404,
-        Response = "Block not found",
+        Response = "Blockchain not found",
       },
       expected = "valid",
     },

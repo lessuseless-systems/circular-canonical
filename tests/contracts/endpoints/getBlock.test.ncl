@@ -1,43 +1,35 @@
-# getTransactionbyID Endpoint Contract Tests
+# getBlock Endpoint Contract Tests
 # Tests that complete request/response objects conform to contracts
 
-let types = import "../../src/schemas/types.ncl" in
-let config = import "../../src/config.ncl" in
+let types = import "../../../src/schemas/types.ncl" in
+let config = import "../../../src/config.ncl" in
 
 {
-  test_name = "getTransactionbyID Endpoint Validation",
+  test_name = "getBlock Endpoint Validation",
 
   # Valid complete request bodies
   valid_requests = {
-    with_block_range = {
+    mainnet_block = {
       request | {
         Blockchain | types.Blockchain,
-        ID | types.TransactionID,
-        Start | String,
-        End | String,
+        BlockNumber | String,
         Version | String,
       } = {
         Blockchain = 'MainNet,
-        ID = "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd",
-        Start = "100",
-        End = "200",
+        BlockNumber = "12345",
         Version = config.version,
       },
       expected = "valid",
     },
 
-    without_range = {
+    testnet_block = {
       request | {
         Blockchain | types.Blockchain,
-        ID | types.TransactionID,
-        Start | String,
-        End | String,
+        BlockNumber | String,
         Version | String,
       } = {
         Blockchain = 'TestNet,
-        ID = "0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
-        Start = "0",
-        End = "0",
+        BlockNumber = "100",
         Version = config.version,
       },
       expected = "valid",
@@ -46,26 +38,45 @@ let config = import "../../src/config.ncl" in
 
   # Valid success responses
   valid_success_responses = {
-    transaction_found = {
+    block_with_transactions = {
       response | {
         Result | types.ResultCode,
         Response | {
-          ID | types.TransactionID,
-          From | types.Address,
-          To | types.Address,
           BlockNumber | types.BlockNumber,
           Timestamp | types.Timestamp,
-          Type | String,
+          Transactions,
+          Hash | String,
         },
       } = {
         Result = 200,
         Response = {
-          ID = "0xabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcdefabcd",
-          From = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-          To = "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
           BlockNumber = 12345,
           Timestamp = "2024-01-15:10:30:00",
-          Type = "C_TYPE_TRANSACTION",
+          Transactions = [
+            { ID = "0xabcdef...", From = "0x742d35...", To = "0x987654..." },
+          ],
+          Hash = "0xblock123...",
+        },
+      },
+      expected = "valid",
+    },
+
+    empty_block = {
+      response | {
+        Result | types.ResultCode,
+        Response | {
+          BlockNumber | types.BlockNumber,
+          Timestamp | types.Timestamp,
+          Transactions,
+          Hash | String,
+        },
+      } = {
+        Result = 200,
+        Response = {
+          BlockNumber = 100,
+          Timestamp = "2024-01-15:10:31:00",
+          Transactions = [],
+          Hash = "0xblock456...",
         },
       },
       expected = "valid",
@@ -74,13 +85,13 @@ let config = import "../../src/config.ncl" in
 
   # Valid error responses
   valid_error_responses = {
-    not_found = {
+    block_not_found = {
       response | {
         Result | types.ResultCode,
         Response | String,
       } = {
         Result = 404,
-        Response = "Transaction not found in specified range",
+        Response = "Block not found",
       },
       expected = "valid",
     },

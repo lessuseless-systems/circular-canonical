@@ -1,47 +1,35 @@
-# callContract Endpoint Contract Tests
+# getDomain Endpoint Contract Tests
 # Tests that complete request/response objects conform to contracts
 
-let types = import "../../src/schemas/types.ncl" in
-let config = import "../../src/config.ncl" in
+let types = import "../../../src/schemas/types.ncl" in
+let config = import "../../../src/config.ncl" in
 
 {
-  test_name = "callContract Endpoint Validation",
+  test_name = "getDomain Endpoint Validation",
 
   # Valid complete request bodies
   valid_requests = {
-    mainnet_call = {
+    simple_domain = {
       request | {
         Blockchain | types.Blockchain,
-        From | types.Address,
-        Address | types.Address,
-        Request | String,
-        Timestamp | types.Timestamp,
+        Domain | types.DomainName,
         Version | String,
       } = {
         Blockchain = 'MainNet,
-        From = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-        Address = "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-        Request = "0x66756e6374696f6e4e616d65...",
-        Timestamp = "2024-01-15:10:30:00",
+        Domain = "alice.cir",
         Version = config.version,
       },
       expected = "valid",
     },
 
-    testnet_call = {
+    complex_domain = {
       request | {
         Blockchain | types.Blockchain,
-        From | types.Address,
-        Address | types.Address,
-        Request | String,
-        Timestamp | types.Timestamp,
+        Domain | types.DomainName,
         Version | String,
       } = {
         Blockchain = 'TestNet,
-        From = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        Address = "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-        Request = "0x616e6f7468657246756e6374696f6e...",
-        Timestamp = "2024-02-20:15:45:30",
+        Domain = "my-wallet.circular.net",
         Version = config.version,
       },
       expected = "valid",
@@ -50,24 +38,36 @@ let config = import "../../src/config.ncl" in
 
   # Valid success responses
   valid_success_responses = {
-    call_successful = {
+    domain_resolved = {
       response | {
         Result | types.ResultCode,
-        Response | String,
+        Response | {
+          Domain | types.DomainName,
+          Address | types.Address,
+        },
       } = {
         Result = 200,
-        Response = "Function returned: success",
+        Response = {
+          Domain = "alice.cir",
+          Address = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        },
       },
       expected = "valid",
     },
 
-    call_with_data = {
+    another_domain = {
       response | {
         Result | types.ResultCode,
-        Response | String,
+        Response | {
+          Domain | types.DomainName,
+          Address | types.Address,
+        },
       } = {
         Result = 200,
-        Response = "{\"data\": [1, 2, 3], \"status\": \"ok\"}",
+        Response = {
+          Domain = "bob.circular.test",
+          Address = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        },
       },
       expected = "valid",
     },
@@ -75,24 +75,24 @@ let config = import "../../src/config.ncl" in
 
   # Valid error responses
   valid_error_responses = {
-    contract_not_found = {
+    domain_not_found = {
       response | {
         Result | types.ResultCode,
         Response | String,
       } = {
         Result = 404,
-        Response = "Contract not found",
+        Response = "Domain not found",
       },
       expected = "valid",
     },
 
-    function_error = {
+    invalid_domain = {
       response | {
         Result | types.ResultCode,
         Response | String,
       } = {
         Result = 400,
-        Response = "Function execution failed",
+        Response = "Invalid domain format",
       },
       expected = "valid",
     },

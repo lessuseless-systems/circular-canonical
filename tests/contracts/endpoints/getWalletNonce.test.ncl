@@ -1,35 +1,35 @@
-# getAsset Endpoint Contract Tests
+# getWalletNonce Endpoint Contract Tests
 # Tests that complete request/response objects conform to contracts
 
-let types = import "../../src/schemas/types.ncl" in
-let config = import "../../src/config.ncl" in
+let types = import "../../../src/schemas/types.ncl" in
+let config = import "../../../src/config.ncl" in
 
 {
-  test_name = "getAsset Endpoint Validation",
+  test_name = "getWalletNonce Endpoint Validation",
 
   # Valid complete request bodies
   valid_requests = {
-    cirx_asset = {
+    mainnet_request = {
       request | {
         Blockchain | types.Blockchain,
-        AssetName | types.AssetName,
+        Address | types.Address,
         Version | String,
       } = {
         Blockchain = 'MainNet,
-        AssetName = "CIRX",
+        Address = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
         Version = config.version,
       },
       expected = "valid",
     },
 
-    btc_asset = {
+    testnet_request = {
       request | {
         Blockchain | types.Blockchain,
-        AssetName | types.AssetName,
+        Address | types.Address,
         Version | String,
       } = {
         Blockchain = 'TestNet,
-        AssetName = "BTC",
+        Address = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         Version = config.version,
       },
       expected = "valid",
@@ -38,22 +38,46 @@ let config = import "../../src/config.ncl" in
 
   # Valid success responses
   valid_success_responses = {
-    asset_details = {
+    zero_nonce = {
       response | {
         Result | types.ResultCode,
         Response | {
-          AssetName | types.AssetName,
-          TotalSupply | Number,
-          Decimals | Number,
-          Owner | types.Address,
+          Nonce | types.Nonce,
         },
       } = {
         Result = 200,
         Response = {
-          AssetName = "CIRX",
-          TotalSupply = 1000000000,
-          Decimals = 8,
-          Owner = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+          Nonce = 0,
+        },
+      },
+      expected = "valid",
+    },
+
+    active_wallet = {
+      response | {
+        Result | types.ResultCode,
+        Response | {
+          Nonce | types.Nonce,
+        },
+      } = {
+        Result = 200,
+        Response = {
+          Nonce = 42,
+        },
+      },
+      expected = "valid",
+    },
+
+    high_activity = {
+      response | {
+        Result | types.ResultCode,
+        Response | {
+          Nonce | types.Nonce,
+        },
+      } = {
+        Result = 200,
+        Response = {
+          Nonce = 99999,
         },
       },
       expected = "valid",
@@ -62,13 +86,13 @@ let config = import "../../src/config.ncl" in
 
   # Valid error responses
   valid_error_responses = {
-    asset_not_found = {
+    wallet_not_found = {
       response | {
         Result | types.ResultCode,
         Response | String,
       } = {
         Result = 404,
-        Response = "Asset not found",
+        Response = "Wallet not found",
       },
       expected = "valid",
     },

@@ -44,9 +44,11 @@ src/api/*.ncl → generators/shared/mock-server.ncl → dist/tests/mock-server.p
 tests/
 ├── CLAUDE.md                    # This file
 ├── contracts/                   # Contract validation specs (Layer 1)
-│   ├── types.test.ncl
-│   ├── wallet.test.ncl
-│   └── ...
+│   ├── types.test.ncl          # Primitive type contracts
+│   └── endpoints/              # Endpoint request/response contracts
+│       ├── checkWallet.test.ncl
+│       ├── getWallet.test.ncl
+│       └── ...
 ├── unit/                        # Unit test specs (Layer 2)
 │   ├── helpers.test.ncl
 │   └── validators.test.ncl

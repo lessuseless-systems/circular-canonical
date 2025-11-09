@@ -5,12 +5,12 @@
 let config = import "../../src/config.ncl" in
 
 # Placeholder test data structure
-# TODO: Replace with actual imports when tests/endpoints/*.test.ncl files exist
+# TODO: Replace with actual imports when tests/contracts/endpoints/*.test.ncl files exist
 {
   version = config.version,
 
   # Placeholder for endpoint tests
-  # TODO: Import from tests/endpoints/
+  # TODO: Import from tests/contracts/endpoints/
   endpoints = {
     # Wallet API (6 endpoints)
     # checkWallet = checkWallet_test,
