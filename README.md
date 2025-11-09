@@ -12,8 +12,8 @@ Single source of truth for Circular Protocol standard APIs, defined in Nickel.
 | **circular-js-npm** | Generated TypeScript SDK | `lessuseless-systems/circular-js-npm` |
 | **circular-py** | Generated Python SDK | `lessuseless-systems/circular-py` |
 
-**Ignore these repos** (outdated/test):
-- `circular-canonicle` (typo)
+**Ignore these repos** (outdated/test/typos):
+- `circular-canonicle`, `circular-canonacle` (typos - correct spelling is "canonical")
 - `circular-py-1`, `circular-py-2` (numbered test repos)
 - `circular-js-npm-1`, `circular-js-npm-2` (numbered test repos)
 
