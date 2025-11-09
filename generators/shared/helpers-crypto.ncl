@@ -83,7 +83,9 @@ import sha256 from 'sha256';
 
     # Import statements for Python
     imports = m%"
-from ecdsa import SigningKey, VerifyingKey, SECP256k1
+from cryptography.hazmat.primitives.asymmetric import ec
+from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.backends import default_backend
 import hashlib
 "%,
 
@@ -98,13 +100,23 @@ import hashlib
             private_key: Private key in hex format (with or without '0x' prefix)
 
         Returns:
-            DER-encoded signature as hex string
+            Signature as hex string (r||s format, 64 bytes)
         """
         private_key_bytes = bytes.fromhex(self.hex_fix(private_key))
-        sk = SigningKey.from_string(private_key_bytes, curve=SECP256k1)
+        private_key_int = int.from_bytes(private_key_bytes, byteorder='big')
+        sk = ec.derive_private_key(private_key_int, ec.SECP256K1(), default_backend())
+
+        # Hash message once (matching TypeScript sha256 behavior)
         msg_hash = hashlib.sha256(message.encode()).digest()
-        signature = sk.sign_digest(msg_hash, sigencode=lambda r, s, order: r.to_bytes(32, 'big') + s.to_bytes(32, 'big'))
-        return signature.hex()
+
+        # Sign with Prehashed to avoid double-hashing (sk.sign would hash again otherwise)
+        from cryptography.hazmat.primitives.asymmetric.utils import Prehashed, decode_dss_signature
+        signature_der = sk.sign(msg_hash, ec.ECDSA(Prehashed(hashes.SHA256())))
+
+        # Convert DER to raw r||s format for consistency with TypeScript
+        r, s = decode_dss_signature(signature_der)
+        signature_bytes = r.to_bytes(32, 'big') + s.to_bytes(32, 'big')
+        return signature_bytes.hex()
 "%,
 
     # Verify signature
@@ -114,19 +126,35 @@ import hashlib
         Verify a signature
 
         Args:
-            public_key: Public key in hex format
+            public_key: Public key in hex format (uncompressed, 64 bytes)
             message: Original message that was signed
-            signature: Signature in hex format
+            signature: Signature in hex format (r||s format, 64 bytes)
 
         Returns:
             True if signature is valid, False otherwise
         """
         try:
             public_key_bytes = bytes.fromhex(self.hex_fix(public_key))
-            vk = VerifyingKey.from_string(public_key_bytes, curve=SECP256k1)
+            # Add uncompressed point prefix if needed (0x04)
+            if len(public_key_bytes) == 64:
+                public_key_bytes = b'\\x04' + public_key_bytes
+
+            vk = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256K1(), public_key_bytes)
+
+            # Hash message once (matching TypeScript sha256 behavior)
             msg_hash = hashlib.sha256(message.encode()).digest()
+
+            # Convert r||s format to DER
             signature_bytes = bytes.fromhex(signature)
-            return vk.verify_digest(signature_bytes, msg_hash)
+            r = int.from_bytes(signature_bytes[:32], 'big')
+            s = int.from_bytes(signature_bytes[32:], 'big')
+
+            from cryptography.hazmat.primitives.asymmetric.utils import Prehashed, encode_dss_signature
+            signature_der = encode_dss_signature(r, s)
+
+            # Verify with Prehashed to match signing behavior
+            vk.verify(signature_der, msg_hash, ec.ECDSA(Prehashed(hashes.SHA256())))
+            return True
         except Exception:
             return False
 "%,
@@ -141,12 +169,18 @@ import hashlib
             private_key: Private key in hex format (with or without '0x' prefix)
 
         Returns:
-            Public key in uncompressed hex format
+            Public key in uncompressed hex format (64 bytes, without 0x04 prefix)
         """
         private_key_bytes = bytes.fromhex(self.hex_fix(private_key))
-        sk = SigningKey.from_string(private_key_bytes, curve=SECP256k1)
-        vk = sk.get_verifying_key()
-        return vk.to_string().hex()
+        private_key_int = int.from_bytes(private_key_bytes, byteorder='big')
+        sk = ec.derive_private_key(private_key_int, ec.SECP256K1(), default_backend())
+        vk = sk.public_key()
+        public_key_bytes = vk.public_bytes(
+            encoding=serialization.Encoding.X962,
+            format=serialization.PublicFormat.UncompressedPoint
+        )
+        # Remove the 0x04 prefix to match TypeScript output
+        return public_key_bytes[1:].hex()
 "%,
 
     # Hash string

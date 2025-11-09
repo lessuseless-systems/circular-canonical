@@ -240,8 +240,39 @@ setup-forks:
 # Multi-Repo Workflow: Sync generated code to fork submodules
 # ===========================================================================
 
+# Verify submodule URLs point to correct official repos (safety check)
+verify-repos:
+    @echo "🔍 Verifying submodule repository URLs..."
+    @if [ ! -e dist/typescript/.git ]; then \
+        echo "⚠️  dist/typescript/ is not a git submodule (run setup-forks)"; \
+    else \
+        ts_url=$$(cd dist/typescript && git remote get-url origin); \
+        if echo "$$ts_url" | grep -q "circular-js-npm\.git$$" && ! echo "$$ts_url" | grep -qE "\-[0-9]+\.git$$"; then \
+            echo "✅ TypeScript submodule: $$ts_url"; \
+        else \
+            echo "❌ ERROR: TypeScript submodule has wrong URL: $$ts_url"; \
+            echo "   Expected: git@github.com:lessuseless-systems/circular-js-npm.git"; \
+            echo "   (NOT numbered repos like circular-js-npm-1.git)"; \
+            exit 1; \
+        fi; \
+    fi
+    @if [ ! -e dist/python/.git ]; then \
+        echo "⚠️  dist/python/ is not a git submodule (run setup-forks)"; \
+    else \
+        py_url=$$(cd dist/python && git remote get-url origin); \
+        if echo "$$py_url" | grep -q "circular-py\.git$$" && ! echo "$$py_url" | grep -qE "\-[0-9]+\.git$$"; then \
+            echo "✅ Python submodule: $$py_url"; \
+        else \
+            echo "❌ ERROR: Python submodule has wrong URL: $$py_url"; \
+            echo "   Expected: git@github.com:lessuseless-systems/circular-py.git"; \
+            echo "   (NOT numbered repos like circular-py-1.git)"; \
+            exit 1; \
+        fi; \
+    fi
+    @echo "✅ All repository URLs verified correct"
+
 # Sync TypeScript package to submodule (lessuseless-systems/circular-js-npm fork)
-sync-typescript:
+sync-typescript: verify-repos
     @echo "Syncing TypeScript package to dist/typescript/ submodule"
     @if [ ! -e dist/typescript/.git ]; then \
         echo "[ERROR] dist/typescript/ is not a git submodule"; \
@@ -260,7 +291,7 @@ sync-typescript:
     @cd dist/typescript && git log -1 --oneline
 
 # Sync Python package to submodule (lessuseless-systems/circular-py fork)
-sync-python:
+sync-python: verify-repos
     @echo "Syncing Python package to dist/python/ submodule"
     @if [ ! -e dist/python/.git ]; then \
         echo "[ERROR] dist/python/ is not a git submodule"; \

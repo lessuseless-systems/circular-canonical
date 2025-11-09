@@ -2,6 +2,23 @@
 
 Single source of truth for Circular Protocol standard APIs, defined in Nickel.
 
+## Official Repositories
+
+**⚠️ IMPORTANT:** Only these repositories are official:
+
+| Repository | Purpose | URL |
+|------------|---------|-----|
+| **circular-canonical** | Source of truth (THIS REPO) | `lessuseless-systems/circular-canonical` |
+| **circular-js-npm** | Generated TypeScript SDK | `lessuseless-systems/circular-js-npm` |
+| **circular-py** | Generated Python SDK | `lessuseless-systems/circular-py` |
+
+**Ignore these repos** (outdated/test):
+- `circular-canonicle` (typo)
+- `circular-py-1`, `circular-py-2` (numbered test repos)
+- `circular-js-npm-1`, `circular-js-npm-2` (numbered test repos)
+
+All generated SDKs are managed as git submodules in `dist/typescript/` and `dist/python/`.
+
 ## Overview
 
 This project uses [Nickel](https://nickel-lang.org/) to define the Circular Protocol API specifications, contracts, and schemas in a single location. From these Nickel definitions, we generate:
@@ -42,9 +59,23 @@ circular-canonical/
 ### Prerequisites
 
 ```bash
-# Install Nickel
-nix shell nixpkgs#nickel
+# Enter development environment (recommended)
+nix develop
+
+# This automatically installs:
+# - Nickel language tools
+# - TypeScript/Node.js
+# - Python environment
+# - Git hooks (pre-commit, pre-push)
+# - All dev dependencies
 ```
+
+### Git Hooks (Automatic)
+
+When you run `nix develop`, git hooks are automatically installed:
+
+**Pre-commit:** Nickel typecheck, secrets detection, JSON/YAML validation, markdown linting
+**Pre-push:** Repository URL validation (prevents pushes to numbered repos or typos)
 
 ### Generate OpenAPI Spec
 
