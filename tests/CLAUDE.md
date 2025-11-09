@@ -69,14 +69,8 @@ tests/
 ├── validators/                      # Runtime validator function tests
 │   └── runtime-validation.test.ncl # Tests validator functions (not contracts)
 │
-└── infrastructure/                  # Supporting infrastructure (manual until generated)
-    ├── mock-server/                # Mock API server (Phase 1 - generated ✅)
-    ├── generators/                 # Test runner generators (Phase 2 - deferred ⏭️)
-    │   ├── syntax-validation.sh   # TEMPORARY: Manual until generated
-    │   └── snapshot-test.sh       # TEMPORARY: Manual until generated
-    └── e2e/                        # E2E orchestration (Phase 7 - deferred ⏭️)
-        ├── test-pipeline.sh       # TEMPORARY: Manual until generated
-        └── test-pipeline-fast.sh  # TEMPORARY: Manual until generated
+└── infrastructure/                  # Supporting infrastructure (all generated ✅)
+    └── mock-server/                # Mock API server (Phase 1 - generated ✅)
 ```
 
 **Key Improvements**:
@@ -88,14 +82,16 @@ tests/
 **Generated artifacts** (in `dist/tests/`, gitignored):
 ```
 dist/tests/
-├── mock-server.py              # Generated HTTP mock server
-├── run-contract-tests.sh       # Generated contract test runner
-├── syntax-validation.sh        # Generated syntax validator
-├── unit/                       # Generated unit tests
-│   ├── test_helpers.py
-│   ├── test_helpers.test.ts
-│   └── ...
-└── e2e-pipeline.sh            # Generated E2E orchestrator
+├── mock-server.py              # Generated HTTP mock server (Phase 1 ✅)
+├── run-contract-tests.sh       # Generated contract test runner (Phase 2 ✅)
+├── syntax-validation.sh        # Generated syntax validator (Phase 2 ✅)
+├── snapshot-test.sh            # Generated snapshot test runner (Phase 2 ✅)
+├── test-pipeline.sh            # Generated E2E orchestrator - full (Phase 2 ✅)
+├── test-pipeline-fast.sh       # Generated E2E orchestrator - fast (Phase 2 ✅)
+└── unit/                       # Generated unit tests (Phase 3)
+    ├── test_helpers.py
+    ├── test_helpers.test.ts
+    └── ...
 ```
 
 ## Test Pyramid (Four Layers)
@@ -206,11 +202,14 @@ checkWallet = {
 #     return {"Result": 200, "Response": {"exists": True, ...}}
 ```
 
-### Phase 2: Test Runner Generators
-Create `generators/shared/test-runners/`:
-- `contract-runner.ncl` → `dist/tests/run-contract-tests.sh`
-- `syntax-validator.ncl` → `dist/tests/syntax-validation.sh`
-- `e2e-pipeline.ncl` → `dist/tests/e2e-pipeline.sh`
+### Phase 2: Test Runner Generators ✅ COMPLETE
+Created `generators/shared/test-runners/`:
+- ✅ `contract-runner.ncl` → `dist/tests/run-contract-tests.sh`
+- ✅ `syntax-validator.ncl` → `dist/tests/syntax-validation.sh`
+- ✅ `snapshot-validator.ncl` → `dist/tests/snapshot-test.sh`
+- ✅ `e2e-pipeline.ncl` → `dist/tests/test-pipeline.sh` + `test-pipeline-fast.sh`
+
+**Result**: 994 lines of test runner code generated from Nickel (replaced 694 lines of manual scripts)
 
 ### Phase 3: Unit Test Generators
 Enhance existing:
@@ -235,7 +234,13 @@ Generate from `tests/regression/*.test.ncl`.
 # Layer 1: Contract validation (fastest)
 ./dist/tests/run-contract-tests.sh
 
-# Layer 2: Unit tests
+# Layer 2a: Syntax validation
+./dist/tests/syntax-validation.sh
+
+# Layer 2b: Snapshot tests
+./dist/tests/snapshot-test.sh
+
+# Layer 2c: Unit tests
 just test-unit
 
 # Layer 3: Integration tests (requires mock server)
