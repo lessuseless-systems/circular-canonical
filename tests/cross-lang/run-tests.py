@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# TEMPORARY: Manual file until Sprint 3 Phase 5 generator is created
+# Will be replaced by: generators/shared/test-runners/cross-lang-validator.ncl → dist/tests/run-cross-lang-tests.py
 """
 Cross-Language Validation Test Runner
 Tests that all language SDKs produce identical behavior for same inputs

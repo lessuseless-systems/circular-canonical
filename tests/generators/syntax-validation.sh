@@ -1,4 +1,6 @@
 #!/bin/bash
+# TEMPORARY: Manual file until Sprint 3 Phase 2 generator is created
+# Will be replaced by: generators/shared/test-runners/syntax-validator.ncl → dist/tests/syntax-validation.sh
 # Generator Syntax Validation Script
 # Validates that generated code is syntactically correct
 

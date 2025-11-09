@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# TEMPORARY: Manual file until Sprint 3 Phase 7 generator is created
+# Will be replaced by: generators/shared/test-runners/e2e-pipeline.ncl → dist/tests/test-pipeline-fast.sh
 # Fast E2E Test - Validates pipeline without running integration tests
 
 set -e

@@ -1,0 +1,32 @@
+# Compiled artifacts
+*.js
+!*.config.js
+*.pyc
+__pycache__/
+*.py[cod]
+*.so
+
+# Dependencies
+node_modules/
+dist/
+build/
+
+# Test outputs
+.coverage
+coverage/
+.pytest_cache/
+.jest/
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.bak
+*~

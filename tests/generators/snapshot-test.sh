@@ -1,4 +1,6 @@
 #!/bin/bash
+# TEMPORARY: Manual file until Sprint 3 Phase 2 generator is created
+# Will be replaced by: generators/shared/test-runners/snapshot-validator.ncl → dist/tests/snapshot-test.sh
 # Snapshot Test Script
 # Compares current generator output against known-good snapshots
 

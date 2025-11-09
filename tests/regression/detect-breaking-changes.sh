@@ -1,4 +1,6 @@
 #!/bin/bash
+# TEMPORARY: Manual file until Sprint 3 Phase 6 generator is created
+# Will be replaced by: generators/shared/test-runners/regression-validator.ncl → dist/tests/detect-breaking-changes.sh
 # Regression Test - Breaking Change Detection
 # Compares current API with previous version to detect breaking changes
 
