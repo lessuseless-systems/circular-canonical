@@ -38,35 +38,52 @@ src/api/*.ncl → generators/shared/mock-server.ncl → dist/tests/mock-server.p
 3. **Consistency**: All test infrastructure generated from same source
 4. **Maintainability**: Update API once, all tests update automatically
 
-## Directory Structure (Sprint 3 Target)
+## Directory Structure (Post-Sprint 3 Restructure)
+
+**Philosophy**: Test pyramid layers are explicit (L1-L4), test specs (.ncl) separated from infrastructure (scripts/data).
 
 ```
 tests/
-├── CLAUDE.md                    # This file
-├── contracts/                   # Contract validation specs (Layer 1)
-│   ├── types.test.ncl          # Primitive type contracts
-│   └── endpoints/              # Endpoint request/response contracts
+├── CLAUDE.md                         # This file
+├── .gitignore                       # Prevents compiled artifacts pollution
+│
+├── L1-contracts/                    # Layer 1: Contract validation (< 5s)
+│   ├── types.test.ncl              # Primitive type contracts
+│   └── endpoints/                  # Endpoint request/response contracts (24 files)
 │       ├── checkWallet.test.ncl
 │       ├── getWallet.test.ncl
 │       └── ...
-├── unit/                        # Unit test specs (Layer 2)
-│   ├── helpers.test.ncl
-│   └── validators.test.ncl
-├── integration/                 # Integration test specs (Layer 3)
-│   ├── wallet-flow.test.ncl
-│   └── ...
-├── e2e/                        # E2E test specs (Layer 4)
-│   └── complete-workflow.test.ncl
-├── cross-lang/                 # Cross-language validator specs
-│   └── sdk-parity.test.ncl
-├── regression/                 # Regression test specs
-│   └── version-compare.test.ncl
-└── generators/                 # Test infrastructure generators
-    ├── mock-server.ncl         # Generates mock server from API defs
-    ├── contract-runner.ncl     # Generates contract test runner
-    ├── syntax-validator.ncl    # Generates syntax validation scripts
-    └── e2e-pipeline.ncl        # Generates E2E test orchestration
+│
+├── L2-unit/                         # Layer 2: Unit tests (< 30s)
+│   └── helpers.test.ncl            # Helper function tests (21 tests)
+│
+├── L3-integration/                  # Layer 3: Integration tests (< 2m)
+│   └── [.ncl test specs]           # Integration flow specifications
+│
+├── L4-crosslang/                    # Layer 4a: Cross-language parity tests (< 5m)
+│   └── [.ncl test specs]           # SDK parity validation
+│
+├── L4-regression/                   # Layer 4b: Regression tests (< 5m)
+│   └── [.ncl test specs]           # Breaking change detection
+│
+├── validators/                      # Runtime validator function tests
+│   └── runtime-validation.test.ncl # Tests validator functions (not contracts)
+│
+└── infrastructure/                  # Supporting infrastructure (manual until generated)
+    ├── mock-server/                # Mock API server (Phase 1 - generated ✅)
+    ├── generators/                 # Test runner generators (Phase 2 - deferred ⏭️)
+    │   ├── syntax-validation.sh   # TEMPORARY: Manual until generated
+    │   └── snapshot-test.sh       # TEMPORARY: Manual until generated
+    └── e2e/                        # E2E orchestration (Phase 7 - deferred ⏭️)
+        ├── test-pipeline.sh       # TEMPORARY: Manual until generated
+        └── test-pipeline-fast.sh  # TEMPORARY: Manual until generated
 ```
+
+**Key Improvements**:
+- **Layer visibility**: L1-L4 prefixes make test pyramid explicit
+- **Separation**: Test specs (.ncl) vs infrastructure (scripts/data)
+- **Self-documenting**: Directory names encode test layer and purpose
+- **Scalability**: Clear where new tests belong
 
 **Generated artifacts** (in `dist/tests/`, gitignored):
 ```
@@ -84,81 +101,88 @@ dist/tests/
 ## Test Pyramid (Four Layers)
 
 ### Layer 1: Contract Validation (Fastest)
-**Location**: `tests/contracts/*.test.ncl`
+**Location**: `tests/L1-contracts/*.test.ncl`
 **Purpose**: Validate Nickel contracts and type definitions
 **Run**: `./dist/tests/run-contract-tests.sh` (generated)
 **Speed**: < 5 seconds
 
 ```nickel
-# tests/contracts/wallet.test.ncl
-let api = import "../../src/api/wallet.ncl" in
+# tests/L1-contracts/types.test.ncl
+let types = import "../../src/schemas/types.ncl" in
 
 {
-  test_check_wallet_valid = {
-    input = { Address = "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb" },
-    expected = true,
-    # Contract validation happens at export time
+  test_name = "Core Types Validation",
+  valid_addresses = {
+    with_prefix_66_chars = {
+      value | types.Address = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      expected = "valid",
+    },
+  },
+}
+```
+
+```nickel
+# tests/L1-contracts/endpoints/checkWallet.test.ncl
+let types = import "../../../src/schemas/types.ncl" in
+
+{
+  test_name = "checkWallet Endpoint Validation",
+  valid_requests = {
+    mainnet_with_prefix = {
+      request | {
+        Blockchain | types.Blockchain,
+        Address | types.Address,
+        Version | String,
+      } = {
+        Blockchain = 'MainNet,
+        Address = "0xbbbb...",
+        Version = "2.0.0-alpha.1",
+      },
+      expected = "valid",
+    },
   },
 }
 ```
 
 ### Layer 2: Unit Tests (Fast)
-**Location**: `tests/unit/*.test.ncl`
+**Location**: `tests/L2-unit/*.test.ncl`
 **Purpose**: Test individual helper functions, validators
 **Run**: `npm test` (TypeScript), `pytest` (Python)
 **Speed**: < 30 seconds
 **Generated**: Unit test files created from `.test.ncl` specs
 
 ```nickel
-# tests/unit/helpers.test.ncl
+# tests/L2-unit/helpers.test.ncl
 {
-  function = "validateAddress",
-  tests = [
-    {
-      name = "accepts valid hex address",
-      input = "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
-      expected = true,
+  address_helpers = {
+    hex_fix = {
+      description = "Normalize hex strings (add/remove 0x prefix, lowercase)",
+      tests = [
+        {
+          name = "adds_0x_prefix_when_missing",
+          input = "1234567890abcdef...",
+          expected = "0x1234567890abcdef...",
+        },
+      ],
     },
-    {
-      name = "rejects invalid format",
-      input = "invalid",
-      expected = false,
-    },
-  ],
+  },
 }
 ```
 
 ### Layer 3: Integration Tests (Medium)
-**Location**: `tests/integration/*.test.ncl`
+**Location**: `tests/L3-integration/*.test.ncl`
 **Purpose**: Test API flows using generated mock server
-**Run**: `./dist/tests/e2e-pipeline.sh integration`
+**Run**: `./dist/tests/test-pipeline.sh integration`
 **Speed**: < 2 minutes
 **Requires**: Generated mock server running
-
-```nickel
-# tests/integration/wallet-flow.test.ncl
-{
-  scenario = "Check wallet, register if not exists",
-  steps = [
-    {
-      endpoint = "checkWallet",
-      request = { Address = "0xNEW..." },
-      expected_response = { Result = 200, Response = { exists = false } },
-    },
-    {
-      endpoint = "registerWallet",
-      request = { Address = "0xNEW...", Blockchain = "ethereum" },
-      expected_response = { Result = 200, Response = { success = true } },
-    },
-  ],
-}
-```
+**Status**: Specs to be created in Phase 4
 
 ### Layer 4: Cross-Language & Regression (Slow)
-**Location**: `tests/cross-lang/*.test.ncl`, `tests/regression/*.test.ncl`
+**Location**: `tests/L4-crosslang/*.test.ncl`, `tests/L4-regression/*.test.ncl`
 **Purpose**: Verify SDK parity across languages, detect breaking changes
-**Run**: `./dist/tests/e2e-pipeline.sh full`
+**Run**: `./tests/infrastructure/e2e/test-pipeline.sh full`
 **Speed**: < 5 minutes
+**Status**: Deferred to Phase 5 (cross-lang) and Phase 6 (regression)
 
 ## Sprint 3: Test Infrastructure Transformation
 
@@ -238,34 +262,48 @@ just test-all
 
 ## Creating New Tests
 
-### 1. Contract Tests
+### 1. Contract Tests (Layer 1)
 ```nickel
-# tests/contracts/my-feature.test.ncl
-let api = import "../../src/api/my-feature.ncl" in
+# tests/L1-contracts/endpoints/my-feature.test.ncl
+let types = import "../../../src/schemas/types.ncl" in
+let config = import "../../../src/config.ncl" in
 
 {
-  test_case_name = {
-    input = { ... },
-    expected = { ... },
+  test_name = "MyFeature Endpoint Validation",
+  valid_requests = {
+    test_case_name = {
+      request | {
+        Field1 | types.SomeType,
+        Field2 | String,
+      } = {
+        Field1 = ...,
+        Field2 = ...,
+      },
+      expected = "valid",
+    },
   },
 }
 ```
 
-### 2. Unit Tests
+### 2. Unit Tests (Layer 2)
 ```nickel
-# tests/unit/my-function.test.ncl
+# tests/L2-unit/my-helpers.test.ncl
 {
-  function = "myFunction",
-  tests = [
-    { name = "test case 1", input = ..., expected = ... },
-    { name = "test case 2", input = ..., expected = ... },
-  ],
+  helper_category = {
+    my_function = {
+      description = "What the function does",
+      tests = [
+        { name = "test case 1", input = ..., expected = ... },
+        { name = "test case 2", input = ..., expected = ... },
+      ],
+    },
+  },
 }
 ```
 
-### 3. Integration Tests
+### 3. Integration Tests (Layer 3)
 ```nickel
-# tests/integration/my-flow.test.ncl
+# tests/L3-integration/my-flow.test.ncl
 {
   scenario = "Description of flow",
   steps = [

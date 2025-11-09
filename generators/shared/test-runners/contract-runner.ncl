@@ -1,43 +1,43 @@
 # Circular Protocol Canonical - Contract Test Runner Generator
 # Generates shell script that runs Nickel contract validation tests
-# Input: Scans tests/contracts/ (including endpoints/) for *.test.ncl files
+# Input: Scans tests/L1-contracts/ (including endpoints/) for *.test.ncl files
 # Output: dist/tests/run-contract-tests.sh (generated test runner)
 
 let config = import "../../../src/config.ncl" in
 
 # List of test directories to scan
 let test_dirs = [
-  "tests/contracts",
-  "tests/contracts/endpoints",
+  "tests/L1-contracts",
+  "tests/L1-contracts/endpoints",
 ] in
 
 # List of known test files (hardcoded for now, could be generated from directory scan)
 let test_files = [
-  "tests/contracts/types.test.ncl",
-  "tests/contracts/endpoints/checkWallet.test.ncl",
-  "tests/contracts/endpoints/getWallet.test.ncl",
-  "tests/contracts/endpoints/getWalletBalance.test.ncl",
-  "tests/contracts/endpoints/getWalletNonce.test.ncl",
-  "tests/contracts/endpoints/registerWallet.test.ncl",
-  "tests/contracts/endpoints/getLatestTransactions.test.ncl",
-  "tests/contracts/endpoints/getPendingTransaction.test.ncl",
-  "tests/contracts/endpoints/getTransactionbyID.test.ncl",
-  "tests/contracts/endpoints/getTransactionbyNode.test.ncl",
-  "tests/contracts/endpoints/getTransactionbyAddress.test.ncl",
-  "tests/contracts/endpoints/getTransactionbyDate.test.ncl",
-  "tests/contracts/endpoints/sendTransaction.test.ncl",
-  "tests/contracts/endpoints/getBlock.test.ncl",
-  "tests/contracts/endpoints/getBlockRange.test.ncl",
-  "tests/contracts/endpoints/getBlockCount.test.ncl",
-  "tests/contracts/endpoints/getAnalytics.test.ncl",
-  "tests/contracts/endpoints/getAsset.test.ncl",
-  "tests/contracts/endpoints/getAssetList.test.ncl",
-  "tests/contracts/endpoints/getAssetSupply.test.ncl",
-  "tests/contracts/endpoints/getVoucher.test.ncl",
-  "tests/contracts/endpoints/getDomain.test.ncl",
-  "tests/contracts/endpoints/getBlockchains.test.ncl",
-  "tests/contracts/endpoints/testContract.test.ncl",
-  "tests/contracts/endpoints/callContract.test.ncl",
+  "tests/L1-contracts/types.test.ncl",
+  "tests/L1-contracts/endpoints/checkWallet.test.ncl",
+  "tests/L1-contracts/endpoints/getWallet.test.ncl",
+  "tests/L1-contracts/endpoints/getWalletBalance.test.ncl",
+  "tests/L1-contracts/endpoints/getWalletNonce.test.ncl",
+  "tests/L1-contracts/endpoints/registerWallet.test.ncl",
+  "tests/L1-contracts/endpoints/getLatestTransactions.test.ncl",
+  "tests/L1-contracts/endpoints/getPendingTransaction.test.ncl",
+  "tests/L1-contracts/endpoints/getTransactionbyID.test.ncl",
+  "tests/L1-contracts/endpoints/getTransactionbyNode.test.ncl",
+  "tests/L1-contracts/endpoints/getTransactionbyAddress.test.ncl",
+  "tests/L1-contracts/endpoints/getTransactionbyDate.test.ncl",
+  "tests/L1-contracts/endpoints/sendTransaction.test.ncl",
+  "tests/L1-contracts/endpoints/getBlock.test.ncl",
+  "tests/L1-contracts/endpoints/getBlockRange.test.ncl",
+  "tests/L1-contracts/endpoints/getBlockCount.test.ncl",
+  "tests/L1-contracts/endpoints/getAnalytics.test.ncl",
+  "tests/L1-contracts/endpoints/getAsset.test.ncl",
+  "tests/L1-contracts/endpoints/getAssetList.test.ncl",
+  "tests/L1-contracts/endpoints/getAssetSupply.test.ncl",
+  "tests/L1-contracts/endpoints/getVoucher.test.ncl",
+  "tests/L1-contracts/endpoints/getDomain.test.ncl",
+  "tests/L1-contracts/endpoints/getBlockchains.test.ncl",
+  "tests/L1-contracts/endpoints/testContract.test.ncl",
+  "tests/L1-contracts/endpoints/callContract.test.ncl",
 ] in
 
 # Generate test command for a single file
