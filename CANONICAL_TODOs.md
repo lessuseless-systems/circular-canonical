@@ -2961,11 +2961,19 @@ See [FORK_WORKFLOW.md](FORK_WORKFLOW.md) for complete documentation.
   - ⏸️ `tests/unit/sdk-methods.test.ncl` - Test specs for SDK methods
   - ⏸️ `tests/unit/helpers.test.ncl` - Test specs for helper functions
 
-- [ ] **Generate helper function unit tests** ⏭️ **DEFERRED**
-  - ⏸️ Current unit tests focus on SDK API methods
-  - ⏸️ Helper function tests not yet implemented
-  - ⏸️ Future sprint: Generate tests for 15 crypto/utility helpers
-  - ⏸️ Test: hex_fix, get_public_key, sign_message, verify_signature, etc.
+- [x] **Generate helper function unit tests** ✅ COMPLETED
+  - ✅ Created `tests/unit/helpers.test.ncl` - Test specifications for 21 helper functions
+  - ✅ Updated TypeScript unit test generator (45 tests total: 24 SDK + 21 helpers)
+  - ✅ Updated Python unit test generator (51 tests total: 30 SDK + 21 helpers)
+  - ✅ Generated tests cover:
+    - Address validation and formatting (hex_fix, is_valid_address)
+    - Cryptographic hashing (sha256_hash)
+    - Timestamp utilities (get_timestamp, is_valid_timestamp)
+    - Hex encoding/decoding (to_hex, from_hex)
+    - Number formatting (to_wei, from_wei)
+    - Amount validation (is_valid_amount)
+  - ✅ Tests serve as specification for helpers that need to be implemented in SDKs
+  - ✅ Generated output: 634 lines TypeScript, 621 lines Python
 
 #### Phase 4: Integration Test Migration ✅ **VERIFIED COMPLETE**
 
@@ -3028,7 +3036,7 @@ See [FORK_WORKFLOW.md](FORK_WORKFLOW.md) for complete documentation.
 **Completed** ✅:
 - [x] All test infrastructure generated to dist/tests/
 - [x] Mock server auto-updates when src/api/ changes (just generate-mock-server)
-- [x] Unit tests generated for all SDK methods (42 TS tests, 34 Py tests)
+- [x] Unit tests generated for all SDK methods (45 TS tests, 51 Py tests including 21 helper tests)
 - [x] Integration tests clearly separated from unit tests (separate files with headers)
 - [x] No manual duplication of API definitions (single source of truth)
 - [x] 655+ lines of manual code eliminated (mock server, integration tests, test runners)
@@ -3040,9 +3048,9 @@ See [FORK_WORKFLOW.md](FORK_WORKFLOW.md) for complete documentation.
 - [~] Test pyramid complete: unit → integration → e2e → regression - Layers 1-3 complete, Layer 4 partial
 
 **Deferred** ⏭️:
-- [⏭️] Unit tests generated for all 15 helper functions (current tests focus on SDK methods)
 - [⏭️] Cross-language validator generator (manual script exists)
 - [⏭️] Regression test generator (manual script exists)
+- [⏭️] Helper function implementations in SDKs (tests created serve as specification)
 
 #### Benefits
 
