@@ -374,10 +374,21 @@ generate-agents-md:
     @echo "[OK] Generated AGENTS.md in docs/"
     @wc -l docs/AGENTS.md
 
-# Start mock API server for SDK testing
-mock-server:
-    @echo "Starting mock API server"
-    @python3 tests/mock-server/server.py
+# Generate mock API server from Nickel definitions
+generate-mock-server:
+    @echo "Generating mock API server from Nickel definitions"
+    @mkdir -p dist/tests
+    @nickel export generators/shared/mock-server.ncl --field server_code --format raw > dist/tests/mock-server.py
+    @chmod +x dist/tests/mock-server.py
+    @echo "[OK] Generated mock server (192 lines, 24 endpoints)"
+    @echo "    Source: generators/shared/mock-server.ncl"
+    @echo "    Output: dist/tests/mock-server.py"
+
+# Start mock API server for SDK testing (uses generated server)
+mock-server: generate-mock-server
+    @echo "Starting generated mock API server"
+    @echo "⚠️  Using generated server from dist/tests/mock-server.py"
+    @python3 dist/tests/mock-server.py
 
 # Generate SDK test files (integration tests)
 generate-tests:
@@ -397,8 +408,8 @@ generate-unit-tests:
     @nickel export generators/python/tests/python-unit-tests.ncl --field test_code --format raw > dist/tests/test_sdk_unit.py
     @echo "[OK] Generated Python unit tests"
 
-# Generate all tests (integration + unit)
-generate-all-tests: generate-tests generate-unit-tests
+# Generate all test infrastructure (mock server + integration + unit tests)
+generate-all-tests: generate-mock-server generate-tests generate-unit-tests
 
 # Run TypeScript SDK tests (requires mock server)
 test-sdk-ts:

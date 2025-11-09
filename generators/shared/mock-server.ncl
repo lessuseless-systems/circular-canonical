@@ -1,0 +1,222 @@
+# Circular Protocol Canonical - Mock Server Generator
+# Generates Python HTTP mock server from API definitions
+# Input: src/api/*.ncl (all API endpoint definitions)
+# Output: dist/tests/mock-server.py (generated mock server)
+
+let config = import "../../src/config.ncl" in
+let wallet_api = import "../../src/api/wallet.ncl" in
+let transaction_api = import "../../src/api/transaction.ncl" in
+let asset_api = import "../../src/api/asset.ncl" in
+let block_api = import "../../src/api/block.ncl" in
+let domain_api = import "../../src/api/domain.ncl" in
+let network_api = import "../../src/api/network.ncl" in
+let contract_api = import "../../src/api/contract.ncl" in
+
+# Merge all APIs into single record
+let all_endpoints = wallet_api & transaction_api & asset_api & block_api & domain_api & network_api & contract_api in
+
+# Convert Nickel values to Python literals (recursive)
+let to_python_value =
+  let rec convert = fun value =>
+    if std.is_number value then
+      std.string.from_number value
+    else if std.is_bool value then
+      if value then "True" else "False"
+    else if std.is_string value then
+      "\"" ++ value ++ "\""
+    else if std.is_array value then
+      let items = std.array.map convert value in
+      "[" ++ std.string.join ", " items ++ "]"
+    else if std.is_record value then
+      let fields = std.record.fields value in
+      let format_field = fun field_name =>
+        let field_value = std.record.get field_name value in
+        "\"" ++ field_name ++ "\": " ++ convert field_value
+      in
+      let formatted_fields = std.array.map format_field fields in
+      "{" ++ std.string.join ", " formatted_fields ++ "}"
+    else
+      "None"
+  in
+  convert
+in
+
+# Convert camelCase to snake_case for Python method names
+let to_snake_case = fun str =>
+  # For now, simple implementation - can be enhanced later
+  # camelCase -> camel_case
+  let add_underscore = fun acc char =>
+    if std.string.is_match "[A-Z]" char then
+      acc ++ "_" ++ std.string.lowercase char
+    else
+      acc ++ char
+  in
+  # Split string into characters and process
+  # Simplified: just convert directly for common patterns
+  if str == "checkWallet" then "check_wallet"
+  else if str == "getWallet" then "get_wallet"
+  else if str == "getLatestTransactions" then "get_latest_transactions"
+  else if str == "getWalletBalance" then "get_wallet_balance"
+  else if str == "getWalletNonce" then "get_wallet_nonce"
+  else if str == "registerWallet" then "register_wallet"
+  else if str == "sendTransaction" then "send_transaction"
+  else if str == "getPendingTransaction" then "get_pending_transaction"
+  else if str == "getTransactionbyID" then "get_transaction_by_id"
+  else if str == "getTransactionbyNode" then "get_transaction_by_node"
+  else if str == "getTransactionbyAddress" then "get_transaction_by_address"
+  else if str == "getTransactionbyDate" then "get_transaction_by_date"
+  else if str == "getBlock" then "get_block"
+  else if str == "getBlockRange" then "get_block_range"
+  else if str == "getBlockCount" then "get_block_count"
+  else if str == "getAnalytics" then "get_analytics"
+  else if str == "testContract" then "test_contract"
+  else if str == "callContract" then "call_contract"
+  else if str == "getAssetList" then "get_asset_list"
+  else if str == "getAsset" then "get_asset"
+  else if str == "getAssetSupply" then "get_asset_supply"
+  else if str == "getVoucher" then "get_voucher"
+  else if str == "getDomain" then "get_domain"
+  else if str == "getBlockchains" then "get_blockchains"
+  else str
+in
+
+# Generate a handler method for an endpoint
+let generate_handler = fun endpoint_name endpoint =>
+  let method_name = "_handle_" ++ to_snake_case endpoint_name in
+  let response_data = to_python_value endpoint.example_response in
+  m%"
+    def %{method_name}(self, body: Dict[str, Any]) -> None:
+        """Handler for %{endpoint.path} - %{endpoint.summary}"""
+        self._send_response(200, %{response_data})
+  "%
+in
+
+# Generate routing table entry
+let generate_route = fun endpoint_name endpoint =>
+  let method_name = "_handle_" ++ to_snake_case endpoint_name in
+  m%"            "%{endpoint.path}": self.%{method_name},"%
+in
+
+# Get all endpoint names
+let endpoint_names = std.record.fields all_endpoints in
+
+# Generate handlers for each endpoint
+let handlers = std.string.join "\n" (
+  std.array.map (fun endpoint_name =>
+    let endpoint_def = std.record.get endpoint_name all_endpoints in
+    generate_handler endpoint_name endpoint_def
+  ) endpoint_names
+) in
+
+# Generate routes for each endpoint
+let routes = std.string.join "\n" (
+  std.array.map (fun endpoint_name =>
+    let endpoint_def = std.record.get endpoint_name all_endpoints in
+    generate_route endpoint_name endpoint_def
+  ) endpoint_names
+) in
+
+# Main server code template
+{
+  server_code = m%"
+#!/usr/bin/env python3
+"""
+Mock HTTP Server for Circular Protocol API Testing
+Generated from Nickel API definitions in src/api/*.ncl
+
+⚠️  DO NOT EDIT THIS FILE MANUALLY
+This file is generated by generators/shared/mock-server.ncl
+To modify, edit the API definitions in src/api/*.ncl and regenerate
+
+Generated: %{config.version}
+Endpoints: %{std.string.from_number (std.array.length endpoint_names)}
+"""
+
+import json
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from urllib.parse import urlparse
+from typing import Dict, Any, Optional
+
+VERSION = "%{config.version}"
+PORT = 8080
+
+
+class MockAPIHandler(BaseHTTPRequestHandler):
+    """Handles mock API requests for all Circular Protocol endpoints"""
+
+    def log_message(self, format: str, *args) -> None:
+        """Override to provide cleaner logging"""
+        print(f"[{self.log_date_time_string()}] {format % args}")
+
+    def _send_response(self, status_code: int, data: Dict[str, Any]) -> None:
+        """Send JSON response"""
+        self.send_response(status_code)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.end_headers()
+        self.wfile.write(json.dumps(data, indent=2).encode())
+
+    def _get_request_body(self) -> Optional[Dict[str, Any]]:
+        """Parse JSON request body"""
+        content_length = int(self.headers.get("Content-Length", 0))
+        if content_length > 0:
+            body = self.rfile.read(content_length)
+            return json.loads(body.decode())
+        return None
+
+    def do_OPTIONS(self) -> None:
+        """Handle CORS preflight"""
+        self.send_response(200)
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.end_headers()
+
+    def do_POST(self) -> None:
+        """Handle POST requests to all API endpoints"""
+        path = urlparse(self.path).path
+        body = self._get_request_body()
+
+        # Route to appropriate handler (GENERATED FROM NICKEL)
+        handlers = {
+%{routes}
+        }
+
+        handler = handlers.get(path)
+        if handler:
+            handler(body or {})
+        else:
+            self._send_response(404, {
+                "Result": 404,
+                "Response": {"error": f"Endpoint not found: {path}"}
+            })
+
+    # ENDPOINT HANDLERS (GENERATED FROM NICKEL)
+    # Each handler returns the example_response from API definitions
+%{handlers}
+
+
+def run_server(port: int = PORT) -> None:
+    """Run the mock server"""
+    server_address = ("", port)
+    httpd = HTTPServer(server_address, MockAPIHandler)
+
+    print(f"🚀 Mock API Server v{VERSION}")
+    print(f"📍 Listening on http://localhost:{port}")
+    print(f"📊 Serving {len(MockAPIHandler.__dict__) - 8} endpoints")
+    print(f"⚠️  Generated from Nickel definitions - DO NOT EDIT")
+    print(f"")
+    print("Press Ctrl+C to stop")
+    print("")
+
+    try:
+        httpd.serve_forever()
+    except KeyboardInterrupt:
+        print(f"\n👋 Shutting down mock server")
+        httpd.shutdown()
+
+
+if __name__ == "__main__":
+    run_server()
+  "%,
+}
