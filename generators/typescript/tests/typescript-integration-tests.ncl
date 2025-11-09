@@ -142,8 +142,24 @@ describe('%{test_spec.test_suite_name}', () => {
 %{generate_test_category "wallet_tests" test_spec.wallet_tests generate_api_test}
   })
 
+  describe('Transaction API', () => {
+%{generate_test_category "transaction_tests" test_spec.transaction_tests generate_api_test}
+  })
+
+  describe('Asset API', () => {
+%{generate_test_category "asset_tests" test_spec.asset_tests generate_api_test}
+  })
+
   describe('Block API', () => {
 %{generate_test_category "block_tests" test_spec.block_tests generate_api_test}
+  })
+
+  describe('Smart Contract API', () => {
+%{generate_test_category "contract_tests" test_spec.contract_tests generate_api_test}
+  })
+
+  describe('Domain API', () => {
+%{generate_test_category "domain_tests" test_spec.domain_tests generate_api_test}
   })
 
   describe('Error Handling', () => {
