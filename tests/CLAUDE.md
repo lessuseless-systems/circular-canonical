@@ -86,8 +86,8 @@ dist/tests/
 ├── run-contract-tests.sh       # Generated contract test runner (Phase 2 ✅)
 ├── syntax-validation.sh        # Generated syntax validator (Phase 2 ✅)
 ├── snapshot-test.sh            # Generated snapshot test runner (Phase 2 ✅)
-├── test-pipeline.sh            # Generated E2E orchestrator - full (Phase 2 ✅)
-├── test-pipeline-fast.sh       # Generated E2E orchestrator - fast (Phase 2 ✅)
+├── test-pipeline.sh            # Generated pipeline test - full (Phase 2 ✅)
+├── test-pipeline-fast.sh       # Generated pipeline test - fast (Phase 2 ✅)
 └── unit/                       # Generated unit tests (Phase 3)
     ├── test_helpers.py
     ├── test_helpers.test.ts
@@ -207,16 +207,22 @@ Created `generators/shared/test-runners/`:
 - ✅ `contract-runner.ncl` → `dist/tests/run-contract-tests.sh`
 - ✅ `syntax-validator.ncl` → `dist/tests/syntax-validation.sh`
 - ✅ `snapshot-validator.ncl` → `dist/tests/snapshot-test.sh`
-- ✅ `e2e-pipeline.ncl` → `dist/tests/test-pipeline.sh` + `test-pipeline-fast.sh`
+- ✅ `pipeline.ncl` → `dist/tests/test-pipeline.sh` + `test-pipeline-fast.sh`
 
 **Result**: 994 lines of test runner code generated from Nickel (replaced 694 lines of manual scripts)
 
-### Phase 3: Unit Test Generators
-Enhance existing:
-- `generators/typescript/tests/typescript-unit-tests.ncl`
-- `generators/python/tests/python-unit-tests.ncl`
+### Phase 3: Unit Test Generators ✅ COMPLETE
+Enhanced existing generators:
+- ✅ `generators/typescript/tests/typescript-unit-tests.ncl` (634 lines, 45 tests)
+- ✅ `generators/python/tests/python-unit-tests.ncl` (621 lines, 51 tests)
 
-Generate tests for 15 helper functions across both languages.
+Generated unit tests for 21 helper functions across both languages:
+- ✅ `dist/typescript/tests/index.test.ts` (610 lines, 38 tests)
+- ✅ `dist/python/tests/test_unit.py` (597 lines, 45 tests)
+
+**Result**: 1,207 lines of test code generated from 21 helper test specifications
+
+**Note**: Tests generated but require SDK implementation to run. Generate full packages with `just generate-packages`.
 
 ### Phase 4: Integration Test Migration
 Convert manual `tests/integration/*.py` to `.ncl` specs.
