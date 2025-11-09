@@ -104,9 +104,11 @@
   python = {
 
     # Private fields for configuration (in __init__)
+    # NOTE: Indentation is added at insertion point in SDK generator
     fields = m%"
-        self._nag_url = 'https://nag.circularlabs.io/NAG.php?cep='
-        self._nag_key = ''
+self._nag_url = 'https://nag.circularlabs.io/NAG.php?cep='
+self._nag_key = ''
+self._last_error = ''
 "%,
 
     # Set custom NAG URL

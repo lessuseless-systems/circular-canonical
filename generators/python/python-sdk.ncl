@@ -309,10 +309,9 @@ class CircularProtocolAPI:
             self.session.headers['Authorization'] = f'Bearer {self.api_key}'
 
         self.session.headers['Content-Type'] = 'application/json'
-%{helpers_config.python.fields}
-%{helpers_advanced.python.errorField}
+        %{std.string.replace_regex "\n" "\n        " helpers_config.python.fields}%{std.string.replace_regex "\n" "\n        " helpers_advanced.python.errorField}
 
-%{helpers_config.python.makeRequestUpdate}
+    %{std.string.replace_regex "\n" "\n    " helpers_config.python.makeRequestUpdate}
 
     def _build_url(self, endpoint: str) -> str:
         \"\"\"
@@ -336,49 +335,49 @@ class CircularProtocolAPI:
     # Helper Methods - Cryptography
     # ============================================================================
 
-%{helpers_crypto.python.signMessage}
+    %{std.string.replace_regex "\n" "\n    " helpers_crypto.python.signMessage}
 
-%{helpers_crypto.python.verifySignature}
+    %{std.string.replace_regex "\n" "\n    " helpers_crypto.python.verifySignature}
 
-%{helpers_crypto.python.getPublicKey}
+    %{std.string.replace_regex "\n" "\n    " helpers_crypto.python.getPublicKey}
 
-%{helpers_crypto.python.hashString}
+    %{std.string.replace_regex "\n" "\n    " helpers_crypto.python.hashString}
 
     # ============================================================================
     # Helper Methods - Encoding
     # ============================================================================
 
-%{helpers_encoding.python.hexFix}
+    %{std.string.replace_regex "\n" "\n    " helpers_encoding.python.hexFix}
 
-%{helpers_encoding.python.stringToHex}
+    %{std.string.replace_regex "\n" "\n    " helpers_encoding.python.stringToHex}
 
-%{helpers_encoding.python.hexToString}
+    %{std.string.replace_regex "\n" "\n    " helpers_encoding.python.hexToString}
 
-%{helpers_encoding.python.padNumber}
+    %{std.string.replace_regex "\n" "\n    " helpers_encoding.python.padNumber}
 
-%{helpers_encoding.python.getFormattedTimestamp}
+    %{std.string.replace_regex "\n" "\n    " helpers_encoding.python.getFormattedTimestamp}
 
     # ============================================================================
     # Helper Methods - Configuration
     # ============================================================================
 
-%{helpers_config.python.setNAGURL}
+    %{std.string.replace_regex "\n" "\n    " helpers_config.python.setNAGURL}
 
-%{helpers_config.python.getNAGURL}
+    %{std.string.replace_regex "\n" "\n    " helpers_config.python.getNAGURL}
 
-%{helpers_config.python.setNAGKey}
+    %{std.string.replace_regex "\n" "\n    " helpers_config.python.setNAGKey}
 
-%{helpers_config.python.getNAGKey}
+    %{std.string.replace_regex "\n" "\n    " helpers_config.python.getNAGKey}
 
     # ============================================================================
     # Helper Methods - Advanced
     # ============================================================================
 
-%{helpers_advanced.python.GetError}
+    %{std.string.replace_regex "\n" "\n    " helpers_advanced.python.GetError}
 
-%{helpers_advanced.python.handleError}
+    %{std.string.replace_regex "\n" "\n    " helpers_advanced.python.handleError}
 
-%{helpers_advanced.python.getTransactionOutcome}
+    %{std.string.replace_regex "\n" "\n    " helpers_advanced.python.getTransactionOutcome}
 
 
 # ============================================================================

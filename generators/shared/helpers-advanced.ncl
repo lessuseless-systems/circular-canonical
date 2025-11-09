@@ -113,10 +113,8 @@
   # Python implementation of advanced helpers
   python = {
 
-    # Error tracking field
-    errorField = m%"
-        self._last_error = ''
-"%,
+    # Error tracking field (now in helpers-config.ncl)
+    errorField = "",
 
     # Get last error
     GetError = m%"
