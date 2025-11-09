@@ -122,6 +122,62 @@ Files in this archive should ONLY be restored if:
 
 **Total Removed**: ~1,554 lines of manual code + 56KB compiled artifacts
 
+### TDD Structure Tests (Deleted - Dead Code)
+
+#### tests/sdk/typescript-structure.test.ncl (316 lines) - DELETED
+**Removed**: 2025-11-09
+**Why**: Dead code - TDD artifact never actually used
+**Original Purpose**: Define expected TypeScript SDK structure before generator implementation
+
+**What it contained**:
+- Expected structure for CircularProtocolAPI class
+- 24 method signatures (camelCase)
+- 48 TypeScript interfaces (24 request + 24 response types)
+- Validation rules (async methods, Promise returns, etc.)
+- TDD specification written before generators existed
+
+**Why it was dead code**:
+- Written as TDD spec before generators existed
+- Once generators were implemented, they read directly from `src/api/*.ncl`
+- These structure tests were never imported or validated against anything
+- No test runner ever used them
+- Completely redundant with `src/api/` definitions
+
+**Evidence**:
+```bash
+# No generator imports them
+grep -r "sdk/.*-structure" generators/  # → empty
+
+# No test runner uses them
+grep -r "typescript-structure" tests/   # → empty (except the file itself)
+```
+
+#### tests/sdk/python-structure.test.ncl (309 lines) - DELETED
+**Removed**: 2025-11-09
+**Why**: Dead code - TDD artifact never actually used
+**Original Purpose**: Define expected Python SDK structure before generator implementation
+
+**What it contained**:
+- Expected structure for CircularProtocolAPI class
+- 24 method signatures (snake_case)
+- Type hints, docstring requirements
+- Validation rules (requests library usage, PEP 8 compliance)
+- TDD specification written before generators existed
+
+**Same issues as TypeScript variant** - never referenced, never validated, redundant with source.
+
+**Lesson Learned**:
+TDD structure specs only provide value if:
+1. Generators read from them (they don't - they read from `src/api/`)
+2. A validator tests generated SDK against them (doesn't exist)
+3. They're kept in sync with API definitions (would be duplicate maintenance)
+
+**Better approach**: Integration tests that validate generated SDK *behavior*, not structure
+specs that duplicate `src/api/` definitions. Our actual tests:
+- `dist/tests/sdk.test.ts` - Generated integration tests from Nickel specs
+- `dist/tests/test_sdk.py` - Generated integration tests from Nickel specs
+- Both validate SDK behavior against mock server, not structure specs
+
 ## Sprint 3 Progress Summary
 
 **Total Manual Code Eliminated**: 1,554 lines
@@ -129,6 +185,8 @@ Files in this archive should ONLY be restored if:
 **Lines of Code Saved**: 354 lines (plus zero-drift guarantee)
 **Maintenance Burden**: -100% for removed files
 **Drift Risk**: Eliminated
+
+**Dead Code Removed**: 625 lines (TDD structure tests that were never used)
 
 **Created**: `tests/.gitignore` to prevent future pollution
 

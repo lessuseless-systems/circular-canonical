@@ -24,16 +24,16 @@ Successfully implemented a complete Test-Driven Development (TDD) workflow for g
 
 ### Part 2: TDD Infrastructure (Tests Before Generators) ✅
 
-**Files Created:**
-- `tests/sdk/typescript-structure.test.ncl` (316 lines)
-  - Defines expected TypeScript SDK structure with 24 methods
-  - Specifies all 48 interfaces (24 request + 24 response)
-  - Validates class structure, method signatures, type safety
+**Files Created (Later Archived - See Note Below)**:
+- ~~`tests/sdk/typescript-structure.test.ncl` (316 lines)~~ → Archived as dead code
+  - ~~Defines expected TypeScript SDK structure with 24 methods~~
+  - Never actually used - generators read from `src/api/*.ncl` directly
 
-- `tests/sdk/python-structure.test.ncl` (309 lines)
-  - Defines expected Python SDK structure with snake_case methods
-  - Specifies type hints, docstrings, requests library usage
-  - Validates class structure, method signatures, PEP 8 compliance
+- ~~`tests/sdk/python-structure.test.ncl` (309 lines)~~ → Archived as dead code
+  - ~~Defines expected Python SDK structure with snake_case methods~~
+  - Never actually used - generators read from `src/api/*.ncl` directly
+
+**Note**: These TDD structure tests were archived because they were never imported or validated against anything. Once generators were implemented reading directly from `src/api/`, these became redundant dead code. See `archive/tests/README.md` for full explanation.
 
 - `tests/mock-server/server.py` (410 lines, executable)
   - Mock HTTP server implementing all 24 API endpoints
