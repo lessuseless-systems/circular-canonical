@@ -76,7 +76,7 @@ let generate_e2e_test = fun test_name test_def =>
         import json
         request_str = '''%{request_template}'''
         request_str = request_str.replace('${CIRCULAR_TEST_ADDRESS}', os.getenv('CIRCULAR_TEST_ADDRESS', ''))
-        request_str = request_str.replace('${CIRCULAR_TEST_BLOCKCHAIN}', os.getenv('CIRCULAR_TEST_BLOCKCHAIN', 'MainNet'))
+        request_str = request_str.replace('${CIRCULAR_TEST_BLOCKCHAIN}', os.getenv('CIRCULAR_TEST_BLOCKCHAIN', '%{e2e_spec.required_env_vars.blockchain.default}'))
         request = json.loads(request_str)
 
         # Convert request keys to snake_case kwargs (Address -> address, BlockNumber -> block_number)
@@ -124,7 +124,7 @@ let block_tests = std.string.join "\n" (
 #
 # Optional ENV vars:
 # - CIRCULAR_NAG_URL: NAG endpoint URL (default: %{e2e_spec.required_env_vars.nag_url.default})
-# - CIRCULAR_TEST_BLOCKCHAIN: Blockchain network (default: MainNet)
+# - CIRCULAR_TEST_BLOCKCHAIN: Blockchain network (default: %{e2e_spec.required_env_vars.blockchain.default})
 # - CIRCULAR_API_KEY: Optional API key
 # - CIRCULAR_E2E_TIMEOUT: Request timeout in ms (default: 30000)
 #
@@ -162,7 +162,7 @@ def api():
 
     print(f'\\n🌐 Running E2E tests against: {nag_url}')
     print(f'📍 Test address: {os.getenv("CIRCULAR_TEST_ADDRESS")}')
-    print(f'⛓️  Blockchain: {os.getenv("CIRCULAR_TEST_BLOCKCHAIN", "MainNet")}')
+    print(f'⛓️  Blockchain: {os.getenv("CIRCULAR_TEST_BLOCKCHAIN", "%{e2e_spec.required_env_vars.blockchain.default}")}')
     print('')
 
     return CircularProtocolAPI(nag_url, api_key)
