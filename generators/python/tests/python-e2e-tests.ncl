@@ -94,28 +94,26 @@ let block_tests = std.string.join "\n" (
 
 {
   test_code = m%"
-\"\"\"
-Circular Protocol Python SDK E2E Tests
-Generated from Nickel E2E test specifications
-
-These tests run against REAL NAG endpoints.
-They only execute when required environment variables are present.
-
-Required ENV vars:
-- CIRCULAR_TEST_ADDRESS: Test wallet address (must exist on blockchain)
-
-Optional ENV vars:
-- CIRCULAR_NAG_URL: NAG endpoint URL (default: %{e2e_spec.required_env_vars.nag_url.default})
-- CIRCULAR_TEST_BLOCKCHAIN: Blockchain network (default: MainNet)
-- CIRCULAR_API_KEY: Optional API key
-- CIRCULAR_E2E_TIMEOUT: Request timeout in ms (default: 30000)
-
-Run with:
-  CIRCULAR_TEST_ADDRESS=0x... pytest tests/test_e2e.py -v
-
-Or skip if ENV vars not present:
-  pytest tests/test_e2e.py -v  # Will skip all tests
-\"\"\"
+# Circular Protocol Python SDK E2E Tests
+# Generated from Nickel E2E test specifications
+#
+# These tests run against REAL NAG endpoints.
+# They only execute when required environment variables are present.
+#
+# Required ENV vars:
+# - CIRCULAR_TEST_ADDRESS: Test wallet address (must exist on blockchain)
+#
+# Optional ENV vars:
+# - CIRCULAR_NAG_URL: NAG endpoint URL (default: %{e2e_spec.required_env_vars.nag_url.default})
+# - CIRCULAR_TEST_BLOCKCHAIN: Blockchain network (default: MainNet)
+# - CIRCULAR_API_KEY: Optional API key
+# - CIRCULAR_E2E_TIMEOUT: Request timeout in ms (default: 30000)
+#
+# Run with:
+#   CIRCULAR_TEST_ADDRESS=0x... pytest tests/test_e2e.py -v
+#
+# Or skip if ENV vars not present:
+#   pytest tests/test_e2e.py -v  # Will skip all tests
 
 import pytest
 import os
@@ -137,7 +135,7 @@ if missing_env_vars:
 
 @pytest.fixture(scope='module')
 def api():
-    \"\"\"Fixture providing API client configured for real NAG endpoints\"\"\"
+    # Fixture providing API client configured for real NAG endpoints
     nag_url = os.getenv('CIRCULAR_NAG_URL', '%{e2e_spec.required_env_vars.nag_url.default}')
     api_key = os.getenv('CIRCULAR_API_KEY')
 
@@ -151,19 +149,19 @@ def api():
 
 @pytest.mark.e2e
 class TestWalletAPIE2E:
-    \"\"\"E2E tests for Wallet API methods\"\"\"
+    # E2E tests for Wallet API methods
     %{wallet_tests}
 
 
 @pytest.mark.e2e
 class TestNetworkAPIE2E:
-    \"\"\"E2E tests for Network API methods\"\"\"
+    # E2E tests for Network API methods
     %{network_tests}
 
 
 @pytest.mark.e2e
 class TestBlockAPIE2E:
-    \"\"\"E2E tests for Block API methods\"\"\"
+    # E2E tests for Block API methods
     %{block_tests}
 "%,
 }
