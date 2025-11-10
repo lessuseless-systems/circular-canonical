@@ -66,21 +66,21 @@ in
 # Generate all wallet tests
 let wallet_tests = std.string.join "\n\n" (
   std.array.map
-    (fun kv => generate_e2e_test kv.key kv.value)
+    (fun kv => generate_e2e_test kv.field kv.value)
     (std.record.to_array e2e_spec.wallet_tests)
 ) in
 
 # Generate all network tests
 let network_tests = std.string.join "\n\n" (
   std.array.map
-    (fun kv => generate_e2e_test kv.key kv.value)
+    (fun kv => generate_e2e_test kv.field kv.value)
     (std.record.to_array e2e_spec.network_tests)
 ) in
 
 # Generate all block tests
 let block_tests = std.string.join "\n\n" (
   std.array.map
-    (fun kv => generate_e2e_test kv.key kv.value)
+    (fun kv => generate_e2e_test kv.field kv.value)
     (std.record.to_array e2e_spec.block_tests)
 ) in
 
