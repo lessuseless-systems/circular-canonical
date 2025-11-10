@@ -73,8 +73,10 @@ let config = import "../../../src/config.ncl" in
 
   # Development dependencies
   devDependencies = {
+    "@types/elliptic" = "^6.4.18",
     "@types/jest" = "^29.5.12",
     "@types/node" = "^20.12.7",
+    "@types/sha256" = "^0.2.2",
     "@typescript-eslint/eslint-plugin" = "^7.7.0",
     "@typescript-eslint/parser" = "^7.7.0",
     eslint = "^8.57.0",

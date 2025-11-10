@@ -52,6 +52,12 @@ let generate_interface = fun name schema =>
   "export interface %{name} {\n%{props_str}\n}"
 in
 
+# Helper: Generate wrapped response interface with Result and Response fields
+let generate_wrapped_response = fun name response_schema =>
+  let response_type = nickel_type_to_ts response_schema in
+  "export interface %{name} {\n  Result: number;\n  Response: %{response_type};\n}"
+in
+
 # Helper: Extract endpoint name from path
 let endpoint_name_from_path = fun path =>
   # Remove leading slash
@@ -109,11 +115,11 @@ let request_interfaces = std.array.map
   all_endpoints
 in
 
-# Generate all response interfaces
+# Generate all response interfaces (wrapped in { Result, Response } structure)
 let response_interfaces = std.array.map
   (fun endpoint =>
     let name = "%{endpoint_name_from_path endpoint.path}Response" in
-    generate_interface name endpoint.response_schema)
+    generate_wrapped_response name endpoint.response_schema)
   all_endpoints
 in
 
@@ -163,8 +169,6 @@ let methods = std.array.map generate_method all_endpoints in
  * ```
  */
 export class CircularProtocolAPI {
-  private readonly baseUrl: string;
-  private readonly apiKey: string;
   private readonly headers: Record<string, string>;
 %{helpers_config.typescript.fields}
 %{helpers_advanced.typescript.errorField}
@@ -172,13 +176,17 @@ export class CircularProtocolAPI {
   /**
    * Create a new Circular Protocol API client
    *
-   * @param baseUrl - Base URL of the API server (default: %{config.api.base_url})
-   * @param apiKey - Optional API key for authentication
+   * @param nagUrl - Optional NAG endpoint URL (default: https://nag.circularlabs.io/NAG.php?cep=)
+   * @param nagKey - Optional NAG API key for authentication
    */
-  constructor(baseUrl?: string, apiKey?: string) {
-    this.baseUrl = baseUrl || '%{config.api.base_url}';
-    this.apiKey = apiKey || '';
+  constructor(nagUrl?: string, nagKey?: string) {
     this.headers = {};
+    if (nagUrl) {
+      this.setNAGURL(nagUrl);
+    }
+    if (nagKey) {
+      this.setNAGKey(nagKey);
+    }
   }
 
 %{helpers_config.typescript.makeRequestUpdate}

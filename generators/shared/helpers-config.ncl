@@ -62,9 +62,9 @@
    * Make HTTP request to NAG endpoint
    * @param endpoint - Endpoint name (e.g., 'GetBlockchains')
    * @param data - Request payload
-   * @returns API response
+   * @returns Full API response with Result and Response fields
    */
-  private async _makeRequest(endpoint: string, data: any = {}): Promise<any> {
+  private async _makeRequest(endpoint: string, data: any = {}): Promise<{ Result: number; Response: any }> {
     const url = `${this.nagURL}Circular_${endpoint}_`;
 
     const headers: Record<string, string> = {
@@ -87,14 +87,14 @@
       throw new Error(`API error: ${response.statusText}`);
     }
 
-    const result = await response.json();
+    const result = await response.json() as { Result: number; Response: any };
 
     // Check for API-level errors
     if (result.Result !== 200) {
       throw new Error(result.Response || 'API request failed');
     }
 
-    return result.Response;
+    return result;
   }
 "%,
 
@@ -170,7 +170,7 @@ self._last_error = ''
             data: Request payload
 
         Returns:
-            API response
+            Full API response with Result and Response fields
 
         Raises:
             Exception: If API request fails
@@ -201,7 +201,7 @@ self._last_error = ''
         if result.get('Result') != 200:
             raise Exception(result.get('Response', 'API request failed'))
 
-        return result.get('Response', {})
+        return result
 "%,
 
   },
