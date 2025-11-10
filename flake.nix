@@ -107,6 +107,14 @@
             # Python ecosystem
             pythonEnv
 
+            # Java ecosystem
+            jdk21
+            maven
+
+            # PHP ecosystem
+            php83
+            php83Packages.composer
+
             # Build tools
             just
             jq
@@ -126,6 +134,10 @@
             echo "  node:       $(node --version)"
             echo "  typescript: $(tsc --version)"
             echo "  python:     $(python3 --version)"
+            echo "  java:       $(java --version | head -1)"
+            echo "  maven:      $(mvn --version | head -1)"
+            echo "  php:        $(php --version | head -1)"
+            echo "  composer:   $(composer --version)"
             echo "  just:       $(just --version)"
             echo ""
             echo "Git hooks enabled:"
@@ -138,6 +150,8 @@
             echo "  just test           - Run all tests"
             echo "  just generate-ts    - Generate TypeScript SDK"
             echo "  just generate-py    - Generate Python SDK"
+            echo "  just generate-java  - Generate Java SDK"
+            echo "  just generate-php   - Generate PHP SDK"
             echo ""
             echo "📚 Documentation: docs/"
             echo "✨ Happy hacking!"
