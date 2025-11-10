@@ -1,0 +1,169 @@
+# Python E2E Test Generator
+# Generates pytest E2E tests that run against real NAG endpoints
+# Tests only execute when required environment variables are present
+
+let config = import "../../../src/config.ncl" in
+let e2e_spec = import "../../../tests/L5-e2e/e2e-tests.test.ncl" in
+
+# Generate Python method name from endpoint name (snake_case)
+let to_snake_case = fun str =>
+  # Convert camelCase to snake_case
+  let first_char = std.string.substring 0 1 str in
+  let rest = std.string.substring 1 (std.string.length str) str in
+  (std.string.lowercase first_char) ++ rest
+in
+
+# Generate assertion code based on operator
+let generate_assertion = fun assertion =>
+  let field_parts = std.string.split "." assertion.field in
+  let field_access =
+    if std.array.length field_parts == 1 then
+      "result['" ++ std.array.at 0 field_parts ++ "']"
+    else if std.array.length field_parts == 2 then
+      "result['" ++ std.array.at 0 field_parts ++ "']['" ++ std.array.at 1 field_parts ++ "']"
+    else
+      "result['" ++ assertion.field ++ "']"
+  in
+
+  if assertion.operator == "equals" then
+    if std.is_number assertion.value then
+      m%"        assert %{field_access} == %{std.string.from_number assertion.value}"%
+    else if std.is_bool assertion.value then
+      m%"        assert %{field_access} == %{if assertion.value then "True" else "False"}"%
+    else
+      m%"        assert %{field_access} == '%{assertion.value}'"%
+  else if assertion.operator == "isDefined" then
+    m%"        assert %{field_access} is not None"%
+  else if assertion.operator == "isArray" then
+    m%"        assert isinstance(%{field_access}, list)"%
+  else if assertion.operator == "greaterThan" then
+    m%"        assert %{field_access} > %{std.string.from_number assertion.value}"%
+  else
+    m%"        # Unknown operator: %{assertion.operator}"%
+in
+
+# Substitute environment variables in request template
+let substitute_env_vars = fun template =>
+  let json_str = std.serialize 'Json template in
+  json_str
+in
+
+# Generate E2E test case
+let generate_e2e_test = fun test_name test_def =>
+  let method_name = to_snake_case test_def.endpoint in
+  let request_template = substitute_env_vars test_def.request_template in
+  let assertions = std.array.map generate_assertion test_def.assertions in
+
+  m%"
+    def test_%{test_name}(self, api):
+        """%{test_def.description}"""
+        import json
+        request_str = '''%{request_template}'''
+        request_str = request_str.replace('${CIRCULAR_TEST_ADDRESS}', os.getenv('CIRCULAR_TEST_ADDRESS', ''))
+        request_str = request_str.replace('${CIRCULAR_TEST_BLOCKCHAIN}', os.getenv('CIRCULAR_TEST_BLOCKCHAIN', 'MainNet'))
+        request = json.loads(request_str)
+
+        result = api.%{method_name}(request)
+
+%{std.string.join "\n" assertions}
+
+        print(f'  ✅ %{test_def.description}')
+  "%
+in
+
+# Generate all wallet tests
+let wallet_tests = std.string.join "\n" (
+  std.array.map
+    (fun kv => generate_e2e_test kv.key kv.value)
+    (std.record.to_array e2e_spec.wallet_tests)
+) in
+
+# Generate all network tests
+let network_tests = std.string.join "\n" (
+  std.array.map
+    (fun kv => generate_e2e_test kv.key kv.value)
+    (std.record.to_array e2e_spec.network_tests)
+) in
+
+# Generate all block tests
+let block_tests = std.string.join "\n" (
+  std.array.map
+    (fun kv => generate_e2e_test kv.key kv.value)
+    (std.record.to_array e2e_spec.block_tests)
+) in
+
+{
+  test_code = m%"
+\"\"\"
+Circular Protocol Python SDK E2E Tests
+Generated from Nickel E2E test specifications
+
+These tests run against REAL NAG endpoints.
+They only execute when required environment variables are present.
+
+Required ENV vars:
+- CIRCULAR_TEST_ADDRESS: Test wallet address (must exist on blockchain)
+
+Optional ENV vars:
+- CIRCULAR_NAG_URL: NAG endpoint URL (default: %{e2e_spec.required_env_vars.nag_url.default})
+- CIRCULAR_TEST_BLOCKCHAIN: Blockchain network (default: MainNet)
+- CIRCULAR_API_KEY: Optional API key
+- CIRCULAR_E2E_TIMEOUT: Request timeout in ms (default: 30000)
+
+Run with:
+  CIRCULAR_TEST_ADDRESS=0x... pytest tests/test_e2e.py -v
+
+Or skip if ENV vars not present:
+  pytest tests/test_e2e.py -v  # Will skip all tests
+\"\"\"
+
+import pytest
+import os
+import sys
+from circular_protocol_api import CircularProtocolAPI
+
+# Check for required environment variables
+REQUIRED_ENV_VARS = ['CIRCULAR_TEST_ADDRESS']
+missing_env_vars = [v for v in REQUIRED_ENV_VARS if not os.getenv(v)]
+
+if missing_env_vars:
+    print('⏭️  Skipping E2E tests - missing required environment variables:')
+    for v in missing_env_vars:
+        print(f'   - {v}')
+    print('\\nTo run E2E tests, set:')
+    print('  CIRCULAR_TEST_ADDRESS=0x... pytest tests/test_e2e.py -v')
+    pytest.skip('Missing required environment variables', allow_module_level=True)
+
+
+@pytest.fixture(scope='module')
+def api():
+    \"\"\"Fixture providing API client configured for real NAG endpoints\"\"\"
+    nag_url = os.getenv('CIRCULAR_NAG_URL', '%{e2e_spec.required_env_vars.nag_url.default}')
+    api_key = os.getenv('CIRCULAR_API_KEY')
+
+    print(f'\\n🌐 Running E2E tests against: {nag_url}')
+    print(f'📍 Test address: {os.getenv("CIRCULAR_TEST_ADDRESS")}')
+    print(f'⛓️  Blockchain: {os.getenv("CIRCULAR_TEST_BLOCKCHAIN", "MainNet")}')
+    print('')
+
+    return CircularProtocolAPI(nag_url, api_key)
+
+
+@pytest.mark.e2e
+class TestWalletAPIE2E:
+    \"\"\"E2E tests for Wallet API methods\"\"\"
+%{wallet_tests}
+
+
+@pytest.mark.e2e
+class TestNetworkAPIE2E:
+    \"\"\"E2E tests for Network API methods\"\"\"
+%{network_tests}
+
+
+@pytest.mark.e2e
+class TestBlockAPIE2E:
+    \"\"\"E2E tests for Block API methods\"\"\"
+%{block_tests}
+"%,
+}

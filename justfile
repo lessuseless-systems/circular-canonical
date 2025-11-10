@@ -155,6 +155,8 @@ generate-py-package:
     @echo "Unit tests"
     @mkdir -p dist/python/tests
     @nickel export generators/python/tests/python-unit-tests.ncl --field test_code --format raw > dist/python/tests/test_unit.py
+    @echo "E2E tests"
+    @nickel export generators/python/tests/python-e2e-tests.ncl --field test_code --format raw > dist/python/tests/test_e2e.py
     @echo "GitHub Actions workflow"
     @mkdir -p dist/python/.github/workflows
     @nickel export generators/python/ci-cd/python-github-actions-test.ncl --field workflow_yaml --format raw > dist/python/.github/workflows/test.yml
@@ -183,6 +185,8 @@ generate-ts-package:
     @echo "Unit tests"
     @mkdir -p dist/typescript/tests
     @nickel export generators/typescript/tests/typescript-unit-tests.ncl --field test_code --format raw > dist/typescript/tests/index.test.ts
+    @echo "E2E tests"
+    @nickel export generators/typescript/tests/typescript-e2e-tests.ncl --field test_code --format raw > dist/typescript/tests/e2e.test.ts
     @echo "GitHub Actions workflow"
     @mkdir -p dist/typescript/.github/workflows
     @nickel export generators/typescript/ci-cd/typescript-github-actions-test.ncl --field workflow_yaml --format raw > dist/typescript/.github/workflows/test.yml
@@ -205,6 +209,8 @@ generate-java-package:
     @echo "Unit tests"
     @mkdir -p dist/java/src/test/java/io/circular/protocol
     @nickel export generators/java/tests/java-unit-tests.ncl --field test_code --format raw > dist/java/src/test/java/io/circular/protocol/CircularProtocolAPITest.java
+    @echo "E2E tests"
+    @nickel export generators/java/tests/java-e2e-tests.ncl --field test_code --format raw > dist/java/src/test/java/io/circular/protocol/CircularProtocolE2ETest.java
     @echo "GitHub Actions workflow"
     @mkdir -p dist/java/.github/workflows
     @nickel export generators/java/ci-cd/java-github-actions-test.ncl --field workflow_yaml --format raw > dist/java/.github/workflows/test.yml
@@ -226,6 +232,8 @@ generate-php-package:
     @nickel export generators/php/php-sdk.ncl --field sdk_code --format raw > dist/php/src/CircularProtocolAPI.php
     @echo "Unit tests"
     @nickel export generators/php/tests/php-unit-tests.ncl --field test_code --format raw > dist/php/tests/CircularProtocolAPITest.php
+    @echo "E2E tests"
+    @nickel export generators/php/tests/php-e2e-tests.ncl --field test_code --format raw > dist/php/tests/CircularProtocolE2ETest.php
     @echo "GitHub Actions workflow"
     @mkdir -p dist/php/.github/workflows
     @nickel export generators/php/ci-cd/php-github-actions-test.ncl --field workflow_yaml --format raw > dist/php/.github/workflows/test.yml
