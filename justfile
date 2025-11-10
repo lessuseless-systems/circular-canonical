@@ -199,7 +199,7 @@ generate-java-package:
     @echo "Generating complete Java package"
     @mkdir -p dist/java/src/main/java/io/circular/protocol
     @echo "pom.xml"
-    @nickel export generators/java/package-manifest/java-pom-xml.ncl --format raw > dist/java/pom.xml
+    @nickel export generators/java/package-manifest/java-pom-xml.ncl --field pom_content --format raw > dist/java/pom.xml
     @echo "README.md"
     @nickel export generators/java/docs/java-readme.ncl --format raw > dist/java/README.md
     @echo ".gitignore"
