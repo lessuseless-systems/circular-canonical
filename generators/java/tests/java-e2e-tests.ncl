@@ -51,7 +51,7 @@ let generate_e2e_test = fun test_name test_def =>
     void test%{std.string.uppercase (std.string.substring 0 1 test_name)}%{std.string.substring 1 (std.string.length test_name) test_name}() throws Exception {
         String requestJson = """%{request_template}"""
             .replace("${CIRCULAR_TEST_ADDRESS}", System.getenv().getOrDefault("CIRCULAR_TEST_ADDRESS", ""))
-            .replace("${CIRCULAR_TEST_BLOCKCHAIN}", System.getenv().getOrDefault("CIRCULAR_TEST_BLOCKCHAIN", "MainNet"));
+            .replace("${CIRCULAR_TEST_BLOCKCHAIN}", System.getenv().getOrDefault("CIRCULAR_TEST_BLOCKCHAIN", "%{e2e_spec.required_env_vars.blockchain.default}"));
 
         ObjectMapper mapper = new ObjectMapper();
         Map<String, Object> request = mapper.readValue(requestJson, new TypeReference<Map<String, Object>>() {});
@@ -112,7 +112,7 @@ import java.util.List;
  *
  * Optional ENV vars:
  * - CIRCULAR_NAG_URL: NAG endpoint URL (default: %{e2e_spec.required_env_vars.nag_url.default})
- * - CIRCULAR_TEST_BLOCKCHAIN: Blockchain network (default: MainNet)
+ * - CIRCULAR_TEST_BLOCKCHAIN: Blockchain network (default: %{e2e_spec.required_env_vars.blockchain.default})
  * - CIRCULAR_API_KEY: Optional API key
  * - CIRCULAR_E2E_TIMEOUT: Request timeout in ms (default: 30000)
  *
@@ -150,7 +150,7 @@ class CircularProtocolE2ETest {
 
         System.out.println("\n🌐 Running E2E tests against: " + nagUrl);
         System.out.println("📍 Test address: " + System.getenv("CIRCULAR_TEST_ADDRESS"));
-        System.out.println("⛓️  Blockchain: " + System.getenv().getOrDefault("CIRCULAR_TEST_BLOCKCHAIN", "MainNet"));
+        System.out.println("⛓️  Blockchain: " + System.getenv().getOrDefault("CIRCULAR_TEST_BLOCKCHAIN", "%{e2e_spec.required_env_vars.blockchain.default}"));
         System.out.println("");
     }
 

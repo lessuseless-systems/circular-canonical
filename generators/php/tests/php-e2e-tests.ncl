@@ -107,7 +107,7 @@ use PHPUnit\Framework\TestCase;
  *
  * Optional ENV vars:
  * - CIRCULAR_NAG_URL: NAG endpoint URL (default: %{e2e_spec.required_env_vars.nag_url.default})
- * - CIRCULAR_TEST_BLOCKCHAIN: Blockchain network (default: MainNet)
+ * - CIRCULAR_TEST_BLOCKCHAIN: Blockchain network (default: %{e2e_spec.required_env_vars.blockchain.default})
  * - CIRCULAR_API_KEY: Optional API key
  * - CIRCULAR_E2E_TIMEOUT: Request timeout in ms (default: 30000)
  *

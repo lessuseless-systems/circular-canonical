@@ -42,6 +42,19 @@ let endpoint_name_from_path = fun path =>
   std.string.substring 1 (std.string.length path) path
 in
 
+# Helper: Convert path to NAG endpoint name (CheckWallet not checkWallet)
+let path_to_endpoint_name = fun path =>
+  let without_slash = if std.string.substring 0 1 path == "/" then
+    std.string.substring 1 (std.string.length path) path
+  else
+    path
+  in
+  # Capitalize first letter
+  let first_char = std.string.substring 0 1 without_slash in
+  let rest = std.string.substring 1 (std.string.length without_slash) without_slash in
+  (std.string.uppercase first_char) ++ rest
+in
+
 # Helper: Generate Java POJO class for request
 let generate_request_class = fun endpoint =>
   let class_name = "%{endpoint_name_from_path endpoint.path}Request" in
@@ -127,7 +140,7 @@ let generate_method = fun endpoint =>
      * @throws CircularProtocolException if the API request fails
      */
     public CompletableFuture<%{response_class}> %{method_name}(%{request_class} request) {
-        return makeRequest("%{endpoint.path}", request, %{response_class}.class);
+        return makeRequest("%{path_to_endpoint_name endpoint.path}", request, %{response_class}.class);
     }
 "%
 in

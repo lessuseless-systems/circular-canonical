@@ -37,6 +37,19 @@ let endpoint_name_from_path = fun path =>
   std.string.substring 1 (std.string.length path) path
 in
 
+# Helper: Convert path to NAG endpoint name (CheckWallet not checkWallet)
+let path_to_endpoint_name = fun path =>
+  let without_slash = if std.string.substring 0 1 path == "/" then
+    std.string.substring 1 (std.string.length path) path
+  else
+    path
+  in
+  # Capitalize first letter
+  let first_char = std.string.substring 0 1 without_slash in
+  let rest = std.string.substring 1 (std.string.length without_slash) without_slash in
+  (std.string.uppercase first_char) ++ rest
+in
+
 # Helper: Generate method
 let generate_method = fun endpoint =>
   let method_name = to_snake_case (endpoint_name_from_path endpoint.path) in
@@ -52,7 +65,7 @@ let generate_method = fun endpoint =>
      */
     public function %{method_name}(array $request): array
     {
-        return $this->makeRequest('%{endpoint.path}', $request);
+        return $this->makeRequest('%{path_to_endpoint_name endpoint.path}', $request);
     }
 "%
 in
