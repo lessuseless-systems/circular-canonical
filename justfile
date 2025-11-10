@@ -198,6 +198,8 @@ generate-java-package:
     @nickel export generators/java/package-manifest/java-pom-xml.ncl --format raw > dist/java/pom.xml
     @echo "README.md"
     @nickel export generators/java/docs/java-readme.ncl --format raw > dist/java/README.md
+    @echo ".gitignore"
+    @nickel export generators/java/metadata/java-gitignore.ncl --field gitignore_content --format raw > dist/java/.gitignore
     @echo "SDK code (src/main/java/io/circular/protocol/CircularProtocolAPI.java)"
     @nickel export generators/java/java-sdk.ncl --field sdk_code --format raw > dist/java/src/main/java/io/circular/protocol/CircularProtocolAPI.java
     @echo "Unit tests"
@@ -218,6 +220,8 @@ generate-php-package:
     @nickel export generators/php/package-manifest/php-composer-json.ncl --format json > dist/php/composer.json
     @echo "README.md"
     @nickel export generators/php/docs/php-readme.ncl --format raw > dist/php/README.md
+    @echo ".gitignore"
+    @nickel export generators/php/metadata/php-gitignore.ncl --field gitignore_content --format raw > dist/php/.gitignore
     @echo "SDK code (src/CircularProtocolAPI.php)"
     @nickel export generators/php/php-sdk.ncl --field sdk_code --format raw > dist/php/src/CircularProtocolAPI.php
     @echo "Unit tests"
