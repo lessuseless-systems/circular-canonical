@@ -51,7 +51,7 @@ let generate_e2e_test = fun test_name test_def =>
     const request = JSON.parse(`%{request_template}`.replace(
       /\$\{CIRCULAR_TEST_ADDRESS\}/g, process.env.CIRCULAR_TEST_ADDRESS || ''
     ).replace(
-      /\$\{CIRCULAR_TEST_BLOCKCHAIN\}/g, process.env.CIRCULAR_TEST_BLOCKCHAIN || 'MainNet'
+      /\$\{CIRCULAR_TEST_BLOCKCHAIN\}/g, process.env.CIRCULAR_TEST_BLOCKCHAIN || '%{e2e_spec.required_env_vars.blockchain.default}'
     ))
 
     const result = await api.%{method_name}(request)
@@ -98,7 +98,7 @@ let block_tests = std.string.join "\n\n" (
  *
  * Optional ENV vars:
  * - CIRCULAR_NAG_URL: NAG endpoint URL (default: %{e2e_spec.required_env_vars.nag_url.default})
- * - CIRCULAR_TEST_BLOCKCHAIN: Blockchain network (default: MainNet)
+ * - CIRCULAR_TEST_BLOCKCHAIN: Blockchain network (default: %{e2e_spec.required_env_vars.blockchain.default})
  * - CIRCULAR_API_KEY: Optional API key
  * - CIRCULAR_E2E_TIMEOUT: Request timeout in ms (default: 30000)
  *
@@ -134,7 +134,7 @@ describe('E2E Tests - Real NAG Endpoints', () => {
 
     console.log('🌐 Running E2E tests against:', nagUrl)
     console.log('📍 Test address:', process.env.CIRCULAR_TEST_ADDRESS)
-    console.log('⛓️  Blockchain:', process.env.CIRCULAR_TEST_BLOCKCHAIN || 'MainNet')
+    console.log('⛓️  Blockchain:', process.env.CIRCULAR_TEST_BLOCKCHAIN || '%{e2e_spec.required_env_vars.blockchain.default}')
     console.log('')
   })
 
