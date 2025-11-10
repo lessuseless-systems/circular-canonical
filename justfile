@@ -203,6 +203,9 @@ generate-java-package:
     @echo "Unit tests"
     @mkdir -p dist/java/src/test/java/io/circular/protocol
     @nickel export generators/java/tests/java-unit-tests.ncl --field test_code --format raw > dist/java/src/test/java/io/circular/protocol/CircularProtocolAPITest.java
+    @echo "GitHub Actions workflow"
+    @mkdir -p dist/java/.github/workflows
+    @nickel export generators/java/ci-cd/java-github-actions-test.ncl --field workflow_yaml --format raw > dist/java/.github/workflows/test.yml
     @echo ""
     @echo "[OK] Java package generated in dist/java/"
     @ls -lh dist/java/
@@ -219,6 +222,9 @@ generate-php-package:
     @nickel export generators/php/php-sdk.ncl --field sdk_code --format raw > dist/php/src/CircularProtocolAPI.php
     @echo "Unit tests"
     @nickel export generators/php/tests/php-unit-tests.ncl --field test_code --format raw > dist/php/tests/CircularProtocolAPITest.php
+    @echo "GitHub Actions workflow"
+    @mkdir -p dist/php/.github/workflows
+    @nickel export generators/php/ci-cd/php-github-actions-test.ncl --field workflow_yaml --format raw > dist/php/.github/workflows/test.yml
     @echo ""
     @echo "[OK] PHP package generated in dist/php/"
     @ls -lh dist/php/
