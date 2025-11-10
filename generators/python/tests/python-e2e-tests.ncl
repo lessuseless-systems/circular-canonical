@@ -52,7 +52,7 @@ in
 let generate_e2e_test = fun test_name test_def =>
   let method_name = to_snake_case test_def.endpoint in
   let request_template = substitute_env_vars test_def.request_template in
-  let assertions = std.array.map generate_assertion test_def.assertions in
+  let assertions = std.string.join "\n" (std.array.map generate_assertion test_def.assertions) in
 
   m%"
     def test_%{test_name}(self, api):
@@ -65,7 +65,7 @@ let generate_e2e_test = fun test_name test_def =>
 
         result = api.%{method_name}(request)
 
-%{std.string.join "\n" assertions}
+        %{assertions}
 
         print(f'  ✅ %{test_def.description}')
   "%
@@ -152,18 +152,18 @@ def api():
 @pytest.mark.e2e
 class TestWalletAPIE2E:
     \"\"\"E2E tests for Wallet API methods\"\"\"
-%{wallet_tests}
+    %{wallet_tests}
 
 
 @pytest.mark.e2e
 class TestNetworkAPIE2E:
     \"\"\"E2E tests for Network API methods\"\"\"
-%{network_tests}
+    %{network_tests}
 
 
 @pytest.mark.e2e
 class TestBlockAPIE2E:
     \"\"\"E2E tests for Block API methods\"\"\"
-%{block_tests}
+    %{block_tests}
 "%,
 }
