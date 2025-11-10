@@ -21,7 +21,7 @@ Run with:
 import pytest
 from unittest.mock import Mock, patch, MagicMock
 import requests
-from circular_protocol import CircularProtocolAPI
+from circular_protocol_api import CircularProtocolAPI
 
 
 TEST_URL = 'http://test.api'
