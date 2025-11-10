@@ -7,10 +7,26 @@ let e2e_spec = import "../../../tests/L5-e2e/e2e-tests.test.ncl" in
 
 # Generate Python method name from endpoint name (snake_case)
 let to_snake_case = fun str =>
-  # Convert camelCase to snake_case
-  let first_char = std.string.substring 0 1 str in
-  let rest = std.string.substring 1 (std.string.length str) str in
-  (std.string.lowercase first_char) ++ rest
+  # Convert camelCase to snake_case by adding _ before uppercase letters
+  let chars = std.string.characters str in
+  let converted = std.array.fold_left
+    (fun acc char =>
+      if std.string.uppercase char == char && char != std.string.lowercase char then
+        # Uppercase letter - add underscore and lowercase it
+        acc ++ "_" ++ std.string.lowercase char
+      else
+        acc ++ char
+    )
+    ""
+    chars
+  in
+  # Remove leading underscore if present and ensure first char is lowercase
+  let trimmed = if std.string.substring 0 1 converted == "_" then
+    std.string.substring 1 (std.string.length converted) converted
+  else
+    converted
+  in
+  trimmed
 in
 
 # Generate assertion code based on operator
@@ -63,7 +79,10 @@ let generate_e2e_test = fun test_name test_def =>
         request_str = request_str.replace('${CIRCULAR_TEST_BLOCKCHAIN}', os.getenv('CIRCULAR_TEST_BLOCKCHAIN', 'MainNet'))
         request = json.loads(request_str)
 
-        result = api.%{method_name}(request)
+        # Convert request keys to snake_case kwargs (Address -> address, BlockNumber -> block_number)
+        kwargs = {k[0].lower() + k[1:] if not any(c.isupper() for c in k[1:]) else ''.join(['_' + c.lower() if c.isupper() else c for c in k]).lstrip('_'): v for k, v in request.items() if k not in ['Version']}
+
+        result = api.%{method_name}(**kwargs)
 
         %{assertions}
 
@@ -118,6 +137,8 @@ let block_tests = std.string.join "\n" (
 import pytest
 import os
 import sys
+# Add src to path to import canonical SDK
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'src'))
 from circular_protocol_api import CircularProtocolAPI
 
 # Check for required environment variables

@@ -10,12 +10,20 @@
   outputs = { self, nixpkgs, flake-utils, git-hooks }:
     flake-utils.lib.eachDefaultSystem (system:
       let
-        pkgs = nixpkgs.legacyPackages.${system};
+        pkgs = import nixpkgs {
+          inherit system;
+          config = {
+            permittedInsecurePackages = [
+              "python3.13-ecdsa-0.19.1"
+            ];
+          };
+        };
 
         # Python with required packages
         pythonEnv = pkgs.python3.withPackages (ps: with ps; [
           requests
           cryptography
+          ecdsa
           pytest
           mypy
           types-requests

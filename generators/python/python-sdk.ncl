@@ -15,6 +15,20 @@ let helpers_encoding = import "../shared/helpers-encoding.ncl" in
 let helpers_config = import "../shared/helpers-config.ncl" in
 let helpers_advanced = import "../shared/helpers-advanced.ncl" in
 
+# Helper: Convert endpoint path to NAG endpoint name
+# /checkWallet -> CheckWallet
+let path_to_endpoint_name = fun path =>
+  let without_slash = if std.string.substring 0 1 path == "/" then
+    std.string.substring 1 (std.string.length path) path
+  else
+    path
+  in
+  # Capitalize first letter
+  let first_char = std.string.substring 0 1 without_slash in
+  let rest = std.string.substring 1 (std.string.length without_slash) without_slash in
+  (std.string.uppercase first_char) ++ rest
+in
+
 # Helper: Convert Nickel type to Python type
 let rec nickel_type_to_python = fun type_str parent_name =>
   if type_str == "string" then "str"
@@ -157,7 +171,7 @@ let generate_method = fun endpoint =>
         data = {
 %{if data_fields == "" then "" else "%{data_fields},\n"}            \"Version\": self.version,
         }
-        return self._make_request('%{endpoint.path}', data)"
+        return self._make_request('%{path_to_endpoint_name endpoint.path}', data)"
 in
 
 # Collect all endpoints

@@ -59,6 +59,7 @@ let config = import "../../../src/config.ncl" in
     # Runtime dependencies
     dependencies = [
       "requests>=2.28.0",
+      "ecdsa>=0.18.0",
       "typing-extensions>=4.5.0;python_version<'3.10'",
     ],
 
