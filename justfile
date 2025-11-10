@@ -95,8 +95,14 @@ generate:
     @echo "Python SDK"
     @nickel export generators/python/python-sdk.ncl --field sdk_code --format raw > dist/sdk/circular_protocol.py 2>&1 && \
         echo "    [OK] Python SDK generated"
+    @echo "Java SDK"
+    @nickel export generators/java/java-sdk.ncl --field sdk_code --format raw > dist/sdk/CircularProtocolAPI.java 2>&1 && \
+        echo "    [OK] Java SDK generated"
+    @echo "PHP SDK"
+    @nickel export generators/php/php-sdk.ncl --field sdk_code --format raw > dist/sdk/CircularProtocolAPI.php 2>&1 && \
+        echo "    [OK] PHP SDK generated"
     @echo ""
-    @echo "[OK] Generation complete"
+    @echo "[OK] Generation complete - 4 SDKs + OpenAPI spec"
 
 # Generate TypeScript SDK only
 generate-ts:
@@ -113,6 +119,22 @@ generate-py:
     @nickel export generators/python/python-sdk.ncl --field sdk_code --format raw > dist/sdk/circular_protocol.py
     @echo "[OK] Generated Python SDK"
     @wc -l dist/sdk/circular_protocol.py
+
+# Generate Java SDK only
+generate-java:
+    @echo "Generating Java SDK"
+    @mkdir -p dist/sdk
+    @nickel export generators/java/java-sdk.ncl --field sdk_code --format raw > dist/sdk/CircularProtocolAPI.java
+    @echo "[OK] Generated Java SDK"
+    @wc -l dist/sdk/CircularProtocolAPI.java
+
+# Generate PHP SDK only
+generate-php:
+    @echo "Generating PHP SDK"
+    @mkdir -p dist/sdk
+    @nickel export generators/php/php-sdk.ncl --field sdk_code --format raw > dist/sdk/CircularProtocolAPI.php
+    @echo "[OK] Generated PHP SDK"
+    @wc -l dist/sdk/CircularProtocolAPI.php
 
 # Generate complete Python package
 generate-py-package:
@@ -168,11 +190,44 @@ generate-ts-package:
     @echo "[OK] TypeScript package generated in dist/typescript/"
     @ls -lh dist/typescript/
 
-# Generate both complete packages
-generate-packages: generate-ts-package generate-py-package
+# Generate complete Java package
+generate-java-package:
+    @echo "Generating complete Java package"
+    @mkdir -p dist/java/src/main/java/io/circular/protocol
+    @echo "pom.xml"
+    @nickel export generators/java/package-manifest/java-pom-xml.ncl --format raw > dist/java/pom.xml
+    @echo "SDK code (src/main/java/io/circular/protocol/CircularProtocolAPI.java)"
+    @nickel export generators/java/java-sdk.ncl --field sdk_code --format raw > dist/java/src/main/java/io/circular/protocol/CircularProtocolAPI.java
+    @echo "Unit tests"
+    @mkdir -p dist/java/src/test/java/io/circular/protocol
+    @nickel export generators/java/tests/java-unit-tests.ncl --field test_code --format raw > dist/java/src/test/java/io/circular/protocol/CircularProtocolAPITest.java
+    @echo ""
+    @echo "[OK] Java package generated in dist/java/"
+    @ls -lh dist/java/
+
+# Generate complete PHP package
+generate-php-package:
+    @echo "Generating complete PHP package"
+    @mkdir -p dist/php/src dist/php/tests
+    @echo "composer.json"
+    @nickel export generators/php/package-manifest/php-composer-json.ncl --format json > dist/php/composer.json
+    @echo "SDK code (src/CircularProtocolAPI.php)"
+    @nickel export generators/php/php-sdk.ncl --field sdk_code --format raw > dist/php/src/CircularProtocolAPI.php
+    @echo "Unit tests"
+    @nickel export generators/php/tests/php-unit-tests.ncl --field test_code --format raw > dist/php/tests/CircularProtocolAPITest.php
+    @echo ""
+    @echo "[OK] PHP package generated in dist/php/"
+    @ls -lh dist/php/
+
+# Generate all complete packages
+generate-packages: generate-ts-package generate-py-package generate-java-package generate-php-package
     @echo ""
     @echo "================================================================"
-    @echo "  [OK] Complete packages generated for TypeScript and Python"
+    @echo "  [OK] Complete packages generated for all 4 languages"
+    @echo "  - TypeScript (dist/typescript/)"
+    @echo "  - Python (dist/python/)"
+    @echo "  - Java (dist/java/)"
+    @echo "  - PHP (dist/php/)"
     @echo "================================================================"
 
 # ===========================================================================
