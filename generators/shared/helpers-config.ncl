@@ -89,11 +89,8 @@
 
     const result = await response.json() as { Result: number; Response: any };
 
-    // Check for API-level errors
-    if (result.Result !== 200) {
-      throw new Error(result.Response || 'API request failed');
-    }
-
+    // Return full response including non-200 Result codes
+    // Let callers handle Result codes appropriately
     return result;
   }
 "%,
@@ -197,10 +194,8 @@ self._last_error = ''
 
         result = response.json()
 
-        # Check for API-level errors
-        if result.get('Result') != 200:
-            raise Exception(result.get('Response', 'API request failed'))
-
+        # Return full response including non-200 Result codes
+        # Let callers handle Result codes appropriately
         return result
 "%,
 
