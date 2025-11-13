@@ -27,7 +27,7 @@ let types = import "../../src/schemas/types.ncl" in
     blockchain = {
       name = "CIRCULAR_TEST_BLOCKCHAIN",
       description = "Blockchain network to test against (default: Circular SandBox for testing)",
-      default = "8a20baa40c45dc5055aeb26197c203e576ef389d9acb171bd62da11dc5ad72b2",
+      default = "0x8a20baa40c45dc5055aeb26197c203e576ef389d9acb171bd62da11dc5ad72b2",
     },
   },
 
