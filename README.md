@@ -17,7 +17,7 @@ Single source of truth for Circular Protocol standard APIs, defined in Nickel.
 - `circular-py-1`, `circular-py-2` (numbered test repos)
 - `circular-js-npm-1`, `circular-js-npm-2` (numbered test repos)
 
-All generated SDKs are managed as git submodules in `dist/typescript/` and `dist/python/`.
+All generated SDKs are managed as git submodules in `dist/circular-ts/` and `dist/circular-py/`.
 
 ## Overview
 

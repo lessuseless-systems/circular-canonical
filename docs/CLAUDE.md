@@ -190,10 +190,10 @@ just generate-ts-sdk  # Includes JSDoc comments
 just generate-py-sdk  # Includes docstrings
 
 # TypeScript: Use TypeDoc
-cd dist/typescript && npm run docs
+cd dist/circular-ts && npm run docs
 
 # Python: Use Sphinx
-cd dist/python && make docs
+cd dist/circular-py && make docs
 ```
 
 ## Documentation Maintenance

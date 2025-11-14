@@ -353,6 +353,152 @@ import javax.xml.bind.DatatypeConverter;
 
   },
 
+  # Go implementation of crypto helpers
+  go = {
+
+    # Import statements for Go
+    imports = m%"
+import (
+	"crypto/ecdsa"
+	"crypto/rand"
+	"crypto/sha256"
+	"encoding/hex"
+	"fmt"
+	"time"
+
+	"github.com/btcsuite/btcd/btcec/v2"
+)
+"%,
+
+    # Sign a message
+    signMessage = m%"
+// SignMessage signs a message using secp256k1 with DER encoding
+// message: Message to sign (will be SHA256 hashed)
+// privateKey: Private key in hex format (with or without '0x' prefix)
+// Returns: DER-encoded signature as hex string
+func (c *Client) SignMessage(message string, privateKey string) (string, error) {
+	// Remove 0x prefix if present
+	cleanKey := hexFix(privateKey)
+
+	// Parse private key
+	privKeyBytes, err := hex.DecodeString(cleanKey)
+	if err != nil {
+		return "", fmt.Errorf("invalid private key hex: %w", err)
+	}
+
+	privKey, _ := btcec.PrivKeyFromBytes(privKeyBytes)
+
+	// Hash the message
+	msgHash := sha256.Sum256([]byte(message))
+
+	// Sign with compact signature (Bitcoin-style)
+	signature, err := ecdsa.SignASN1(rand.Reader, privKey.ToECDSA(), msgHash[:])
+	if err != nil {
+		return "", fmt.Errorf("signing failed: %w", err)
+	}
+
+	return hex.EncodeToString(signature), nil
+}
+"%,
+
+    # Verify signature
+    verifySignature = m%"
+// VerifySignature verifies a DER-encoded signature
+// publicKey: Public key in hex format (uncompressed, 64 bytes without 0x04 prefix)
+// message: Original message that was signed
+// signatureHex: DER-encoded signature in hex format
+// Returns: true if signature is valid, false otherwise
+func (c *Client) VerifySignature(publicKey string, message string, signatureHex string) bool {
+	// Parse public key
+	cleanPubKey := hexFix(publicKey)
+	pubKeyBytes, err := hex.DecodeString(cleanPubKey)
+	if err != nil {
+		return false
+	}
+
+	// Add uncompressed point prefix if needed (0x04)
+	if len(pubKeyBytes) == 64 {
+		pubKeyBytes = append([]byte{0x04}, pubKeyBytes...)
+	}
+
+	// Parse public key
+	pubKey, err := btcec.ParsePubKey(pubKeyBytes)
+	if err != nil {
+		return false
+	}
+
+	// Hash the message
+	msgHash := sha256.Sum256([]byte(message))
+
+	// Parse signature
+	signatureBytes, err := hex.DecodeString(hexFix(signatureHex))
+	if err != nil {
+		return false
+	}
+
+	// Verify DER-encoded signature
+	return ecdsa.VerifyASN1(pubKey.ToECDSA(), msgHash[:], signatureBytes)
+}
+"%,
+
+    # Get public key
+    getPublicKey = m%"
+// GetPublicKey derives public key from private key
+// privateKey: Private key in hex format (with or without '0x' prefix)
+// Returns: Public key in uncompressed hex format (64 bytes, without 0x04 prefix)
+func (c *Client) GetPublicKey(privateKey string) (string, error) {
+	// Remove 0x prefix if present
+	cleanKey := hexFix(privateKey)
+
+	// Parse private key
+	privKeyBytes, err := hex.DecodeString(cleanKey)
+	if err != nil {
+		return "", fmt.Errorf("invalid private key hex: %w", err)
+	}
+
+	privKey, pubKey := btcec.PrivKeyFromBytes(privKeyBytes)
+	if privKey == nil {
+		return "", fmt.Errorf("failed to derive public key")
+	}
+
+	// Get uncompressed public key bytes (65 bytes with 0x04 prefix)
+	pubKeyBytes := pubKey.SerializeUncompressed()
+
+	// Remove 0x04 prefix to return 64 bytes
+	return hex.EncodeToString(pubKeyBytes[1:]), nil
+}
+"%,
+
+    # Hash string
+    hashString = m%"
+// HashString computes SHA256 hash of a string
+// str: String to hash
+// Returns: SHA256 hash as hex string
+func (c *Client) HashString(str string) string {
+	hash := sha256.Sum256([]byte(str))
+	return hex.EncodeToString(hash[:])
+}
+"%,
+
+    # Get formatted timestamp
+    getFormattedTimestamp = m%%"
+// GetFormattedTimestamp returns current timestamp in Circular Protocol format
+// Format: YYYY:MM:DD-hh:mm:ss (UTC)
+// Returns: Formatted timestamp string
+func (c *Client) GetFormattedTimestamp() string {
+	now := time.Now().UTC()
+	return fmt.Sprintf("%d:%02d:%02d-%02d:%02d:%02d",
+		now.Year(),
+		now.Month(),
+		now.Day(),
+		now.Hour(),
+		now.Minute(),
+		now.Second())
+}
+"%%,
+
+  },
+
   # PHP implementation of crypto helpers
   php = {
 

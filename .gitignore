@@ -5,11 +5,11 @@ output/
 *.generated.*
 
 # Generated code output directory
-# Note: dist/typescript/ and dist/python/ are git submodules (forks), so they're tracked
+# Note: dist/circular-ts/ and dist/circular-py/ are git submodules (forks), so they're tracked
 # But we ignore all other dist/ contents and generated files within submodules
 dist/*
-!dist/typescript/
-!dist/python/
+!dist/circular-ts/
+!dist/circular-py/
 !dist/openapi/
 
 # Nickel temporary files

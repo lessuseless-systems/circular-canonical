@@ -40,13 +40,13 @@ jobs:
       - name: Check for changes
         id: check_changes
         run: |
-          cd dist/typescript
+          cd dist/circular-ts
           if [[ -n $(git status --porcelain) ]]; then
             echo "typescript_changed=true" >> $GITHUB_OUTPUT
           else
             echo "typescript_changed=false" >> $GITHUB_OUTPUT
           fi
-          cd ../python
+          cd ../circular-py
           if [[ -n $(git status --porcelain) ]]; then
             echo "python_changed=true" >> $GITHUB_OUTPUT
           else

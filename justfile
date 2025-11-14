@@ -139,207 +139,207 @@ generate-php:
 # Generate complete Python package (modular structure)
 generate-py-package:
     @echo "Generating complete Python package (modular structure)"
-    @mkdir -p dist/python/src/circular_protocol_api
+    @mkdir -p dist/circular-py/src/circular_protocol_api
     @echo "pyproject.toml"
-    @nickel export generators/python/package-manifest/python-pyproject-toml.ncl --format toml > dist/python/pyproject.toml
+    @nickel export generators/python/package-manifest/python-pyproject-toml.ncl --format toml > dist/circular-py/pyproject.toml
     @echo "setup.py"
-    @nickel export generators/python/package-manifest/python-setup-py.ncl --field setup_code --format raw > dist/python/setup.py
+    @nickel export generators/python/package-manifest/python-setup-py.ncl --field setup_code --format raw > dist/circular-py/setup.py
     @echo "README file"
-    @nickel export generators/python/docs/python-readme.ncl --format raw > dist/python/README.md
+    @nickel export generators/python/docs/python-readme.ncl --field readme_content --format raw > dist/circular-py/README.md
     @echo "pytest.ini"
-    @nickel export generators/python/config/python-pytest-ini.ncl --field pytest_ini_content --format raw > dist/python/pytest.ini
+    @nickel export generators/python/config/python-pytest-ini.ncl --field pytest_ini_content --format raw > dist/circular-py/pytest.ini
     @echo ".gitignore"
-    @nickel export generators/python/metadata/python-gitignore.ncl --field gitignore_content --format raw > dist/python/.gitignore
+    @nickel export generators/python/metadata/python-gitignore.ncl --field gitignore_content --format raw > dist/circular-py/.gitignore
     @echo "Modular SDK code:"
     @echo "  src/circular_protocol_api/__init__.py (clean exports)"
-    @nickel export generators/python/python-init.ncl --field init_code --format raw > dist/python/src/circular_protocol_api/__init__.py
+    @nickel export generators/python/python-init.ncl --field init_code --format raw > dist/circular-py/src/circular_protocol_api/__init__.py
     @echo "  src/circular_protocol_api/client.py (main API class)"
-    @nickel export generators/python/python-client.ncl --field client_code --format raw > dist/python/src/circular_protocol_api/client.py
+    @nickel export generators/python/python-client.ncl --field client_code --format raw > dist/circular-py/src/circular_protocol_api/client.py
     @echo "  src/circular_protocol_api/models.py (TypedDict types)"
-    @nickel export generators/python/python-models.ncl --field models_code --format raw > dist/python/src/circular_protocol_api/models.py
+    @nickel export generators/python/python-models.ncl --field models_code --format raw > dist/circular-py/src/circular_protocol_api/models.py
     @echo "  src/circular_protocol_api/exceptions.py (custom exceptions)"
-    @nickel export generators/python/python-exceptions.ncl --field exceptions_code --format raw > dist/python/src/circular_protocol_api/exceptions.py
+    @nickel export generators/python/python-exceptions.ncl --field exceptions_code --format raw > dist/circular-py/src/circular_protocol_api/exceptions.py
     @echo "  src/circular_protocol_api/_helpers.py (utility functions)"
-    @nickel export generators/python/python-helpers.ncl --field helpers_code --format raw > dist/python/src/circular_protocol_api/_helpers.py
+    @nickel export generators/python/python-helpers.ncl --field helpers_code --format raw > dist/circular-py/src/circular_protocol_api/_helpers.py
     @echo "  src/circular_protocol_api/_crypto.py (cryptographic operations)"
-    @nickel export generators/python/python-crypto.ncl --field crypto_code --format raw > dist/python/src/circular_protocol_api/_crypto.py
+    @nickel export generators/python/python-crypto.ncl --field crypto_code --format raw > dist/circular-py/src/circular_protocol_api/_crypto.py
     @echo "Unit tests"
-    @mkdir -p dist/python/tests
-    @nickel export generators/python/tests/python-unit-tests.ncl --field test_code --format raw > dist/python/tests/test_unit.py
+    @mkdir -p dist/circular-py/tests
+    @nickel export generators/python/tests/python-unit-tests.ncl --field test_code --format raw > dist/circular-py/tests/test_unit.py
     @echo "E2E tests"
-    @nickel export generators/python/tests/python-e2e-tests.ncl --field test_code --format raw > dist/python/tests/test_e2e.py
+    @nickel export generators/python/tests/python-e2e-tests.ncl --field test_code --format raw > dist/circular-py/tests/test_e2e.py
     @echo "Integration tests"
-    @nickel export generators/python/tests/python-integration-tests.ncl --field test_file --format raw > dist/python/tests/test_integration.py
+    @nickel export generators/python/tests/python-integration-tests.ncl --field test_file --format raw > dist/circular-py/tests/test_integration.py
     @echo "GitHub Actions workflow"
-    @mkdir -p dist/python/.github/workflows
-    @nickel export generators/python/ci-cd/python-github-actions-test.ncl --field workflow_yaml --format raw > dist/python/.github/workflows/test.yml
+    @mkdir -p dist/circular-py/.github/workflows
+    @nickel export generators/python/ci-cd/python-github-actions-test.ncl --field workflow_yaml --format raw > dist/circular-py/.github/workflows/test.yml
     @echo ""
-    @echo "[OK] Python package generated in dist/python/ (modular structure)"
-    @ls -lh dist/python/src/circular_protocol_api/
+    @echo "[OK] Python package generated in dist/circular-py/ (modular structure)"
+    @ls -lh dist/circular-py/src/circular_protocol_api/
 
 # Generate complete TypeScript package
 generate-ts-package:
     @echo "Generating complete TypeScript package"
-    @mkdir -p dist/typescript/src
+    @mkdir -p dist/circular-ts/src
     @echo "package.json"
-    @nickel export generators/typescript/package-manifest/typescript-package-json.ncl --format json > dist/typescript/package.json
+    @nickel export generators/typescript/package-manifest/typescript-package-json.ncl --format json > dist/circular-ts/package.json
     @echo "tsconfig.json"
-    @nickel export generators/typescript/config/typescript-tsconfig.ncl --format json > dist/typescript/tsconfig.json
+    @nickel export generators/typescript/config/typescript-tsconfig.ncl --format json > dist/circular-ts/tsconfig.json
     @echo "jest.config.cjs"
-    @nickel export generators/typescript/config/typescript-jest.ncl --format raw > dist/typescript/jest.config.cjs
+    @nickel export generators/typescript/config/typescript-jest.ncl --format raw > dist/circular-ts/jest.config.cjs
     @echo "webpack.config.cjs.js"
-    @nickel export generators/typescript/config/typescript-webpack-cjs.ncl --format raw > dist/typescript/webpack.config.cjs.js
+    @nickel export generators/typescript/config/typescript-webpack-cjs.ncl --format raw > dist/circular-ts/webpack.config.cjs.js
     @echo "webpack.config.esm.js"
-    @nickel export generators/typescript/config/typescript-webpack-esm.ncl --format raw > dist/typescript/webpack.config.esm.js
+    @nickel export generators/typescript/config/typescript-webpack-esm.ncl --format raw > dist/circular-ts/webpack.config.esm.js
     @echo "README file"
-    @nickel export generators/typescript/docs/typescript-readme.ncl --format raw > dist/typescript/README.md
+    @nickel export generators/typescript/docs/typescript-readme.ncl --field readme_content --format raw > dist/circular-ts/README.md
     @echo "SDK code (src/index.ts)"
-    @nickel export generators/typescript/typescript-sdk.ncl --field sdk_code --format raw > dist/typescript/src/index.ts
+    @nickel export generators/typescript/typescript-sdk.ncl --field sdk_code --format raw > dist/circular-ts/src/index.ts
     @echo "Unit tests"
-    @mkdir -p dist/typescript/tests
-    @nickel export generators/typescript/tests/typescript-unit-tests.ncl --field test_code --format raw > dist/typescript/tests/index.test.ts
+    @mkdir -p dist/circular-ts/tests
+    @nickel export generators/typescript/tests/typescript-unit-tests.ncl --field test_code --format raw > dist/circular-ts/tests/index.test.ts
     @echo "E2E tests"
-    @nickel export generators/typescript/tests/typescript-e2e-tests.ncl --field test_code --format raw > dist/typescript/tests/e2e.test.ts
+    @nickel export generators/typescript/tests/typescript-e2e-tests.ncl --field test_code --format raw > dist/circular-ts/tests/e2e.test.ts
     @echo "Integration tests"
-    @nickel export generators/typescript/tests/typescript-integration-tests.ncl --field test_file --format raw > dist/typescript/tests/integration.test.ts
+    @nickel export generators/typescript/tests/typescript-integration-tests.ncl --field test_file --format raw > dist/circular-ts/tests/integration.test.ts
     @echo "GitHub Actions workflow"
-    @mkdir -p dist/typescript/.github/workflows
-    @nickel export generators/typescript/ci-cd/typescript-github-actions-test.ncl --field workflow_yaml --format raw > dist/typescript/.github/workflows/test.yml
+    @mkdir -p dist/circular-ts/.github/workflows
+    @nickel export generators/typescript/ci-cd/typescript-github-actions-test.ncl --field workflow_yaml --format raw > dist/circular-ts/.github/workflows/test.yml
     @echo ""
-    @echo "[OK] TypeScript package generated in dist/typescript/"
-    @ls -lh dist/typescript/
+    @echo "[OK] TypeScript package generated in dist/circular-ts/"
+    @ls -lh dist/circular-ts/
 
 # Generate complete Java package
 generate-java-package:
     @echo "Generating complete Java package"
-    @mkdir -p dist/java/src/main/java/io/circular/protocol
+    @mkdir -p dist/circular-java/src/main/java/io/circular/protocol
     @echo "pom.xml"
-    @nickel export generators/java/package-manifest/java-pom-xml.ncl --field pom_content --format raw > dist/java/pom.xml
+    @nickel export generators/java/package-manifest/java-pom-xml.ncl --field pom_content --format raw > dist/circular-java/pom.xml
     @echo "README.md"
-    @nickel export generators/java/docs/java-readme.ncl --format raw > dist/java/README.md
+    @nickel export generators/java/docs/java-readme.ncl --field readme_content --format raw > dist/circular-java/README.md
     @echo ".gitignore"
-    @nickel export generators/java/metadata/java-gitignore.ncl --field gitignore_content --format raw > dist/java/.gitignore
+    @nickel export generators/java/metadata/java-gitignore.ncl --field gitignore_content --format raw > dist/circular-java/.gitignore
     @echo "SDK code (src/main/java/io/circular/protocol/CircularProtocolAPI.java)"
-    @nickel export generators/java/java-sdk.ncl --field sdk_code --format raw > dist/java/src/main/java/io/circular/protocol/CircularProtocolAPI.java
+    @nickel export generators/java/java-sdk.ncl --field sdk_code --format raw > dist/circular-java/src/main/java/io/circular/protocol/CircularProtocolAPI.java
     @echo "Unit tests"
-    @mkdir -p dist/java/src/test/java/io/circular/protocol
-    @nickel export generators/java/tests/java-unit-tests.ncl --field test_code --format raw > dist/java/src/test/java/io/circular/protocol/CircularProtocolUnitTest.java
+    @mkdir -p dist/circular-java/src/test/java/io/circular/protocol
+    @nickel export generators/java/tests/java-unit-tests.ncl --field test_code --format raw > dist/circular-java/src/test/java/io/circular/protocol/CircularProtocolUnitTest.java
     @echo "E2E tests"
-    @nickel export generators/java/tests/java-e2e-tests.ncl --field test_code --format raw > dist/java/src/test/java/io/circular/protocol/CircularProtocolE2ETest.java
+    @nickel export generators/java/tests/java-e2e-tests.ncl --field test_code --format raw > dist/circular-java/src/test/java/io/circular/protocol/CircularProtocolE2ETest.java
     @echo "Integration tests"
-    @nickel export generators/java/tests/java-integration-tests.ncl --field test_file --format raw > dist/java/src/test/java/io/circular/protocol/CircularProtocolIntegrationTest.java
+    @nickel export generators/java/tests/java-integration-tests.ncl --field test_file --format raw > dist/circular-java/src/test/java/io/circular/protocol/CircularProtocolIntegrationTest.java
     @echo "GitHub Actions workflow"
-    @mkdir -p dist/java/.github/workflows
-    @nickel export generators/java/ci-cd/java-github-actions-test.ncl --field workflow_yaml --format raw > dist/java/.github/workflows/test.yml
+    @mkdir -p dist/circular-java/.github/workflows
+    @nickel export generators/java/ci-cd/java-github-actions-test.ncl --field workflow_yaml --format raw > dist/circular-java/.github/workflows/test.yml
     @echo ""
-    @echo "[OK] Java package generated in dist/java/"
-    @ls -lh dist/java/
+    @echo "[OK] Java package generated in dist/circular-java/"
+    @ls -lh dist/circular-java/
 
 # Generate complete PHP package
 generate-php-package:
     @echo "Generating complete PHP package"
-    @mkdir -p dist/php/src dist/php/tests
+    @mkdir -p dist/circular-php/src dist/circular-php/tests
     @echo "composer.json"
-    @nickel export generators/php/package-manifest/php-composer-json.ncl --format json > dist/php/composer.json
+    @nickel export generators/php/package-manifest/php-composer-json.ncl --format json > dist/circular-php/composer.json
     @echo "README.md"
-    @nickel export generators/php/docs/php-readme.ncl --format raw > dist/php/README.md
+    @nickel export generators/php/docs/php-readme.ncl --field readme_content --format raw > dist/circular-php/README.md
     @echo ".gitignore"
-    @nickel export generators/php/metadata/php-gitignore.ncl --field gitignore_content --format raw > dist/php/.gitignore
+    @nickel export generators/php/metadata/php-gitignore.ncl --field gitignore_content --format raw > dist/circular-php/.gitignore
     @echo "SDK code (src/CircularProtocolAPI.php)"
-    @nickel export generators/php/php-sdk.ncl --field sdk_code --format raw > dist/php/src/CircularProtocolAPI.php
+    @nickel export generators/php/php-sdk.ncl --field sdk_code --format raw > dist/circular-php/src/CircularProtocolAPI.php
     @echo "Unit tests"
-    @nickel export generators/php/tests/php-unit-tests.ncl --field test_code --format raw > dist/php/tests/CircularProtocolUnitTest.php
+    @nickel export generators/php/tests/php-unit-tests.ncl --field test_code --format raw > dist/circular-php/tests/CircularProtocolUnitTest.php
     @echo "E2E tests"
-    @nickel export generators/php/tests/php-e2e-tests.ncl --field test_code --format raw > dist/php/tests/CircularProtocolE2ETest.php
+    @nickel export generators/php/tests/php-e2e-tests.ncl --field test_code --format raw > dist/circular-php/tests/CircularProtocolE2ETest.php
     @echo "Integration tests"
-    @nickel export generators/php/tests/php-integration-tests.ncl --field test_file --format raw > dist/php/tests/CircularProtocolIntegrationTest.php
+    @nickel export generators/php/tests/php-integration-tests.ncl --field test_file --format raw > dist/circular-php/tests/CircularProtocolIntegrationTest.php
     @echo "GitHub Actions workflow"
-    @mkdir -p dist/php/.github/workflows
-    @nickel export generators/php/ci-cd/php-github-actions-test.ncl --field workflow_yaml --format raw > dist/php/.github/workflows/test.yml
+    @mkdir -p dist/circular-php/.github/workflows
+    @nickel export generators/php/ci-cd/php-github-actions-test.ncl --field workflow_yaml --format raw > dist/circular-php/.github/workflows/test.yml
     @echo ""
-    @echo "[OK] PHP package generated in dist/php/"
-    @ls -lh dist/php/
+    @echo "[OK] PHP package generated in dist/circular-php/"
+    @ls -lh dist/circular-php/
 
 # Generate complete Go package
 generate-go-package:
     @echo "Generating complete Go package"
-    @mkdir -p dist/go
+    @mkdir -p dist/circular-go
     @echo "go.mod"
-    @nickel export generators/go/package-manifest/go-mod.ncl --field go_mod --format raw > dist/go/go.mod
+    @nickel export generators/go/package-manifest/go-mod.ncl --field go_mod --format raw > dist/circular-go/go.mod
     @echo "SDK code (circular_protocol.go)"
-    @nickel export generators/go/go-sdk.ncl --field sdk_code --format raw > dist/go/circular_protocol.go
+    @nickel export generators/go/go-sdk.ncl --field sdk_code --format raw > dist/circular-go/circular_protocol.go
     @echo "Unit tests"
-    @nickel export generators/go/tests/go-unit-tests.ncl --field test_code --format raw > dist/go/circular_protocol_test.go
+    @nickel export generators/go/tests/go-unit-tests.ncl --field test_code --format raw > dist/circular-go/circular_protocol_test.go
     @echo "Integration tests"
-    @nickel export generators/go/tests/go-integration-tests.ncl --field test_code --format raw > dist/go/circular_protocol_integration_test.go
+    @nickel export generators/go/tests/go-integration-tests.ncl --field test_code --format raw > dist/circular-go/circular_protocol_integration_test.go
     @echo "E2E tests"
-    @nickel export generators/go/tests/go-e2e-tests.ncl --field test_code --format raw > dist/go/circular_protocol_e2e_test.go
+    @nickel export generators/go/tests/go-e2e-tests.ncl --field test_code --format raw > dist/circular-go/circular_protocol_e2e_test.go
     @echo "README.md"
-    @nickel export generators/go/docs/go-readme.ncl --field readme_content --format raw > dist/go/README.md
+    @nickel export generators/go/docs/go-readme.ncl --field readme_content --format raw > dist/circular-go/README.md
     @echo ".gitignore"
-    @nickel export generators/go/metadata/go-gitignore.ncl --field gitignore_content --format raw > dist/go/.gitignore
+    @nickel export generators/go/metadata/go-gitignore.ncl --field gitignore_content --format raw > dist/circular-go/.gitignore
     @echo "GitHub Actions workflow"
-    @mkdir -p dist/go/.github/workflows
-    @nickel export generators/go/ci-cd/go-github-actions-test.ncl --field workflow_content --format raw > dist/go/.github/workflows/test.yml
+    @mkdir -p dist/circular-go/.github/workflows
+    @nickel export generators/go/ci-cd/go-github-actions-test.ncl --field workflow_content --format raw > dist/circular-go/.github/workflows/test.yml
     @echo ""
-    @echo "[OK] Go package generated in dist/go/"
-    @ls -lh dist/go/
+    @echo "[OK] Go package generated in dist/circular-go/"
+    @ls -lh dist/circular-go/
 
 # Generate complete Dart package
 generate-dart-package:
     @echo "Generating complete Dart package"
-    @mkdir -p dist/dart/lib dist/dart/test
+    @mkdir -p dist/circular-dart/lib dist/circular-dart/test
     @echo "pubspec.yaml"
-    @nickel export generators/dart/package-manifest/pubspec-yaml.ncl --field pubspec_yaml --format raw > dist/dart/pubspec.yaml
+    @nickel export generators/dart/package-manifest/pubspec-yaml.ncl --field pubspec_yaml --format raw > dist/circular-dart/pubspec.yaml
     @echo "SDK code (lib/circular_protocol.dart)"
-    @nickel export generators/dart/dart-sdk.ncl --field sdk_code --format raw > dist/dart/lib/circular_protocol.dart
+    @nickel export generators/dart/dart-sdk.ncl --field sdk_code --format raw > dist/circular-dart/lib/circular_protocol.dart
     @echo "Unit tests"
-    @nickel export generators/dart/tests/dart-unit-tests.ncl --field test_code --format raw > dist/dart/test/unit_test.dart
+    @nickel export generators/dart/tests/dart-unit-tests.ncl --field test_code --format raw > dist/circular-dart/test/unit_test.dart
     @echo "Integration tests"
-    @nickel export generators/dart/tests/dart-integration-tests.ncl --field test_code --format raw > dist/dart/test/integration_test.dart
+    @nickel export generators/dart/tests/dart-integration-tests.ncl --field test_code --format raw > dist/circular-dart/test/integration_test.dart
     @echo "E2E tests"
-    @nickel export generators/dart/tests/dart-e2e-tests.ncl --field test_code --format raw > dist/dart/test/e2e_test.dart
+    @nickel export generators/dart/tests/dart-e2e-tests.ncl --field test_code --format raw > dist/circular-dart/test/e2e_test.dart
     @echo "README.md"
-    @nickel export generators/dart/docs/dart-readme.ncl --field readme_content --format raw > dist/dart/README.md
+    @nickel export generators/dart/docs/dart-readme.ncl --field readme_content --format raw > dist/circular-dart/README.md
     @echo ".gitignore"
-    @nickel export generators/dart/metadata/dart-gitignore.ncl --field gitignore_content --format raw > dist/dart/.gitignore
+    @nickel export generators/dart/metadata/dart-gitignore.ncl --field gitignore_content --format raw > dist/circular-dart/.gitignore
     @echo "GitHub Actions workflow"
-    @mkdir -p dist/dart/.github/workflows
-    @nickel export generators/dart/ci-cd/dart-github-actions-test.ncl --field workflow_content --format raw > dist/dart/.github/workflows/test.yml
+    @mkdir -p dist/circular-dart/.github/workflows
+    @nickel export generators/dart/ci-cd/dart-github-actions-test.ncl --field workflow_content --format raw > dist/circular-dart/.github/workflows/test.yml
     @echo "analysis_options.yaml"
-    @nickel export generators/dart/metadata/dart-analysis-options.ncl --field analysis_options --format raw > dist/dart/analysis_options.yaml
+    @nickel export generators/dart/metadata/dart-analysis-options.ncl --field analysis_options --format raw > dist/circular-dart/analysis_options.yaml
     @echo "CHANGELOG.md"
-    @nickel export generators/dart/docs/dart-changelog.ncl --field changelog_content --format raw > dist/dart/CHANGELOG.md
+    @nickel export generators/dart/docs/dart-changelog.ncl --field changelog_content --format raw > dist/circular-dart/CHANGELOG.md
     @echo "LICENSE"
-    @nickel export generators/dart/metadata/dart-license.ncl --field license_content --format raw > dist/dart/LICENSE
+    @nickel export generators/dart/metadata/dart-license.ncl --field license_content --format raw > dist/circular-dart/LICENSE
     @echo ""
-    @echo "[OK] Dart package generated in dist/dart/"
-    @ls -lh dist/dart/
+    @echo "[OK] Dart package generated in dist/circular-dart/"
+    @ls -lh dist/circular-dart/
 
 # Generate complete Rust package
 generate-rust-package:
     @echo "Generating complete Rust package"
-    @mkdir -p dist/rust/src
+    @mkdir -p dist/circular-rs/src
     @echo "Cargo.toml"
-    @nickel export generators/rust/package-manifest/cargo-toml.ncl --field cargo_toml --format raw > dist/rust/Cargo.toml
+    @nickel export generators/rust/package-manifest/cargo-toml.ncl --field cargo_toml --format raw > dist/circular-rs/Cargo.toml
     @echo "SDK code (src/lib.rs)"
-    @nickel export generators/rust/rust-sdk.ncl --field sdk_code --format raw > dist/rust/src/lib.rs
+    @nickel export generators/rust/rust-sdk.ncl --field sdk_code --format raw > dist/circular-rs/src/lib.rs
     @echo ""
-    @echo "[OK] Rust package generated in dist/rust/"
-    @ls -lh dist/rust/
+    @echo "[OK] Rust package generated in dist/circular-rs/"
+    @ls -lh dist/circular-rs/
 
 # Generate all complete packages
 generate-packages: generate-ts-package generate-py-package generate-java-package generate-php-package generate-go-package generate-dart-package generate-rust-package
     @echo ""
     @echo "================================================================"
     @echo "  [OK] Complete packages generated for all 7 languages"
-    @echo "  - TypeScript (dist/typescript/)"
-    @echo "  - Python (dist/python/)"
-    @echo "  - Java (dist/java/)"
-    @echo "  - PHP (dist/php/)"
-    @echo "  - Go (dist/go/)"
-    @echo "  - Dart (dist/dart/)"
-    @echo "  - Rust (dist/rust/)"
+    @echo "  - TypeScript (dist/circular-ts/)"
+    @echo "  - Python (dist/circular-py/)"
+    @echo "  - Java (dist/circular-java/)"
+    @echo "  - PHP (dist/circular-php/)"
+    @echo "  - Go (dist/circular-go/)"
+    @echo "  - Dart (dist/circular-dart/)"
+    @echo "  - Rust (dist/circular-rs/)"
     @echo "================================================================"
 
 # ===========================================================================
@@ -457,11 +457,11 @@ setup-forks:
         git push -u origin development 2>/dev/null || echo "  [OK] development branch exists"
     @echo ""
     @echo "Step 3: Remove existing dist/ contents and add submodules"
-    @rm -rf dist/typescript/* dist/python/* 2>/dev/null || true
-    @git submodule add -b development git@github.com:lessuseless-systems/circular-js-npm.git dist/typescript 2>/dev/null || \
-        echo "  [WARNING] Submodule dist/typescript already exists"
-    @git submodule add -b development git@github.com:lessuseless-systems/circular-py.git dist/python 2>/dev/null || \
-        echo "  [WARNING] Submodule dist/python already exists"
+    @rm -rf dist/circular-ts/* dist/circular-py/* 2>/dev/null || true
+    @git submodule add -b development git@github.com:lessuseless-systems/circular-js-npm.git dist/circular-ts 2>/dev/null || \
+        echo "  [WARNING] Submodule dist/circular-ts already exists"
+    @git submodule add -b development git@github.com:lessuseless-systems/circular-py.git dist/circular-py 2>/dev/null || \
+        echo "  [WARNING] Submodule dist/circular-py already exists"
     @git submodule init
     @git submodule update
     @echo ""
@@ -489,10 +489,10 @@ setup-forks:
 # Verify submodule URLs point to correct official repos (safety check)
 verify-repos:
     @echo "🔍 Verifying submodule repository URLs..."
-    @if [ ! -e dist/typescript/.git ]; then \
-        echo "⚠️  dist/typescript/ is not a git submodule (run setup-forks)"; \
+    @if [ ! -e dist/circular-ts/.git ]; then \
+        echo "⚠️  dist/circular-ts/ is not a git submodule (run setup-forks)"; \
     else \
-        ts_url=$$(cd dist/typescript && git remote get-url origin); \
+        ts_url=$$(cd dist/circular-ts && git remote get-url origin); \
         if echo "$$ts_url" | grep -q "circular-js-npm\.git$$" && ! echo "$$ts_url" | grep -qE "\-[0-9]+\.git$$"; then \
             echo "✅ TypeScript submodule: $$ts_url"; \
         else \
@@ -502,10 +502,10 @@ verify-repos:
             exit 1; \
         fi; \
     fi
-    @if [ ! -e dist/python/.git ]; then \
-        echo "⚠️  dist/python/ is not a git submodule (run setup-forks)"; \
+    @if [ ! -e dist/circular-py/.git ]; then \
+        echo "⚠️  dist/circular-py/ is not a git submodule (run setup-forks)"; \
     else \
-        py_url=$$(cd dist/python && git remote get-url origin); \
+        py_url=$$(cd dist/circular-py && git remote get-url origin); \
         if echo "$$py_url" | grep -q "circular-py\.git$$" && ! echo "$$py_url" | grep -qE "\-[0-9]+\.git$$"; then \
             echo "✅ Python submodule: $$py_url"; \
         else \
@@ -519,41 +519,41 @@ verify-repos:
 
 # Sync TypeScript package to submodule (lessuseless-systems/circular-js-npm fork)
 sync-typescript: verify-repos
-    @echo "Syncing TypeScript package to dist/typescript/ submodule"
-    @if [ ! -e dist/typescript/.git ]; then \
-        echo "[ERROR] dist/typescript/ is not a git submodule"; \
+    @echo "Syncing TypeScript package to dist/circular-ts/ submodule"
+    @if [ ! -e dist/circular-ts/.git ]; then \
+        echo "[ERROR] dist/circular-ts/ is not a git submodule"; \
         echo "  Run setup-forks to configure submodules"; \
         exit 1; \
     fi
     @echo "Generating TypeScript package"
     @just generate-ts-package
     @echo "Skipping LICENSE and gitignore (generators not yet implemented)"
-    @cd dist/typescript && \
+    @cd dist/circular-ts && \
         git add -A && \
         git diff --cached --quiet || \
         git commit -m "chore: sync generated TypeScript SDK from circular-canonical"
-    @echo "[OK] TypeScript package synced to dist/typescript/"
+    @echo "[OK] TypeScript package synced to dist/circular-ts/"
     @echo "  Branch: development"
-    @cd dist/typescript && git log -1 --oneline
+    @cd dist/circular-ts && git log -1 --oneline
 
 # Sync Python package to submodule (lessuseless-systems/circular-py fork)
 sync-python: verify-repos
-    @echo "Syncing Python package to dist/python/ submodule"
-    @if [ ! -e dist/python/.git ]; then \
-        echo "[ERROR] dist/python/ is not a git submodule"; \
+    @echo "Syncing Python package to dist/circular-py/ submodule"
+    @if [ ! -e dist/circular-py/.git ]; then \
+        echo "[ERROR] dist/circular-py/ is not a git submodule"; \
         echo "  Run setup-forks to configure submodules"; \
         exit 1; \
     fi
     @echo "Generating Python package"
     @just generate-py-package
     @echo "Skipping LICENSE (generator not yet implemented)"
-    @cd dist/python && \
+    @cd dist/circular-py && \
         git add -A && \
         git diff --cached --quiet || \
         git commit -m "chore: sync generated Python SDK from circular-canonical"
-    @echo "[OK] Python package synced to dist/python/"
+    @echo "[OK] Python package synced to dist/circular-py/"
     @echo "  Branch: development"
-    @cd dist/python && git log -1 --oneline
+    @cd dist/circular-py && git log -1 --oneline
 
 # Sync both TypeScript and Python packages (LEGACY)
 sync-all: sync-typescript sync-python
@@ -563,7 +563,7 @@ sync-all: sync-typescript sync-python
     @echo "================================================================"
     @echo ""
     @echo "Next steps:"
-    @echo "  *Review changes: cd dist/typescript && git status"
+    @echo "  *Review changes: cd dist/circular-ts && git status"
     @echo "  *Push to fork: just push-forks"
     @echo "  *Create PRs to upstream circular-protocol repos"
 
@@ -643,15 +643,15 @@ sync-all-sdks: sync-typescript sync-python sync-go sync-php sync-dart
 # Push development branches to lessuseless-systems forks
 push-forks:
     @echo "Pushing development branches to lessuseless-systems forks"
-    @if [ -e dist/typescript/.git ]; then \
-        echo "Pushing TypeScript (dist/typescript)"; \
-        cd dist/typescript && git push origin development; \
+    @if [ -e dist/circular-ts/.git ]; then \
+        echo "Pushing TypeScript (dist/circular-ts)"; \
+        cd dist/circular-ts && git push origin development; \
     else \
         echo "  [WARNING] Skipping TypeScript: not a submodule"; \
     fi
-    @if [ -e dist/python/.git ]; then \
-        echo "Pushing Python (dist/python)"; \
-        cd dist/python && git push origin development; \
+    @if [ -e dist/circular-py/.git ]; then \
+        echo "Pushing Python (dist/circular-py)"; \
+        cd dist/circular-py && git push origin development; \
     else \
         echo "  [WARNING] Skipping Python: not a submodule"; \
     fi
@@ -705,16 +705,16 @@ check-all-submodules:
 check-submodules:
     @echo "Checking submodule status"
     @echo ""
-    @if [ -e dist/typescript/.git ]; then \
-        echo "TypeScript (dist/typescript):"; \
-        cd dist/typescript && git status -sb; \
+    @if [ -e dist/circular-ts/.git ]; then \
+        echo "TypeScript (dist/circular-ts):"; \
+        cd dist/circular-ts && git status -sb; \
     else \
         echo "TypeScript: Not a submodule"; \
     fi
     @echo ""
-    @if [ -e dist/python/.git ]; then \
-        echo "Python (dist/python):"; \
-        cd dist/python && git status -sb; \
+    @if [ -e dist/circular-py/.git ]; then \
+        echo "Python (dist/circular-py):"; \
+        cd dist/circular-py && git status -sb; \
     else \
         echo "Python: Not a submodule"; \
     fi
@@ -842,7 +842,7 @@ test-e2e-ts:
         echo "  export CIRCULAR_PRIVATE_KEY=..."; \
         echo "  ⚠️  WARNING: Write tests create real blockchain transactions!"; \
     else \
-        cd dist/typescript && npm run test:e2e; \
+        cd dist/circular-ts && npm run test:e2e; \
     fi
 
 # Run E2E tests (Python) - gracefully skips if env vars missing
@@ -859,7 +859,7 @@ test-e2e-py:
         echo "  export CIRCULAR_PRIVATE_KEY=..."; \
         echo "  ⚠️  WARNING: Write tests create real blockchain transactions!"; \
     else \
-        cd dist/python && pytest tests/test_e2e.py -v -m e2e; \
+        cd dist/circular-py && pytest tests/test_e2e.py -v -m e2e; \
     fi
 
 # Run E2E tests (all languages) - gracefully skips if env vars missing
@@ -1121,8 +1121,8 @@ help:
     @echo ""
     @echo "Multi-Repo Workflow (Fork Sync):"
     @echo "  just setup-forks      *ONE-TIME: Fork repos, create dev branches, add submodules"
-    @echo "  just sync-typescript  *Sync generated TS to dist/typescript submodule"
-    @echo "  just sync-python      *Sync generated Python to dist/python submodule"
+    @echo "  just sync-typescript  *Sync generated TS to dist/circular-ts submodule"
+    @echo "  just sync-python      *Sync generated Python to dist/circular-py submodule"
     @echo "  just sync-all         *Sync both packages to submodules"
     @echo "  just push-forks       *Push development branches to lessuseless-systems"
     @echo "  just create-prs       *Create pull requests to upstream circular-protocol"

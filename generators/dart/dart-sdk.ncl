@@ -11,6 +11,8 @@ let asset = import "../../src/api/asset.ncl" in
 let domain = import "../../src/api/domain.ncl" in
 let network = import "../../src/api/network.ncl" in
 let convenience_methods = import "../../src/api/convenience-methods.ncl" in
+let helpers_encoding = import "../shared/helpers-encoding.ncl" in
+let helpers_advanced = import "../shared/helpers-advanced.ncl" in
 
 # Helper: Convert Nickel type to Dart type
 let nickel_type_to_dart = fun type_str =>
@@ -70,6 +72,57 @@ let generate_method = fun endpoint =>
 "%
 in
 
+# Helper: Generate convenience method (wraps API calls)
+let generate_convenience_method = fun method_name spec =>
+  m%"
+  /// %{spec.summary} (Convenience Method)
+  /// %{spec.description}
+  ///
+  /// This is a convenience method that wraps %{spec.wraps}().
+  /// It handles transaction construction internally.
+  ///
+  /// [blockchain] Blockchain where the wallet will be registered
+  /// [publicKey] Wallet public key (128 hex characters)
+  /// Returns: Same as sendTransaction response
+  Future<Map<String, dynamic>> %{method_name}(String blockchain, String publicKey) async {
+    // Derive addresses from public key
+    final from = hashString(publicKey);
+    final to = from;
+    final nonce = '%{spec.implementation.nonce}';
+    final type = '%{spec.implementation.transaction_type}';
+
+    // Build payload
+    final payloadObj = {
+      'Action': '%{spec.implementation.payload_structure.Action}',
+      'PublicKey': publicKey,
+    };
+    final payload = stringToHex(jsonEncode(payloadObj));
+    final timestamp = getFormattedTimestamp();
+
+    // Calculate transaction ID
+    final id = hashString(blockchain + from + to + payload + nonce + timestamp);
+    final signature = '%{spec.implementation.signature}';
+
+    // Build request
+    final request = {
+      'ID': id,
+      'From': from,
+      'To': to,
+      'Timestamp': timestamp,
+      'Type': type,
+      'Payload': payload,
+      'Nonce': nonce,
+      'Signature': signature,
+      'Blockchain': blockchain,
+      'Version': '%{config.version}',
+    };
+
+    // Call sendTransaction
+    return sendTransaction(request);
+  }
+"%
+in
+
 # Collect all endpoints
 let all_endpoints = [
   wallet.checkWallet,
@@ -99,6 +152,16 @@ let all_endpoints = [
 
 # Generate all methods
 let methods = std.array.map generate_method all_endpoints in
+
+# Generate convenience methods
+let convenience_method_specs = [
+  { name = "registerWallet", spec = convenience_methods.registerWallet },
+  # Future convenience methods can be added here
+] in
+let convenience_methods_code = std.array.map
+  (fun item => generate_convenience_method item.name item.spec)
+  convenience_method_specs
+in
 
 # Assemble the complete SDK
 {
@@ -149,6 +212,8 @@ class CircularProtocolAPI {
 
   /// Request timeout duration
   final Duration timeout;
+
+%{helpers_advanced.dart.errorField}
 
   /// Constructor
   CircularProtocolAPI({
@@ -259,6 +324,13 @@ class CircularProtocolAPI {
   // API Methods
   // ============================================================================
 %{std.string.join "\n" methods}
+
+  // ============================================================================
+  // Convenience Methods
+  // ============================================================================
+  // These methods wrap underlying API calls to simplify common workflows
+
+%{std.string.join "\n" convenience_methods_code}
 
   // ============================================================================
   // Cryptographic Helper Functions
@@ -422,6 +494,30 @@ class CircularProtocolAPI {
       'seed': seed,
     };
   }
+
+  // ============================================================================
+  // Helper Methods - Encoding
+  // ============================================================================
+
+%{helpers_encoding.dart.hexFix}
+
+%{helpers_encoding.dart.stringToHex}
+
+%{helpers_encoding.dart.hexToString}
+
+%{helpers_encoding.dart.padNumber}
+
+%{helpers_encoding.dart.getFormattedTimestamp}
+
+  // ============================================================================
+  // Helper Methods - Advanced
+  // ============================================================================
+
+%{helpers_advanced.dart.GetError}
+
+%{helpers_advanced.dart.handleError}
+
+%{helpers_advanced.dart.getTransactionOutcome}
 
   /// Close HTTP client
   void dispose() {
