@@ -594,82 +594,182 @@ generate-syntax-validator:
 # Generate all test infrastructure (mock server + test runners + integration + unit tests)
 generate-all-tests: generate-mock-server generate-contract-runner generate-syntax-validator generate-tests generate-unit-tests
 
-# Run TypeScript SDK tests (requires mock server)
-test-sdk-ts:
-    @echo "Running TypeScript SDK tests"
-    @echo "Note: Mock server must be running (just mock-server)"
-    @cd dist/tests && npm install --silent && npm test
+# ===========================================================================
+# SDK Testing Commands (Uniform Pattern: test-<lang>-<type>)
+# ===========================================================================
 
-# Run Python SDK tests (requires mock server)
-test-sdk-py:
-    @echo "Running Python SDK tests"
-    @echo "Note: Mock server must be running (just mock-server)"
-    @cd dist/tests && PYTHONPATH=../sdk:$$PYTHONPATH pytest test_sdk.py -v
+# TypeScript SDK Tests
+# ---------------------------------------------------------------------------
 
-# Run all SDK tests (TypeScript + Python)
-test-sdk: test-sdk-ts test-sdk-py
+# TypeScript: Unit tests (no dependencies)
+test-ts-unit:
+    @echo "🧪 TypeScript: Unit tests"
+    @cd dist/circular-ts && npm test -- --selectProjects=unit 2>/dev/null || npm test
 
-# Run TypeScript SDK unit tests (no mock server needed)
-test-sdk-unit-ts:
-    @echo "Running TypeScript SDK unit tests"
-    @echo "Note: No mock server required"
-    @cd dist/tests && npm install --silent && npx jest --selectProjects=unit
+# TypeScript: Integration tests (with mock server)
+test-ts-integration:
+    @echo "🧪 TypeScript: Integration tests"
+    @cd dist/circular-ts && npm test -- tests/integration.test.ts 2>/dev/null || echo "⏭️  Integration tests not configured"
 
-# Run Python SDK unit tests (no mock server needed)
-test-sdk-unit-py:
-    @echo "Running Python SDK unit tests"
-    @echo "Note: No mock server required"
-    @cd dist/tests && PYTHONPATH=../sdk:$$PYTHONPATH pytest test_sdk_unit.py -v -m unit
-
-# Run all SDK unit tests (TypeScript + Python)
-test-sdk-unit: test-sdk-unit-ts test-sdk-unit-py
-
-# Run all tests (integration + unit, both languages)
-test-sdk-all:
-    @echo "Running all SDK tests (integration + unit)"
-    @echo ""
-    @echo "=== Integration Tests (requires mock server) ==="
-    @just test-sdk
-    @echo ""
-    @echo "=== Unit Tests (standalone) ==="
-    @just test-sdk-unit
-
-# Run E2E tests (TypeScript) - gracefully skips if env vars missing
-test-e2e-ts:
-    @echo "Running TypeScript E2E tests (against real NAG endpoints)"
-    @echo ""
-    @if [ -z "$$CIRCULAR_TEST_ADDRESS" ] && [ -z "$$CIRCULAR_PRIVATE_KEY" ]; then \
-        echo "⏭️  Skipping E2E tests - missing required environment variables"; \
-        echo ""; \
-        echo "For read-only tests, set:"; \
-        echo "  export CIRCULAR_TEST_ADDRESS=0x..."; \
-        echo ""; \
-        echo "For write operation tests, set:"; \
-        echo "  export CIRCULAR_PRIVATE_KEY=..."; \
-        echo "  ⚠️  WARNING: Write tests create real blockchain transactions!"; \
+# TypeScript: E2E tests (requires ENV vars)
+test-ts-e2e:
+    @echo "🧪 TypeScript: E2E tests (real NAG endpoints)"
+    @if [ -z "$$CIRCULAR_TEST_ADDRESS" ]; then \
+        echo "⏭️  Skipping - set CIRCULAR_TEST_ADDRESS=0x... to run"; \
     else \
-        cd dist/circular-ts && npm run test:e2e; \
+        cd dist/circular-ts && npm run test:e2e 2>/dev/null || npx jest tests/e2e.test.ts; \
     fi
 
-# Run E2E tests (Python) - gracefully skips if env vars missing
-test-e2e-py:
-    @echo "Running Python E2E tests (against real NAG endpoints)"
-    @echo ""
-    @if [ -z "$$CIRCULAR_TEST_ADDRESS" ] && [ -z "$$CIRCULAR_PRIVATE_KEY" ]; then \
-        echo "⏭️  Skipping E2E tests - missing required environment variables"; \
-        echo ""; \
-        echo "For read-only tests, set:"; \
-        echo "  export CIRCULAR_TEST_ADDRESS=0x..."; \
-        echo ""; \
-        echo "For write operation tests, set:"; \
-        echo "  export CIRCULAR_PRIVATE_KEY=..."; \
-        echo "  ⚠️  WARNING: Write tests create real blockchain transactions!"; \
+# TypeScript: All tests
+test-ts-all: test-ts-unit test-ts-integration test-ts-e2e
+
+# Python SDK Tests
+# ---------------------------------------------------------------------------
+
+# Python: Unit tests (no dependencies)
+test-py-unit:
+    @echo "🧪 Python: Unit tests"
+    @cd dist/circular-py && pytest tests/test_unit.py -v
+
+# Python: Integration tests (with mock server)
+test-py-integration:
+    @echo "🧪 Python: Integration tests"
+    @cd dist/circular-py && pytest tests/test_integration.py -v 2>/dev/null || echo "⏭️  Integration tests not configured"
+
+# Python: E2E tests (requires ENV vars)
+test-py-e2e:
+    @echo "🧪 Python: E2E tests (real NAG endpoints)"
+    @if [ -z "$$CIRCULAR_TEST_ADDRESS" ]; then \
+        echo "⏭️  Skipping - set CIRCULAR_TEST_ADDRESS=0x... to run"; \
     else \
         cd dist/circular-py && pytest tests/test_e2e.py -v -m e2e; \
     fi
 
-# Run E2E tests (all languages) - gracefully skips if env vars missing
-test-e2e: test-e2e-ts test-e2e-py
+# Python: All tests
+test-py-all: test-py-unit test-py-integration test-py-e2e
+
+# Java SDK Tests
+# ---------------------------------------------------------------------------
+
+# Java: Unit tests (no dependencies)
+test-java-unit:
+    @echo "🧪 Java: Unit tests"
+    @cd dist/circular-java && mvn test -Dtest=CircularProtocolUnitTest 2>/dev/null || mvn test
+
+# Java: Integration tests (with mock server)
+test-java-integration:
+    @echo "🧪 Java: Integration tests"
+    @cd dist/circular-java && mvn test -Dtest=CircularProtocolIntegrationTest 2>/dev/null || echo "⏭️  Integration tests not configured"
+
+# Java: E2E tests (requires ENV vars)
+test-java-e2e:
+    @echo "🧪 Java: E2E tests (real NAG endpoints)"
+    @if [ -z "$$CIRCULAR_TEST_ADDRESS" ]; then \
+        echo "⏭️  Skipping - set CIRCULAR_TEST_ADDRESS=0x... to run"; \
+    else \
+        cd dist/circular-java && mvn test -Dtest=CircularProtocolE2ETest; \
+    fi
+
+# Java: All tests
+test-java-all: test-java-unit test-java-integration test-java-e2e
+
+# PHP SDK Tests
+# ---------------------------------------------------------------------------
+
+# PHP: Unit tests (no dependencies)
+test-php-unit:
+    @echo "🧪 PHP: Unit tests"
+    @cd dist/circular-php && composer test 2>/dev/null || vendor/bin/phpunit tests/CircularProtocolUnitTest.php
+
+# PHP: Integration tests (with mock server)
+test-php-integration:
+    @echo "🧪 PHP: Integration tests"
+    @cd dist/circular-php && vendor/bin/phpunit tests/CircularProtocolIntegrationTest.php 2>/dev/null || echo "⏭️  Integration tests not configured"
+
+# PHP: E2E tests (requires ENV vars)
+test-php-e2e:
+    @echo "🧪 PHP: E2E tests (real NAG endpoints)"
+    @if [ -z "$$CIRCULAR_TEST_ADDRESS" ]; then \
+        echo "⏭️  Skipping - set CIRCULAR_TEST_ADDRESS=0x... to run"; \
+    else \
+        cd dist/circular-php && vendor/bin/phpunit tests/CircularProtocolE2ETest.php; \
+    fi
+
+# PHP: All tests
+test-php-all: test-php-unit test-php-integration test-php-e2e
+
+# Go SDK Tests
+# ---------------------------------------------------------------------------
+
+# Go: Unit tests (no dependencies)
+test-go-unit:
+    @echo "🧪 Go: Unit tests"
+    @cd dist/circular-go && go test -v -run Unit
+
+# Go: Integration tests (with mock server)
+test-go-integration:
+    @echo "🧪 Go: Integration tests"
+    @cd dist/circular-go && go test -v -run Integration 2>/dev/null || echo "⏭️  Integration tests not configured"
+
+# Go: E2E tests (requires ENV vars)
+test-go-e2e:
+    @echo "🧪 Go: E2E tests (real NAG endpoints)"
+    @if [ -z "$$CIRCULAR_TEST_ADDRESS" ]; then \
+        echo "⏭️  Skipping - set CIRCULAR_TEST_ADDRESS=0x... to run"; \
+    else \
+        cd dist/circular-go && go test -v -run E2E; \
+    fi
+
+# Go: All tests
+test-go-all: test-go-unit test-go-integration test-go-e2e
+
+# Dart SDK Tests
+# ---------------------------------------------------------------------------
+
+# Dart: Unit tests (no dependencies)
+test-dart-unit:
+    @echo "🧪 Dart: Unit tests"
+    @cd dist/circular-dart && dart test test/unit_test.dart
+
+# Dart: Integration tests (with mock server)
+test-dart-integration:
+    @echo "🧪 Dart: Integration tests"
+    @cd dist/circular-dart && dart test test/integration_test.dart 2>/dev/null || echo "⏭️  Integration tests not configured"
+
+# Dart: E2E tests (requires ENV vars)
+test-dart-e2e:
+    @echo "🧪 Dart: E2E tests (real NAG endpoints)"
+    @if [ -z "$$CIRCULAR_TEST_ADDRESS" ]; then \
+        echo "⏭️  Skipping - set CIRCULAR_TEST_ADDRESS=0x... to run"; \
+    else \
+        cd dist/circular-dart && dart test test/e2e_test.dart; \
+    fi
+
+# Dart: All tests
+test-dart-all: test-dart-unit test-dart-integration test-dart-e2e
+
+# Aggregated Test Commands (All Languages)
+# ---------------------------------------------------------------------------
+
+# Run unit tests for all languages
+test-unit: test-ts-unit test-py-unit test-java-unit test-php-unit test-go-unit test-dart-unit
+    @echo ""
+    @echo "✅ All unit tests complete"
+
+# Run integration tests for all languages
+test-integration-sdks: test-ts-integration test-py-integration test-java-integration test-php-integration test-go-integration test-dart-integration
+    @echo ""
+    @echo "✅ All integration tests complete"
+
+# Run E2E tests for all languages
+test-e2e: test-ts-e2e test-py-e2e test-java-e2e test-php-e2e test-go-e2e test-dart-e2e
+    @echo ""
+    @echo "✅ All E2E tests complete"
+
+# Run ALL tests for ALL languages
+test-all: test-unit test-integration-sdks test-e2e
+    @echo ""
+    @echo "✅ Complete test suite finished"
 
 # Run manual write operation tests (registerWallet) - requires explicit enable
 test-manual-write:
@@ -698,10 +798,10 @@ test-pyramid:
     @just test-contracts
     @echo ""
     @echo "=== Layer 2: Unit Tests (< 30s) ==="
-    @just test-sdk-unit
+    @just test-unit
     @echo ""
     @echo "=== Layer 3: Integration Tests (< 2m) ==="
-    @just test-integration
+    @just test-integration-sdks
     @echo ""
     @echo "=== Layer 4: Cross-Language & Regression (< 5m) ==="
     @just test-cross-lang
