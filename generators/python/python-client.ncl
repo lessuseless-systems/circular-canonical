@@ -338,6 +338,96 @@ class CircularProtocolAPI:
         \"\"\"Get human-readable transaction outcome.\"\"\"
         return get_transaction_outcome(transaction_result)
 
+    def get_version(self) -> str:
+        \"\"\"
+        Get the API version.
+
+        Returns:
+            str: API version string (e.g., '1.0.8')
+        \"\"\"
+        return self.version
+
+    def set_node(self, address: str) -> None:
+        \"\"\"
+        Set the primary node address for querying blockchain.
+
+        Args:
+            address: Node address or URL
+        \"\"\"
+        self.base_url = address
+
+    # ============================================================================
+    # Convenience Methods
+    # ============================================================================
+
+    def register_wallet(self, blockchain: str, public_key: str) -> Dict:
+        \"\"\"
+        Register wallet on blockchain.
+
+        This convenience method wraps sendTransaction to create a wallet
+        registration transaction. It handles all transaction construction:
+        - Derives From/To addresses from public key (sha256)
+        - Builds registration payload
+        - Calculates transaction ID
+        - Sets appropriate nonce and signature
+
+        Without registration, the wallet will not be reachable on the blockchain.
+        The same wallet can be registered on multiple blockchains.
+
+        Args:
+            blockchain: Blockchain where the wallet will be registered (e.g., 'MainNet')
+            public_key: Wallet public key (128 hex characters, uncompressed secp256k1)
+
+        Returns:
+            Dict: Transaction result with TransactionID and Status
+
+        Raises:
+            CircularProtocolError: If the registration fails
+            APIConnectionError: If unable to connect to the API
+            APITimeoutError: If the request times out
+
+        Example:
+            >>> from circular_protocol_api._crypto import get_public_key
+            >>> public_key = get_public_key(private_key)
+            >>> result = api.register_wallet('MainNet', public_key)
+            >>> print(f'Transaction ID: {result[\"Response\"][\"TransactionID\"]}')
+        \"\"\"
+        import json
+
+        # Derive addresses from public key (sha256)
+        from_address = self.hash_string(public_key)
+        to_address = from_address
+
+        # Build payload
+        payload_obj = {
+            \"Action\": \"CP_REGISTERWALLET\",
+            \"PublicKey\": public_key
+        }
+        payload = self.string_to_hex(json.dumps(payload_obj))
+
+        # Transaction metadata
+        transaction_type = \"C_TYPE_REGISTERWALLET\"
+        nonce = \"0\"
+        signature = \"\"
+        timestamp = self.get_formatted_timestamp()
+
+        # Calculate transaction ID
+        id_input = blockchain + from_address + to_address + payload + nonce + timestamp
+        transaction_id = self.hash_string(id_input)
+
+        # Send transaction
+        return self.send_transaction(
+            blockchain=blockchain,
+            from_address=from_address,
+            to_address=to_address,
+            transaction_id=transaction_id,
+            nonce=nonce,
+            payload=payload,
+            signature=signature,
+            timestamp=timestamp,
+            tx_type=transaction_type
+        )
+
     # ============================================================================
     # API Methods
     # ============================================================================
