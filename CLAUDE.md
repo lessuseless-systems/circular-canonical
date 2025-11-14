@@ -221,13 +221,13 @@ nickel repl
    - URL: `git@github.com:lessuseless-systems/circular-js-npm.git`
    - Purpose: Generated TypeScript SDK
    - Branch: `development`
-   - Submodule at: `dist/typescript/`
+   - Submodule at: `dist/circular-ts/`
 
 3. **circular-py** - Python SDK (generated)
    - URL: `git@github.com:lessuseless-systems/circular-py.git`
    - Purpose: Generated Python SDK
    - Branch: `development`
-   - Submodule at: `dist/python/`
+   - Submodule at: `dist/circular-py/`
 
 **Never push to:**
 - `circular-canonicle` (typo)

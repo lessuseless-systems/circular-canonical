@@ -217,8 +217,8 @@ Enhanced existing generators:
 - ✅ `generators/python/tests/python-unit-tests.ncl` (621 lines, 51 tests)
 
 Generated unit tests for 21 helper functions across both languages:
-- ✅ `dist/typescript/tests/index.test.ts` (610 lines, 38 tests)
-- ✅ `dist/python/tests/test_unit.py` (597 lines, 45 tests)
+- ✅ `dist/circular-ts/tests/index.test.ts` (610 lines, 38 tests)
+- ✅ `dist/circular-py/tests/test_unit.py` (597 lines, 45 tests)
 
 **Result**: 1,207 lines of test code generated from 21 helper test specifications
 
@@ -399,9 +399,9 @@ Non-breaking (MINOR/PATCH allowed):
 **Execution**: Always runs automatically, no dependencies
 **Speed**: < 30 seconds
 **Commands**:
-- TypeScript: `cd dist/typescript && npm test`
-- Python: `cd dist/python && pytest tests/test_unit.py`
-- All: `just test-sdk-unit`
+- TypeScript: `cd dist/circular-ts && npm test`
+- Python: `cd dist/circular-py && pytest tests/test_unit.py`
+- All: `just test-unit`
 **Environment Variables**: None required
 **CI/CD**: Runs on every push to development/main
 
@@ -426,8 +426,8 @@ Non-breaking (MINOR/PATCH allowed):
 **Execution**: Runs automatically IF environment variables are present, **skips gracefully** if missing
 **Speed**: Variable (depends on real NAG response time)
 **Commands**:
-- TypeScript: `just test-e2e-ts` or `cd dist/typescript && npm run test:e2e`
-- Python: `just test-e2e-py` or `cd dist/python && pytest tests/test_e2e.py -v -m e2e`
+- TypeScript: `just test-ts-e2e` or `cd dist/circular-ts && npm run test:e2e`
+- Python: `just test-py-e2e` or `cd dist/circular-py && pytest tests/test_e2e.py -v -m e2e`
 - All: `just test-e2e`
 
 **Environment Variables** (Read-Only Tests):
@@ -495,7 +495,7 @@ export CIRCULAR_NAG_URL="https://nag.circularlabs.io/NAG.php?cep="
 just validate
 
 # Unit tests only (< 30s)
-just test-sdk-unit
+just test-unit
 
 # Pre-commit (< 2m)
 just test
@@ -526,7 +526,7 @@ just test-manual-write
 - name: Run L1-L4 tests (always)
   run: |
     just test-contracts
-    just test-sdk-unit
+    just test-unit
     just test-integration
     just test-cross-lang
 
@@ -618,7 +618,7 @@ just test-manual-write
 |--------------------------|-----------|--------|-------------------|-----------------------------------|
 | `just validate`          | L1        | < 5s   | None              | Quick type checking               |
 | `just test-contracts`    | L1        | < 5s   | None              | Contract validation only          |
-| `just test-sdk-unit`     | L2        | < 30s  | None              | Unit tests only                   |
+| `just test-unit`         | L2        | < 30s  | None              | Unit tests only                   |
 | `just test-integration`  | L3        | < 2m   | None (mock)       | Integration tests only            |
 | `just test-cross-lang`   | L4        | < 5m   | None              | Cross-language & regression       |
 | `just test`              | L1-L2     | < 30s  | None              | Pre-commit checks                 |
@@ -634,10 +634,10 @@ just test-contracts
 ./dist/tests/run-contract-tests.sh
 
 # Layer 2: Unit tests
-just test-sdk-unit
+just test-unit
 # Or per language:
-just test-sdk-unit-ts    # TypeScript only
-just test-sdk-unit-py    # Python only
+just test-ts-unit        # TypeScript only
+just test-py-unit        # Python only
 
 # Layer 3: Integration tests (requires mock server)
 just test-integration
@@ -648,8 +648,8 @@ just test-cross-lang
 # Layer 5a: E2E tests (gracefully skips if env vars missing)
 just test-e2e
 # Or per language:
-just test-e2e-ts         # TypeScript only
-just test-e2e-py         # Python only
+just test-ts-e2e         # TypeScript only
+just test-py-e2e         # Python only
 
 # Layer 5b: Manual write tests (requires explicit enable)
 just test-manual-write
@@ -661,7 +661,7 @@ just test-manual-write
 just validate
 
 # Fast feedback loop (< 30 seconds)
-just test-sdk-unit
+just test-unit
 
 # Pre-commit checks (< 2 minutes)
 just test
