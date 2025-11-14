@@ -31,7 +31,7 @@ API_VERSION = '%{config.version}'
 @pytest.fixture
 def api():
     \"\"\"Fixture providing API client\"\"\"
-    return CircularProtocolAPI(TEST_URL)
+    return CircularProtocolAPI(base_url=TEST_URL)
 
 
 @pytest.fixture
