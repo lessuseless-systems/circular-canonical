@@ -21,11 +21,11 @@ addopts =
     --strict-markers
     --strict-config
 
-    # Coverage reporting
-    --cov=circular_protocol_api
-    --cov-report=term-missing
-    --cov-report=html
-    --cov-report=xml
+    # Coverage reporting (disabled - requires pytest-cov in environment)
+    # --cov=circular_protocol_api
+    # --cov-report=term-missing
+    # --cov-report=html
+    # --cov-report=xml
 
     # Output options
     --verbose
@@ -43,8 +43,8 @@ markers =
     slow: Slow-running tests
     network: Tests requiring network access
 
-# Asyncio configuration
-asyncio_mode = auto
+# Asyncio configuration (disabled - requires pytest-asyncio plugin)
+# asyncio_mode = auto
 
 # Minimum Python version
 minversion = 7.0
@@ -58,9 +58,9 @@ log_cli_level = INFO
 log_cli_format = %%(asctime)s [%%(levelname)8s] %%(message)s
 log_cli_date_format = %%Y-%%m-%%d %%H:%%M:%%S
 
-# Timeout (prevent hanging tests)
-timeout = 300
-timeout_method = thread
+# Timeout (prevent hanging tests - requires pytest-timeout plugin)
+# timeout = 300
+# timeout_method = thread
 
 # Coverage options
 [coverage:run]
