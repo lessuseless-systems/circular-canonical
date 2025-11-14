@@ -32,7 +32,7 @@ import java.util.concurrent.CompletableFuture;
  * Tests SDK helper functions and basic functionality
  */
 @DisplayName("CircularProtocolAPI Unit Tests")
-class CircularProtocolAPITest {
+class CircularProtocolUnitTest {
 
     private CircularProtocolAPI api;
 

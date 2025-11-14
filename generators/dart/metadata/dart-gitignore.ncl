@@ -1,0 +1,54 @@
+# Dart .gitignore Generator
+# Generates .gitignore for Dart/Flutter packages
+
+let config = import "../../../src/config.ncl" in
+
+{
+  gitignore_content = m%"
+# Dart/Flutter build artifacts
+.dart_tool/
+.packages
+build/
+pubspec.lock
+
+# Flutter/Dart code coverage
+coverage/
+*.coverage
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# VS Code
+.vscode/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Linux
+*~
+
+# Test coverage
+.test_coverage.dart
+
+# Generated files
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+
+# Miscellaneous
+.env
+*.log
+"%,
+
+  # Metadata
+  metadata = {
+    version = config.version,
+    language = "Dart",
+  },
+}

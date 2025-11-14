@@ -10,6 +10,7 @@
     "/getWalletBalance" = "get_wallet_balance",
     "/getWalletNonce" = "get_wallet_nonce",
     "/registerWallet" = "register_wallet",
+    "/AddTransaction" = "send_transaction",
     "/sendTransaction" = "send_transaction",
     "/getPendingTransaction" = "get_pending_transaction",
     "/getTransactionbyID" = "get_transaction_by_id",

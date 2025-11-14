@@ -6,7 +6,7 @@ let types = import "../schemas/types.ncl" in
 {
   sendTransaction = {
     method = "POST",
-    path = "/sendTransaction",
+    path = "/AddTransaction",
     summary = "Submit transaction to blockchain",
     description = m%"
       Submits a transaction to the blockchain. Requires a complete signed transaction
@@ -96,10 +96,10 @@ let types = import "../schemas/types.ncl" in
       from = "0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb",
       to = "0x9876543210fedcba9876543210fedcba98765432",
       timestamp = "2024-01-15:10:30:00",
-      type = "C_TYPE_TRANSACTION",
-      payload = "0x48656c6c6f",
+      type = "C_TYPE_CERTIFICATE",
+      payload = "7b22416374696f6e223a202243505f4345525449464943415445222c202244617461223a20223132333435227d",
       nonce = "5",
-      signature = "0xsig123...",
+      signature = "304402205412b07cc922e58b0c167f1a2edb78ca43b064c5b99b3475fc7422f198677bb902202332d606a27ddb1c14c2adf731527eb9fc0eb9c597305ccbfce31a82a7a4a2df",
       blockchain = "MainNet",
     },
 

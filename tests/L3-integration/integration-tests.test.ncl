@@ -106,29 +106,13 @@ let types = import "../../src/schemas/types.ncl" in
       ],
     },
 
-    register_wallet = {
-      description = "Should register a new wallet",
-      endpoint = "registerWallet",
-      request = {
-        Blockchain = 'MainNet,
-        Address = "0xcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
-        PublicKey = "0x04abcdef1234567890",
-        Version = config.version,
-      },
-      expected_result = 200,
-      expected_fields = ["success", "address"],
-      assertions = [
-        { field = "Result", operator = "equals", value = 200 },
-        { field = "Response.success", operator = "equals", value = true },
-      ],
-    },
   },
 
-  # Transaction API Tests (6 tests)
+  # Transaction API Tests (5 tests)
   transaction_tests = {
-    send_transaction = {
+    add_transaction = {
       description = "Should submit a transaction to blockchain",
-      endpoint = "sendTransaction",
+      endpoint = "addTransaction",
       request = {
         ID = "0xaabbccdd11223344",
         From = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",

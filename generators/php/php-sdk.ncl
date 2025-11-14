@@ -10,6 +10,7 @@ let contract = import "../../src/api/contract.ncl" in
 let asset = import "../../src/api/asset.ncl" in
 let domain = import "../../src/api/domain.ncl" in
 let network = import "../../src/api/network.ncl" in
+let convenience_methods = import "../../src/api/convenience-methods.ncl" in
 
 # Helper: Convert Nickel type to PHP type hint
 let nickel_type_to_php = fun type_str =>
@@ -70,14 +71,69 @@ let generate_method = fun endpoint =>
 "%
 in
 
-# Collect all endpoints
+# Helper: Generate convenience method (wraps API calls)
+let generate_convenience_method = fun method_name spec =>
+  m%"
+    /**
+     * %{spec.summary} (Convenience Method)
+     * %{spec.description}
+     *
+     * This is a convenience method that wraps %{spec.wraps}().
+     * It handles transaction construction internally.
+     *
+     * @param string $blockchain Blockchain where the wallet will be registered
+     * @param string $publicKey Wallet public key (128 hex characters)
+     * @return array Same as send_transaction response
+     * @throws CircularProtocolException
+     */
+    public function %{method_name}(string $blockchain, string $publicKey): array
+    {
+        // Derive addresses from public key
+        $from = $this->hashString($publicKey);
+        $to = $from;
+        $nonce = '%{spec.implementation.nonce}';
+        $type = '%{spec.implementation.transaction_type}';
+
+        // Build payload
+        $payloadObj = [
+            'Action' => '%{spec.implementation.payload_structure.Action}',
+            'PublicKey' => $publicKey
+        ];
+        $payload = $this->stringToHex(json_encode($payloadObj, JSON_UNESCAPED_SLASHES));
+        $timestamp = $this->getFormattedTimestamp();
+
+        // Calculate transaction ID
+        $id = $this->hashString($blockchain . $from . $to . $payload . $nonce . $timestamp);
+        $signature = '%{spec.implementation.signature}';
+
+        // Build request
+        $request = [
+            'ID' => $id,
+            'From' => $from,
+            'To' => $to,
+            'Timestamp' => $timestamp,
+            'Type' => $type,
+            'Payload' => $payload,
+            'Nonce' => $nonce,
+            'Signature' => $signature,
+            'Blockchain' => $blockchain,
+            'Version' => '%{config.version}'
+        ];
+
+        // Call sendTransaction
+        return $this->send_transaction($request);
+    }
+"%
+in
+
+# Collect all endpoints (real API endpoints only - no convenience methods)
 let all_endpoints = [
   wallet.checkWallet,
   wallet.getWallet,
   wallet.getLatestTransactions,
   wallet.getWalletBalance,
   wallet.getWalletNonce,
-  wallet.registerWallet,
+  # Note: registerWallet removed - it's now a convenience method, not an endpoint
   transaction.sendTransaction,
   transaction.getPendingTransaction,
   transaction.getTransactionbyID,
@@ -100,6 +156,16 @@ let all_endpoints = [
 
 # Generate all methods
 let methods = std.array.map generate_method all_endpoints in
+
+# Generate convenience methods
+let convenience_method_specs = [
+  { name = "register_wallet", spec = convenience_methods.registerWallet },
+  # Future convenience methods can be added here
+] in
+let convenience_methods_code = std.array.map
+  (fun item => generate_convenience_method item.name item.spec)
+  convenience_method_specs
+in
 
 # Assemble the complete SDK
 {
@@ -285,6 +351,13 @@ class CircularProtocolAPI
     // API Methods
     // ============================================================================
 %{std.string.join "\n" methods}
+
+    // ============================================================================
+    // Convenience Methods
+    // ============================================================================
+    // These methods wrap underlying API calls to simplify common workflows
+
+%{std.string.join "\n" convenience_methods_code}
 }
 
 /**

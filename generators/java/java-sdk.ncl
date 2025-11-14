@@ -10,6 +10,7 @@ let contract = import "../../src/api/contract.ncl" in
 let asset = import "../../src/api/asset.ncl" in
 let domain = import "../../src/api/domain.ncl" in
 let network = import "../../src/api/network.ncl" in
+let convenience_methods = import "../../src/api/convenience-methods.ncl" in
 let helpers_crypto = import "../shared/helpers-crypto.ncl" in
 let helpers_encoding = import "../shared/helpers-encoding.ncl" in
 let helpers_config = import "../shared/helpers-config.ncl" in
@@ -145,14 +146,73 @@ let generate_method = fun endpoint =>
 "%
 in
 
-# Collect all endpoints
+# Helper: Generate convenience method (wraps API calls)
+let generate_convenience_method = fun method_name spec =>
+  m%"
+    /**
+     * %{spec.summary} (Convenience Method)
+     * %{spec.description}
+     *
+     * This is a convenience method that wraps %{spec.wraps}().
+     * It handles transaction construction internally.
+     *
+     * @param blockchain Blockchain where the wallet will be registered
+     * @param publicKey Wallet public key (128 hex characters)
+     * @return CompletableFuture<Map<String, Object>>
+     */
+    public CompletableFuture<Map<String, Object>> %{method_name}(String blockchain, String publicKey) {
+        // Derive addresses from public key
+        String from = hashString(publicKey);
+        String to = from;
+        String nonce = "%{spec.implementation.nonce}";
+        String type = "%{spec.implementation.transaction_type}";
+
+        // Build payload
+        Map<String, String> payloadObj = new HashMap<>();
+        payloadObj.put("Action", "%{spec.implementation.payload_structure.Action}");
+        payloadObj.put("PublicKey", publicKey);
+
+        ObjectMapper mapper = new ObjectMapper();
+        String payloadJson;
+        try {
+            payloadJson = mapper.writeValueAsString(payloadObj);
+        } catch (Exception e) {
+            return CompletableFuture.failedFuture(e);
+        }
+        String payload = stringToHex(payloadJson);
+        String timestamp = getFormattedTimestamp();
+
+        // Calculate transaction ID
+        String id = hashString(blockchain + from + to + payload + nonce + timestamp);
+        String signature = "%{spec.implementation.signature}";
+
+        // Build request
+        Map<String, Object> request = new HashMap<>();
+        request.put("ID", id);
+        request.put("From", from);
+        request.put("To", to);
+        request.put("Timestamp", timestamp);
+        request.put("Type", type);
+        request.put("Payload", payload);
+        request.put("Nonce", nonce);
+        request.put("Signature", signature);
+        request.put("Blockchain", blockchain);
+        request.put("Version", this.version != null ? this.version : "%{config.version}");
+
+        // Call sendTransaction
+        return sendTransaction(request);
+    }
+"%
+in
+
+# Collect all endpoints (real API endpoints only - no convenience methods)
 let all_endpoints = [
   wallet.checkWallet,
   wallet.getWallet,
   wallet.getLatestTransactions,
   wallet.getWalletBalance,
   wallet.getWalletNonce,
-  wallet.registerWallet,
+  # Note: registerWallet removed - it's now a convenience method, not an endpoint
   transaction.sendTransaction,
   transaction.getPendingTransaction,
   transaction.getTransactionbyID,
@@ -181,6 +241,16 @@ let response_classes = std.array.map generate_response_class all_endpoints in
 
 # Generate all methods
 let methods = std.array.map generate_method all_endpoints in
+
+# Generate convenience methods
+let convenience_method_specs = [
+  { name = "registerWallet", spec = convenience_methods.registerWallet },
+  # Future convenience methods can be added here
+] in
+let convenience_methods_code = std.array.map
+  (fun item => generate_convenience_method item.name item.spec)
+  convenience_method_specs
+in
 
 # Assemble the complete SDK
 {
@@ -359,6 +429,13 @@ public class CircularProtocolAPI {
     // ============================================================================
 
 %{std.string.join "\n" methods}
+
+    // ============================================================================
+    // Convenience Methods
+    // ============================================================================
+    // These methods wrap underlying API calls to simplify common workflows
+
+%{std.string.join "\n" convenience_methods_code}
 
     // ============================================================================
     // Request/Response Classes

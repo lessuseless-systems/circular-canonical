@@ -83,39 +83,36 @@ import sha256 from 'sha256';
 
     # Import statements for Python
     imports = m%"
-from cryptography.hazmat.primitives.asymmetric import ec
-from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.backends import default_backend
 import hashlib
+from ecdsa import SigningKey, SECP256k1
+from ecdsa.util import sigencode_der, sigdecode_der
 "%,
 
     # Sign a message
     signMessage = m%"
     def sign_message(self, message: str, private_key: str) -> str:
         """
-        Sign a message using secp256k1
+        Sign a message using secp256k1 with DER encoding
 
         Args:
-            message: Message to sign
+            message: Message to sign (will be SHA256 hashed)
             private_key: Private key in hex format (with or without '0x' prefix)
 
         Returns:
-            Signature as hex string (r||s format, 64 bytes)
+            DER-encoded signature as hex string
         """
-        private_key_bytes = bytes.fromhex(self.hex_fix(private_key))
-        private_key_int = int.from_bytes(private_key_bytes, byteorder='big')
-        sk = ec.derive_private_key(private_key_int, ec.SECP256K1(), default_backend())
+        # Remove 0x prefix if present
+        clean_key = self.hex_fix(private_key)
 
-        # Hash message once (matching TypeScript sha256 behavior)
-        msg_hash = hashlib.sha256(message.encode()).digest()
+        # Create signing key
+        private_key_bytes = bytes.fromhex(clean_key)
+        sk = SigningKey.from_string(private_key_bytes, curve=SECP256k1)
 
-        # Sign with Prehashed to avoid double-hashing (sk.sign would hash again otherwise)
-        from cryptography.hazmat.primitives.asymmetric.utils import Prehashed, decode_dss_signature
-        signature_der = sk.sign(msg_hash, ec.ECDSA(Prehashed(hashes.SHA256())))
+        # Hash the message
+        message_hash = hashlib.sha256(message.encode()).digest()
 
-        # Convert DER to raw r||s format for consistency with TypeScript
-        r, s = decode_dss_signature(signature_der)
-        signature_bytes = r.to_bytes(32, 'big') + s.to_bytes(32, 'big')
+        # Sign with DER encoding (matching circular-js behavior)
+        signature_bytes = sk.sign_digest(message_hash, sigencode=sigencode_der)
         return signature_bytes.hex()
 "%,
 
@@ -123,37 +120,33 @@ import hashlib
     verifySignature = m%"
     def verify_signature(self, public_key: str, message: str, signature: str) -> bool:
         """
-        Verify a signature
+        Verify a DER-encoded signature
 
         Args:
-            public_key: Public key in hex format (uncompressed, 64 bytes)
+            public_key: Public key in hex format (uncompressed, 64 bytes without 0x04 prefix)
             message: Original message that was signed
-            signature: Signature in hex format (r||s format, 64 bytes)
+            signature: DER-encoded signature in hex format
 
         Returns:
             True if signature is valid, False otherwise
         """
         try:
+            from ecdsa import VerifyingKey
+
+            # Parse public key
             public_key_bytes = bytes.fromhex(self.hex_fix(public_key))
             # Add uncompressed point prefix if needed (0x04)
             if len(public_key_bytes) == 64:
                 public_key_bytes = b'\x04' + public_key_bytes
 
-            vk = ec.EllipticCurvePublicKey.from_encoded_point(ec.SECP256K1(), public_key_bytes)
+            vk = VerifyingKey.from_string(public_key_bytes[1:], curve=SECP256k1)
 
-            # Hash message once (matching TypeScript sha256 behavior)
-            msg_hash = hashlib.sha256(message.encode()).digest()
+            # Hash the message
+            message_hash = hashlib.sha256(message.encode()).digest()
 
-            # Convert r||s format to DER
-            signature_bytes = bytes.fromhex(signature)
-            r = int.from_bytes(signature_bytes[:32], 'big')
-            s = int.from_bytes(signature_bytes[32:], 'big')
-
-            from cryptography.hazmat.primitives.asymmetric.utils import Prehashed, encode_dss_signature
-            signature_der = encode_dss_signature(r, s)
-
-            # Verify with Prehashed to match signing behavior
-            vk.verify(signature_der, msg_hash, ec.ECDSA(Prehashed(hashes.SHA256())))
+            # Verify DER-encoded signature
+            signature_bytes = bytes.fromhex(self.hex_fix(signature))
+            vk.verify_digest(signature_bytes, message_hash, sigdecode=sigdecode_der)
             return True
         except Exception:
             return False
@@ -171,16 +164,18 @@ import hashlib
         Returns:
             Public key in uncompressed hex format (64 bytes, without 0x04 prefix)
         """
-        private_key_bytes = bytes.fromhex(self.hex_fix(private_key))
-        private_key_int = int.from_bytes(private_key_bytes, byteorder='big')
-        sk = ec.derive_private_key(private_key_int, ec.SECP256K1(), default_backend())
-        vk = sk.public_key()
-        public_key_bytes = vk.public_bytes(
-            encoding=serialization.Encoding.X962,
-            format=serialization.PublicFormat.UncompressedPoint
-        )
-        # Remove the 0x04 prefix to match TypeScript output
-        return public_key_bytes[1:].hex()
+        # Remove 0x prefix if present
+        clean_key = self.hex_fix(private_key)
+
+        # Create signing key
+        private_key_bytes = bytes.fromhex(clean_key)
+        sk = SigningKey.from_string(private_key_bytes, curve=SECP256k1)
+
+        # Get public key
+        vk = sk.get_verifying_key()
+        public_key_bytes = vk.to_string()  # Returns 64 bytes without 0x04 prefix
+
+        return public_key_bytes.hex()
 "%,
 
     # Hash string
@@ -196,6 +191,297 @@ import hashlib
             SHA256 hash as hex string
         """
         return hashlib.sha256(string.encode()).hexdigest()
+"%,
+
+  },
+
+  # Java implementation of crypto helpers
+  java = {
+
+    # Import statements for Java
+    imports = m%"
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.ECNamedCurveTable;
+import org.bouncycastle.jce.spec.ECParameterSpec;
+import org.bouncycastle.jce.spec.ECPrivateKeySpec;
+import org.bouncycastle.jce.spec.ECPublicKeySpec;
+import org.bouncycastle.math.ec.ECPoint;
+import java.math.BigInteger;
+import java.security.*;
+import java.security.spec.PKCS8EncodedKeySpec;
+import javax.xml.bind.DatatypeConverter;
+"%,
+
+    # Sign a message
+    signMessage = m%"
+    /**
+     * Sign a message using secp256k1 with DER encoding
+     *
+     * @param message Message to sign (will be SHA256 hashed)
+     * @param privateKey Private key in hex format (with or without '0x' prefix)
+     * @return DER-encoded signature as hex string
+     */
+    public String signMessage(String message, String privateKey) throws Exception {
+        // Register BouncyCastle provider
+        Security.addProvider(new BouncyCastleProvider());
+
+        // Remove 0x prefix if present
+        String cleanKey = hexFix(privateKey);
+
+        // Parse private key
+        ECParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec("secp256k1");
+        BigInteger privateKeyInt = new BigInteger(cleanKey, 16);
+        ECPrivateKeySpec privateKeySpec = new ECPrivateKeySpec(privateKeyInt, ecSpec);
+        KeyFactory keyFactory = KeyFactory.getInstance("ECDSA", "BC");
+        PrivateKey privKey = keyFactory.generatePrivate(privateKeySpec);
+
+        // Hash the message
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] messageHash = digest.digest(message.getBytes("UTF-8"));
+
+        // Sign with DER encoding (default format in Java)
+        Signature signature = Signature.getInstance("SHA256withECDSA", "BC");
+        signature.initSign(privKey);
+        signature.update(messageHash);
+        byte[] signatureBytes = signature.sign();
+
+        // Convert to hex
+        return DatatypeConverter.printHexBinary(signatureBytes).toLowerCase();
+    }
+"%,
+
+    # Verify signature
+    verifySignature = m%"
+    /**
+     * Verify a DER-encoded signature
+     *
+     * @param publicKey Public key in hex format (uncompressed, 64 bytes without 0x04 prefix)
+     * @param message Original message that was signed
+     * @param signatureHex DER-encoded signature in hex format
+     * @return true if signature is valid, false otherwise
+     */
+    public boolean verifySignature(String publicKey, String message, String signatureHex) {
+        try {
+            // Register BouncyCastle provider
+            Security.addProvider(new BouncyCastleProvider());
+
+            // Parse public key
+            String cleanPubKey = hexFix(publicKey);
+            byte[] pubKeyBytes = DatatypeConverter.parseHexBinary(cleanPubKey);
+
+            // Add uncompressed point prefix if needed (0x04)
+            if (pubKeyBytes.length == 64) {
+                byte[] withPrefix = new byte[65];
+                withPrefix[0] = 0x04;
+                System.arraycopy(pubKeyBytes, 0, withPrefix, 1, 64);
+                pubKeyBytes = withPrefix;
+            }
+
+            // Reconstruct public key
+            ECParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec("secp256k1");
+            ECPoint point = ecSpec.getCurve().decodePoint(pubKeyBytes);
+            ECPublicKeySpec publicKeySpec = new ECPublicKeySpec(point, ecSpec);
+            KeyFactory keyFactory = KeyFactory.getInstance("ECDSA", "BC");
+            PublicKey pubKey = keyFactory.generatePublic(publicKeySpec);
+
+            // Hash the message
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] messageHash = digest.digest(message.getBytes("UTF-8"));
+
+            // Verify DER-encoded signature
+            byte[] signatureBytes = DatatypeConverter.parseHexBinary(hexFix(signatureHex));
+            Signature signature = Signature.getInstance("SHA256withECDSA", "BC");
+            signature.initVerify(pubKey);
+            signature.update(messageHash);
+
+            return signature.verify(signatureBytes);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+"%,
+
+    # Get public key
+    getPublicKey = m%"
+    /**
+     * Derive public key from private key
+     *
+     * @param privateKey Private key in hex format (with or without '0x' prefix)
+     * @return Public key in uncompressed hex format (64 bytes, without 0x04 prefix)
+     */
+    public String getPublicKey(String privateKey) throws Exception {
+        // Register BouncyCastle provider
+        Security.addProvider(new BouncyCastleProvider());
+
+        // Remove 0x prefix if present
+        String cleanKey = hexFix(privateKey);
+
+        // Parse private key
+        ECParameterSpec ecSpec = ECNamedCurveTable.getParameterSpec("secp256k1");
+        BigInteger privateKeyInt = new BigInteger(cleanKey, 16);
+
+        // Calculate public key point
+        ECPoint publicPoint = ecSpec.getG().multiply(privateKeyInt).normalize();
+
+        // Get X and Y coordinates (each 32 bytes)
+        byte[] x = publicPoint.getAffineXCoord().getEncoded();
+        byte[] y = publicPoint.getAffineYCoord().getEncoded();
+
+        // Combine to 64 bytes (without 0x04 prefix)
+        byte[] publicKey = new byte[64];
+        System.arraycopy(x, 0, publicKey, 0, 32);
+        System.arraycopy(y, 0, publicKey, 32, 32);
+
+        return DatatypeConverter.printHexBinary(publicKey).toLowerCase();
+    }
+"%,
+
+    # Hash string
+    hashString = m%"
+    /**
+     * Compute SHA256 hash of a string
+     *
+     * @param str String to hash
+     * @return SHA256 hash as hex string
+     */
+    public String hashString(String str) throws Exception {
+        MessageDigest digest = MessageDigest.getInstance("SHA-256");
+        byte[] hash = digest.digest(str.getBytes("UTF-8"));
+        return DatatypeConverter.printHexBinary(hash).toLowerCase();
+    }
+"%,
+
+  },
+
+  # PHP implementation of crypto helpers
+  php = {
+
+    # Import/require statements for PHP
+    imports = m%"
+use phpseclib3\Crypt\EC;
+use phpseclib3\Math\BigInteger;
+"%,
+
+    # Sign a message
+    signMessage = m%"
+    /**
+     * Sign a message using secp256k1 with DER encoding
+     *
+     * @param string $message Message to sign (will be SHA256 hashed)
+     * @param string $privateKey Private key in hex format (with or without '0x' prefix)
+     * @return string DER-encoded signature as hex string
+     */
+    public function signMessage(string $message, string $privateKey): string {
+        // Remove 0x prefix if present
+        $cleanKey = $this->hexFix($privateKey);
+
+        // Create private key
+        $privateKeyObj = EC::loadPrivateKey([
+            'curve' => 'secp256k1',
+            'secret' => new BigInteger($cleanKey, 16)
+        ]);
+
+        // Hash the message
+        $messageHash = hash('sha256', $message, true);
+
+        // Sign with DER encoding (default format in phpseclib)
+        $signature = $privateKeyObj->sign($messageHash);
+
+        // Return hex-encoded signature
+        return bin2hex($signature);
+    }
+"%,
+
+    # Verify signature
+    verifySignature = m%"
+    /**
+     * Verify a DER-encoded signature
+     *
+     * @param string $publicKey Public key in hex format (uncompressed, 64 bytes without 0x04 prefix)
+     * @param string $message Original message that was signed
+     * @param string $signatureHex DER-encoded signature in hex format
+     * @return bool true if signature is valid, false otherwise
+     */
+    public function verifySignature(string $publicKey, string $message, string $signatureHex): bool {
+        try {
+            // Parse public key
+            $cleanPubKey = $this->hexFix($publicKey);
+            $pubKeyBytes = hex2bin($cleanPubKey);
+
+            // Add uncompressed point prefix if needed (0x04)
+            if (strlen($pubKeyBytes) === 64) {
+                $pubKeyBytes = "\x04" . $pubKeyBytes;
+            }
+
+            // Extract X and Y coordinates
+            $x = substr($pubKeyBytes, 1, 32);
+            $y = substr($pubKeyBytes, 33, 32);
+
+            // Create public key
+            $publicKeyObj = EC::loadPublicKey([
+                'curve' => 'secp256k1',
+                'QA' => [
+                    'x' => new BigInteger(bin2hex($x), 16),
+                    'y' => new BigInteger(bin2hex($y), 16)
+                ]
+            ]);
+
+            // Hash the message
+            $messageHash = hash('sha256', $message, true);
+
+            // Verify DER-encoded signature
+            $signatureBytes = hex2bin($this->hexFix($signatureHex));
+
+            return $publicKeyObj->verify($messageHash, $signatureBytes);
+        } catch (\Exception $e) {
+            return false;
+        }
+    }
+"%,
+
+    # Get public key
+    getPublicKey = m%"
+    /**
+     * Derive public key from private key
+     *
+     * @param string $privateKey Private key in hex format (with or without '0x' prefix)
+     * @return string Public key in uncompressed hex format (64 bytes, without 0x04 prefix)
+     */
+    public function getPublicKey(string $privateKey): string {
+        // Remove 0x prefix if present
+        $cleanKey = $this->hexFix($privateKey);
+
+        // Create private key
+        $privateKeyObj = EC::loadPrivateKey([
+            'curve' => 'secp256k1',
+            'secret' => new BigInteger($cleanKey, 16)
+        ]);
+
+        // Get public key
+        $publicKeyObj = $privateKeyObj->getPublicKey();
+        $point = $publicKeyObj->getEncodedCoordinates();
+
+        // Extract X and Y coordinates (remove 0x04 prefix)
+        $publicKeyBytes = hex2bin($point);
+        if ($publicKeyBytes[0] === "\x04") {
+            $publicKeyBytes = substr($publicKeyBytes, 1);
+        }
+
+        return bin2hex($publicKeyBytes);
+    }
+"%,
+
+    # Hash string
+    hashString = m%"
+    /**
+     * Compute SHA256 hash of a string
+     *
+     * @param string $str String to hash
+     * @return string SHA256 hash as hex string
+     */
+    public function hashString(string $str): string {
+        return hash('sha256', $str);
+    }
 "%,
 
   },

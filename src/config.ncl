@@ -5,7 +5,7 @@
   # Project metadata
   name = "Circular Protocol Canonical API",
   description = "Official API specification for Circular Protocol blockchain operations and wallet management",
-  version = "2.0.0-alpha.1",
+  version = "1.0.8",
 
   # API Configuration
   api = {

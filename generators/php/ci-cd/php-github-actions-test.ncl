@@ -67,13 +67,49 @@ let workflow = {
           continue-on-error = true,
         },
         {
-          name = "Run PHPUnit tests",
-          run = "composer test",
+          name = "Run PHPUnit unit tests",
+          run = "composer test -- --exclude-group e2e",
         },
         {
           name = "Generate coverage report",
           run = "composer test:coverage",
           "if" = "matrix.php-version == '8.3'",
+        },
+      ],
+    },
+
+    e2e-tests = {
+      "runs-on" = "ubuntu-latest",
+      needs = "test",
+      "if" = "github.event_name == 'push' || github.event_name == 'schedule'",
+
+      steps = [
+        {
+          name = "Checkout code",
+          uses = "actions/checkout@v4",
+        },
+        {
+          name = "Setup PHP",
+          uses = "shivammathur/setup-php@v2",
+          "with" = {
+            "php-version" = "8.3",
+            extensions = "curl, json, mbstring",
+          },
+        },
+        {
+          name = "Install dependencies",
+          run = "composer install --prefer-dist --no-progress",
+        },
+        {
+          name = "Run E2E tests (read-only)",
+          run = "composer test -- --group e2e",
+          env = {
+            CIRCULAR_TEST_ADDRESS = "${{ secrets.CIRCULAR_TEST_ADDRESS }}",
+            CIRCULAR_TEST_BLOCKCHAIN = "${{ secrets.CIRCULAR_TEST_BLOCKCHAIN }}",
+            CIRCULAR_NAG_URL = "${{ secrets.CIRCULAR_NAG_URL }}",
+            CIRCULAR_API_KEY = "${{ secrets.CIRCULAR_API_KEY }}",
+          },
+          continue-on-error = true,
         },
       ],
     },

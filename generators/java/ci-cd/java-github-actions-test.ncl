@@ -44,8 +44,8 @@ let workflow = {
           run = "mvn clean compile",
         },
         {
-          name = "Run tests",
-          run = "mvn test",
+          name = "Run unit tests",
+          run = "mvn test -Dtest='!*E2E*'",
         },
         {
           name = "Package",
@@ -54,6 +54,39 @@ let workflow = {
         {
           name = "Verify package",
           run = "mvn verify -DskipTests",
+        },
+      ],
+    },
+
+    e2e-tests = {
+      "runs-on" = "ubuntu-latest",
+      needs = "test",
+      "if" = "github.event_name == 'push' || github.event_name == 'schedule'",
+
+      steps = [
+        {
+          name = "Checkout code",
+          uses = "actions/checkout@v4",
+        },
+        {
+          name = "Setup Java",
+          uses = "actions/setup-java@v4",
+          "with" = {
+            "java-version" = "17",
+            distribution = "temurin",
+            cache = "maven",
+          },
+        },
+        {
+          name = "Run E2E tests (read-only)",
+          run = "mvn test -Dtest='*E2E*'",
+          env = {
+            CIRCULAR_TEST_ADDRESS = "${{ secrets.CIRCULAR_TEST_ADDRESS }}",
+            CIRCULAR_TEST_BLOCKCHAIN = "${{ secrets.CIRCULAR_TEST_BLOCKCHAIN }}",
+            CIRCULAR_NAG_URL = "${{ secrets.CIRCULAR_NAG_URL }}",
+            CIRCULAR_API_KEY = "${{ secrets.CIRCULAR_API_KEY }}",
+          },
+          continue-on-error = true,
         },
       ],
     },

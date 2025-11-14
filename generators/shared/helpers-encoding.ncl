@@ -88,6 +88,65 @@
   }
 "%,
 
+    # Sign message with DER-encoded signature
+    signMessage = m%"
+  /**
+   * Sign a message using secp256k1 with DER encoding
+   * @param message - Message to sign (will be SHA256 hashed)
+   * @param privateKey - Private key in hex format (with or without 0x prefix)
+   * @returns DER-encoded signature as hex string
+   */
+  signMessage(message: string, privateKey: string): string {
+    const elliptic = require('elliptic');
+    const crypto = require('crypto');
+
+    const EC = elliptic.ec;
+    const ec = new EC('secp256k1');
+    const key = ec.keyFromPrivate(this.hexFix(privateKey), 'hex');
+
+    // Hash the message
+    const msgHash = crypto.createHash('sha256').update(message).digest('hex');
+
+    // Sign and return DER-encoded signature
+    const signature = key.sign(msgHash).toDER('hex');
+    return signature;
+  }
+"%,
+
+    # Calculate transaction ID
+    calculateTransactionId = m%"
+  /**
+   * Calculate transaction ID from components
+   * @param blockchain - Blockchain ID (hex)
+   * @param from - From address (hex)
+   * @param to - To address (hex)
+   * @param payload - Transaction payload (hex)
+   * @param nonce - Wallet nonce (string)
+   * @param timestamp - Formatted timestamp
+   * @returns Transaction ID as hex string
+   */
+  calculateTransactionId(
+    blockchain: string,
+    from: string,
+    to: string,
+    payload: string,
+    nonce: string,
+    timestamp: string
+  ): string {
+    const crypto = require('crypto');
+
+    const input =
+      this.hexFix(blockchain) +
+      this.hexFix(from) +
+      this.hexFix(to) +
+      this.hexFix(payload) +
+      nonce +
+      timestamp;
+
+    return crypto.createHash('sha256').update(input).digest('hex');
+  }
+"%,
+
   },
 
   # Python implementation of encoding helpers
@@ -177,6 +236,77 @@
         seconds = self._pad_number(now.second)
 
         return f'{year}:{month}:{day}-{hours}:{minutes}:{seconds}'
+"%,
+
+    # Sign message with DER-encoded signature
+    signMessage = m%"
+    def sign_message(self, message: str, private_key: str) -> str:
+        """
+        Sign a message using secp256k1 with DER encoding
+
+        Args:
+            message: Message to sign (will be SHA256 hashed)
+            private_key: Private key in hex format (with or without 0x prefix)
+
+        Returns:
+            DER-encoded signature as hex string
+        """
+        import hashlib
+        from ecdsa import SigningKey, SECP256k1
+        from ecdsa.util import sigencode_der
+
+        # Remove 0x prefix if present
+        clean_key = self.hex_fix(private_key)
+
+        # Create signing key
+        private_key_bytes = bytes.fromhex(clean_key)
+        sk = SigningKey.from_string(private_key_bytes, curve=SECP256k1)
+
+        # Hash the message
+        message_hash = hashlib.sha256(message.encode()).digest()
+
+        # Sign with DER encoding
+        signature_bytes = sk.sign_digest(message_hash, sigencode=sigencode_der)
+        return signature_bytes.hex()
+"%,
+
+    # Calculate transaction ID
+    calculateTransactionId = m%"
+    def calculate_transaction_id(
+        self,
+        blockchain: str,
+        from_address: str,
+        to_address: str,
+        payload: str,
+        nonce: str,
+        timestamp: str
+    ) -> str:
+        """
+        Calculate transaction ID from components
+
+        Args:
+            blockchain: Blockchain ID (hex)
+            from_address: From address (hex)
+            to_address: To address (hex)
+            payload: Transaction payload (hex)
+            nonce: Wallet nonce (string)
+            timestamp: Formatted timestamp
+
+        Returns:
+            Transaction ID as hex string
+        """
+        import hashlib
+
+        input_str = (
+            self.hex_fix(blockchain) +
+            self.hex_fix(from_address) +
+            self.hex_fix(to_address) +
+            self.hex_fix(payload) +
+            nonce +
+            timestamp
+        )
+
+        return hashlib.sha256(input_str.encode()).hexdigest()
 "%,
 
   },

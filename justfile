@@ -34,8 +34,8 @@ validate:
 # Run contract validation tests only (Layer 1: fastest)
 test-contracts:
     @echo "Running contract validation tests"
-    @if [ -f tests/run-contract-tests.sh ]; then \
-        ./tests/run-contract-tests.sh; \
+    @if [ -f dist/tests/run-contract-tests.sh ]; then \
+        ./dist/tests/run-contract-tests.sh; \
     else \
         echo "[WARNING] contract test script not found yet"; \
         echo "  Run contract tests manually"; \
@@ -136,9 +136,9 @@ generate-php:
     @echo "[OK] Generated PHP SDK"
     @wc -l dist/sdk/CircularProtocolAPI.php
 
-# Generate complete Python package
+# Generate complete Python package (modular structure)
 generate-py-package:
-    @echo "Generating complete Python package"
+    @echo "Generating complete Python package (modular structure)"
     @mkdir -p dist/python/src/circular_protocol_api
     @echo "pyproject.toml"
     @nickel export generators/python/package-manifest/python-pyproject-toml.ncl --format toml > dist/python/pyproject.toml
@@ -150,19 +150,32 @@ generate-py-package:
     @nickel export generators/python/config/python-pytest-ini.ncl --field pytest_ini_content --format raw > dist/python/pytest.ini
     @echo ".gitignore"
     @nickel export generators/python/metadata/python-gitignore.ncl --field gitignore_content --format raw > dist/python/.gitignore
-    @echo "SDK code (src/circular_protocol_api/__init__.py)"
-    @nickel export generators/python/python-sdk.ncl --field sdk_code --format raw > dist/python/src/circular_protocol_api/__init__.py
+    @echo "Modular SDK code:"
+    @echo "  src/circular_protocol_api/__init__.py (clean exports)"
+    @nickel export generators/python/python-init.ncl --field init_code --format raw > dist/python/src/circular_protocol_api/__init__.py
+    @echo "  src/circular_protocol_api/client.py (main API class)"
+    @nickel export generators/python/python-client.ncl --field client_code --format raw > dist/python/src/circular_protocol_api/client.py
+    @echo "  src/circular_protocol_api/models.py (TypedDict types)"
+    @nickel export generators/python/python-models.ncl --field models_code --format raw > dist/python/src/circular_protocol_api/models.py
+    @echo "  src/circular_protocol_api/exceptions.py (custom exceptions)"
+    @nickel export generators/python/python-exceptions.ncl --field exceptions_code --format raw > dist/python/src/circular_protocol_api/exceptions.py
+    @echo "  src/circular_protocol_api/_helpers.py (utility functions)"
+    @nickel export generators/python/python-helpers.ncl --field helpers_code --format raw > dist/python/src/circular_protocol_api/_helpers.py
+    @echo "  src/circular_protocol_api/_crypto.py (cryptographic operations)"
+    @nickel export generators/python/python-crypto.ncl --field crypto_code --format raw > dist/python/src/circular_protocol_api/_crypto.py
     @echo "Unit tests"
     @mkdir -p dist/python/tests
     @nickel export generators/python/tests/python-unit-tests.ncl --field test_code --format raw > dist/python/tests/test_unit.py
     @echo "E2E tests"
     @nickel export generators/python/tests/python-e2e-tests.ncl --field test_code --format raw > dist/python/tests/test_e2e.py
+    @echo "Integration tests"
+    @nickel export generators/python/tests/python-integration-tests.ncl --field test_file --format raw > dist/python/tests/test_integration.py
     @echo "GitHub Actions workflow"
     @mkdir -p dist/python/.github/workflows
     @nickel export generators/python/ci-cd/python-github-actions-test.ncl --field workflow_yaml --format raw > dist/python/.github/workflows/test.yml
     @echo ""
-    @echo "[OK] Python package generated in dist/python/"
-    @ls -lh dist/python/
+    @echo "[OK] Python package generated in dist/python/ (modular structure)"
+    @ls -lh dist/python/src/circular_protocol_api/
 
 # Generate complete TypeScript package
 generate-ts-package:
@@ -187,6 +200,8 @@ generate-ts-package:
     @nickel export generators/typescript/tests/typescript-unit-tests.ncl --field test_code --format raw > dist/typescript/tests/index.test.ts
     @echo "E2E tests"
     @nickel export generators/typescript/tests/typescript-e2e-tests.ncl --field test_code --format raw > dist/typescript/tests/e2e.test.ts
+    @echo "Integration tests"
+    @nickel export generators/typescript/tests/typescript-integration-tests.ncl --field test_file --format raw > dist/typescript/tests/integration.test.ts
     @echo "GitHub Actions workflow"
     @mkdir -p dist/typescript/.github/workflows
     @nickel export generators/typescript/ci-cd/typescript-github-actions-test.ncl --field workflow_yaml --format raw > dist/typescript/.github/workflows/test.yml
@@ -208,9 +223,11 @@ generate-java-package:
     @nickel export generators/java/java-sdk.ncl --field sdk_code --format raw > dist/java/src/main/java/io/circular/protocol/CircularProtocolAPI.java
     @echo "Unit tests"
     @mkdir -p dist/java/src/test/java/io/circular/protocol
-    @nickel export generators/java/tests/java-unit-tests.ncl --field test_code --format raw > dist/java/src/test/java/io/circular/protocol/CircularProtocolAPITest.java
+    @nickel export generators/java/tests/java-unit-tests.ncl --field test_code --format raw > dist/java/src/test/java/io/circular/protocol/CircularProtocolUnitTest.java
     @echo "E2E tests"
     @nickel export generators/java/tests/java-e2e-tests.ncl --field test_code --format raw > dist/java/src/test/java/io/circular/protocol/CircularProtocolE2ETest.java
+    @echo "Integration tests"
+    @nickel export generators/java/tests/java-integration-tests.ncl --field test_file --format raw > dist/java/src/test/java/io/circular/protocol/CircularProtocolIntegrationTest.java
     @echo "GitHub Actions workflow"
     @mkdir -p dist/java/.github/workflows
     @nickel export generators/java/ci-cd/java-github-actions-test.ncl --field workflow_yaml --format raw > dist/java/.github/workflows/test.yml
@@ -231,9 +248,11 @@ generate-php-package:
     @echo "SDK code (src/CircularProtocolAPI.php)"
     @nickel export generators/php/php-sdk.ncl --field sdk_code --format raw > dist/php/src/CircularProtocolAPI.php
     @echo "Unit tests"
-    @nickel export generators/php/tests/php-unit-tests.ncl --field test_code --format raw > dist/php/tests/CircularProtocolAPITest.php
+    @nickel export generators/php/tests/php-unit-tests.ncl --field test_code --format raw > dist/php/tests/CircularProtocolUnitTest.php
     @echo "E2E tests"
     @nickel export generators/php/tests/php-e2e-tests.ncl --field test_code --format raw > dist/php/tests/CircularProtocolE2ETest.php
+    @echo "Integration tests"
+    @nickel export generators/php/tests/php-integration-tests.ncl --field test_file --format raw > dist/php/tests/CircularProtocolIntegrationTest.php
     @echo "GitHub Actions workflow"
     @mkdir -p dist/php/.github/workflows
     @nickel export generators/php/ci-cd/php-github-actions-test.ncl --field workflow_yaml --format raw > dist/php/.github/workflows/test.yml
@@ -241,15 +260,86 @@ generate-php-package:
     @echo "[OK] PHP package generated in dist/php/"
     @ls -lh dist/php/
 
+# Generate complete Go package
+generate-go-package:
+    @echo "Generating complete Go package"
+    @mkdir -p dist/go
+    @echo "go.mod"
+    @nickel export generators/go/package-manifest/go-mod.ncl --field go_mod --format raw > dist/go/go.mod
+    @echo "SDK code (circular_protocol.go)"
+    @nickel export generators/go/go-sdk.ncl --field sdk_code --format raw > dist/go/circular_protocol.go
+    @echo "Unit tests"
+    @nickel export generators/go/tests/go-unit-tests.ncl --field test_code --format raw > dist/go/circular_protocol_test.go
+    @echo "Integration tests"
+    @nickel export generators/go/tests/go-integration-tests.ncl --field test_code --format raw > dist/go/circular_protocol_integration_test.go
+    @echo "E2E tests"
+    @nickel export generators/go/tests/go-e2e-tests.ncl --field test_code --format raw > dist/go/circular_protocol_e2e_test.go
+    @echo "README.md"
+    @nickel export generators/go/docs/go-readme.ncl --field readme_content --format raw > dist/go/README.md
+    @echo ".gitignore"
+    @nickel export generators/go/metadata/go-gitignore.ncl --field gitignore_content --format raw > dist/go/.gitignore
+    @echo "GitHub Actions workflow"
+    @mkdir -p dist/go/.github/workflows
+    @nickel export generators/go/ci-cd/go-github-actions-test.ncl --field workflow_content --format raw > dist/go/.github/workflows/test.yml
+    @echo ""
+    @echo "[OK] Go package generated in dist/go/"
+    @ls -lh dist/go/
+
+# Generate complete Dart package
+generate-dart-package:
+    @echo "Generating complete Dart package"
+    @mkdir -p dist/dart/lib dist/dart/test
+    @echo "pubspec.yaml"
+    @nickel export generators/dart/package-manifest/pubspec-yaml.ncl --field pubspec_yaml --format raw > dist/dart/pubspec.yaml
+    @echo "SDK code (lib/circular_protocol.dart)"
+    @nickel export generators/dart/dart-sdk.ncl --field sdk_code --format raw > dist/dart/lib/circular_protocol.dart
+    @echo "Unit tests"
+    @nickel export generators/dart/tests/dart-unit-tests.ncl --field test_code --format raw > dist/dart/test/unit_test.dart
+    @echo "Integration tests"
+    @nickel export generators/dart/tests/dart-integration-tests.ncl --field test_code --format raw > dist/dart/test/integration_test.dart
+    @echo "E2E tests"
+    @nickel export generators/dart/tests/dart-e2e-tests.ncl --field test_code --format raw > dist/dart/test/e2e_test.dart
+    @echo "README.md"
+    @nickel export generators/dart/docs/dart-readme.ncl --field readme_content --format raw > dist/dart/README.md
+    @echo ".gitignore"
+    @nickel export generators/dart/metadata/dart-gitignore.ncl --field gitignore_content --format raw > dist/dart/.gitignore
+    @echo "GitHub Actions workflow"
+    @mkdir -p dist/dart/.github/workflows
+    @nickel export generators/dart/ci-cd/dart-github-actions-test.ncl --field workflow_content --format raw > dist/dart/.github/workflows/test.yml
+    @echo "analysis_options.yaml"
+    @nickel export generators/dart/metadata/dart-analysis-options.ncl --field analysis_options --format raw > dist/dart/analysis_options.yaml
+    @echo "CHANGELOG.md"
+    @nickel export generators/dart/docs/dart-changelog.ncl --field changelog_content --format raw > dist/dart/CHANGELOG.md
+    @echo "LICENSE"
+    @nickel export generators/dart/metadata/dart-license.ncl --field license_content --format raw > dist/dart/LICENSE
+    @echo ""
+    @echo "[OK] Dart package generated in dist/dart/"
+    @ls -lh dist/dart/
+
+# Generate complete Rust package
+generate-rust-package:
+    @echo "Generating complete Rust package"
+    @mkdir -p dist/rust/src
+    @echo "Cargo.toml"
+    @nickel export generators/rust/package-manifest/cargo-toml.ncl --field cargo_toml --format raw > dist/rust/Cargo.toml
+    @echo "SDK code (src/lib.rs)"
+    @nickel export generators/rust/rust-sdk.ncl --field sdk_code --format raw > dist/rust/src/lib.rs
+    @echo ""
+    @echo "[OK] Rust package generated in dist/rust/"
+    @ls -lh dist/rust/
+
 # Generate all complete packages
-generate-packages: generate-ts-package generate-py-package generate-java-package generate-php-package
+generate-packages: generate-ts-package generate-py-package generate-java-package generate-php-package generate-go-package generate-dart-package generate-rust-package
     @echo ""
     @echo "================================================================"
-    @echo "  [OK] Complete packages generated for all 4 languages"
+    @echo "  [OK] Complete packages generated for all 7 languages"
     @echo "  - TypeScript (dist/typescript/)"
     @echo "  - Python (dist/python/)"
     @echo "  - Java (dist/java/)"
     @echo "  - PHP (dist/php/)"
+    @echo "  - Go (dist/go/)"
+    @echo "  - Dart (dist/dart/)"
+    @echo "  - Rust (dist/rust/)"
     @echo "================================================================"
 
 # ===========================================================================
@@ -544,6 +634,83 @@ test-sdk-all:
     @echo "=== Unit Tests (standalone) ==="
     @just test-sdk-unit
 
+# Run E2E tests (TypeScript) - gracefully skips if env vars missing
+test-e2e-ts:
+    @echo "Running TypeScript E2E tests (against real NAG endpoints)"
+    @echo ""
+    @if [ -z "$$CIRCULAR_TEST_ADDRESS" ] && [ -z "$$CIRCULAR_PRIVATE_KEY" ]; then \
+        echo "⏭️  Skipping E2E tests - missing required environment variables"; \
+        echo ""; \
+        echo "For read-only tests, set:"; \
+        echo "  export CIRCULAR_TEST_ADDRESS=0x..."; \
+        echo ""; \
+        echo "For write operation tests, set:"; \
+        echo "  export CIRCULAR_PRIVATE_KEY=..."; \
+        echo "  ⚠️  WARNING: Write tests create real blockchain transactions!"; \
+    else \
+        cd dist/typescript && npm run test:e2e; \
+    fi
+
+# Run E2E tests (Python) - gracefully skips if env vars missing
+test-e2e-py:
+    @echo "Running Python E2E tests (against real NAG endpoints)"
+    @echo ""
+    @if [ -z "$$CIRCULAR_TEST_ADDRESS" ] && [ -z "$$CIRCULAR_PRIVATE_KEY" ]; then \
+        echo "⏭️  Skipping E2E tests - missing required environment variables"; \
+        echo ""; \
+        echo "For read-only tests, set:"; \
+        echo "  export CIRCULAR_TEST_ADDRESS=0x..."; \
+        echo ""; \
+        echo "For write operation tests, set:"; \
+        echo "  export CIRCULAR_PRIVATE_KEY=..."; \
+        echo "  ⚠️  WARNING: Write tests create real blockchain transactions!"; \
+    else \
+        cd dist/python && pytest tests/test_e2e.py -v -m e2e; \
+    fi
+
+# Run E2E tests (all languages) - gracefully skips if env vars missing
+test-e2e: test-e2e-ts test-e2e-py
+
+# Run manual write operation tests (registerWallet) - requires explicit enable
+test-manual-write:
+    @echo "Running manual write operation tests (LIVE BLOCKCHAIN)"
+    @echo ""
+    @if [ -z "$$CIRCULAR_ALLOW_WRITE_TESTS" ] || [ "$$CIRCULAR_ALLOW_WRITE_TESTS" != "1" ]; then \
+        echo "❌ Write tests are disabled"; \
+        echo ""; \
+        echo "To enable write tests (which write to LIVE blockchain):"; \
+        echo "  export CIRCULAR_ALLOW_WRITE_TESTS=1"; \
+        echo "  export CIRCULAR_PRIVATE_KEY=..."; \
+        echo "  export CIRCULAR_PUBLIC_KEY=..."; \
+        echo "  export CIRCULAR_TEST_BLOCKCHAIN=0x8a20baa...  # SandBox only"; \
+        echo ""; \
+        echo "⚠️  WARNING: Only enable on test networks (SandBox)"; \
+        exit 1; \
+    else \
+        python3 dist/tests/manual/manual-test-registerWallet.py; \
+    fi
+
+# Run complete test pyramid (all layers: L1-L5)
+test-pyramid:
+    @echo "Running complete test pyramid (all layers)"
+    @echo ""
+    @echo "=== Layer 1: Contract Validation (< 5s) ==="
+    @just test-contracts
+    @echo ""
+    @echo "=== Layer 2: Unit Tests (< 30s) ==="
+    @just test-sdk-unit
+    @echo ""
+    @echo "=== Layer 3: Integration Tests (< 2m) ==="
+    @just test-integration
+    @echo ""
+    @echo "=== Layer 4: Cross-Language & Regression (< 5m) ==="
+    @just test-cross-lang
+    @echo ""
+    @echo "=== Layer 5: E2E Tests (conditional on env vars) ==="
+    @just test-e2e
+    @echo ""
+    @echo "✅ Test pyramid complete"
+
 # Generate JSON export for inspection (useful for debugging)
 generate-json file:
     @echo "Exporting {{file}} to JSON"
@@ -799,3 +966,26 @@ help:
     @echo "  just new-test <name>     *Create new test template"
     @echo ""
     @echo "For more details: just --list"
+
+# Generate manual test scripts for write operations
+generate-manual-tests:
+    @echo "Generating manual test scripts for write operations..."
+    @mkdir -p dist/tests/manual
+    @echo "Python manual test (registerWallet)"
+    @nickel export generators/python/tests/python-manual-tests.ncl --field test_code --format raw > dist/tests/manual/manual-test-registerWallet.py
+    @chmod +x dist/tests/manual/manual-test-registerWallet.py
+    @echo ""
+    @echo "[OK] Manual test scripts generated in dist/tests/manual/"
+    @echo ""
+    @echo "⚠️  WARNING: These tests write to LIVE blockchain"
+    @echo "⚠️  Only run on test networks with test credentials"
+    @echo ""
+    @echo "Usage:"
+    @echo "  1. Set environment variables:"
+    @echo "     export CIRCULAR_PRIVATE_KEY='...'"
+    @echo "     export CIRCULAR_PUBLIC_KEY='...'"
+    @echo "     export CIRCULAR_TEST_BLOCKCHAIN='0x8a20baa...'"
+    @echo ""
+    @echo "  2. Run test:"
+    @echo "     python3 dist/tests/manual/manual-test-registerWallet.py"
+    @echo ""

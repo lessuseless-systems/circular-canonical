@@ -284,65 +284,7 @@ let types = import "../schemas/types.ncl" in
     },
   },
 
-  registerWallet = {
-    method = "POST",
-    path = "/registerWallet",
-    summary = "Register wallet on blockchain",
-    description = m%"
-      Registers a wallet on a desired blockchain. The same wallet can be registered
-      on multiple blockchains. Without registration, the wallet will not be reachable
-      on the blockchain. This endpoint constructs a transaction of type C_TYPE_REGISTERWALLET.
-    "%,
-
-    parameters = {
-      blockchain = {
-        type = "string",
-        required = true,
-        description = "Blockchain where the wallet will be registered",
-        default = "MainNet",
-      },
-
-      publicKey = {
-        type = "string",
-        required = true,
-        description = "Wallet public key",
-      },
-    },
-
-    request_body = {
-      Blockchain = "string",
-      PublicKey = "string",
-      Version = "string",
-    },
-
-    response_schema = {
-      Result = "number",
-      Response = {
-        TransactionID = "string",
-        Status = "string",
-      },
-    },
-
-    example_request = {
-      blockchain = "MainNet",
-      publicKey = "04abc123def456...",
-    },
-
-    example_response = {
-      Result = 200,
-      Response = {
-        TransactionID = "0x9876543210fedcba...",
-        Status = "pending",
-      },
-    },
-
-    notes = m%"
-      This endpoint constructs a transaction with:
-      - Type: C_TYPE_REGISTERWALLET
-      - From: sha256(publicKey)
-      - To: sha256(publicKey)
-      - Nonce: '0'
-      - Payload: stringToHex({"Action": "CP_REGISTERWALLET", "PublicKey": publicKey})
-    "%,
-  },
+  # Note: registerWallet is NOT an API endpoint - it's a convenience method
+  # See src/api/convenience-methods.ncl for the registerWallet specification
+  # registerWallet wraps sendTransaction with Type="C_TYPE_REGISTERWALLET"
 }

@@ -52,12 +52,47 @@ let workflow = {
           continue-on-error = true,
         },
         {
-          name = "Run tests",
-          run = "pytest -v",
+          name = "Run unit tests",
+          run = "pytest tests/test_unit.py -v",
         },
         {
           name = "Build package",
           run = "python -m build",
+        },
+      ],
+    },
+
+    e2e-tests = {
+      "runs-on" = "ubuntu-latest",
+      needs = "test",
+      "if" = "github.event_name == 'push' || github.event_name == 'schedule'",
+
+      steps = [
+        {
+          name = "Checkout code",
+          uses = "actions/checkout@v4",
+        },
+        {
+          name = "Setup Python",
+          uses = "actions/setup-python@v5",
+          "with" = {
+            "python-version" = "3.11",
+          },
+        },
+        {
+          name = "Install dependencies",
+          run = "pip install -e .[dev]",
+        },
+        {
+          name = "Run E2E tests (read-only)",
+          run = "pytest tests/test_e2e.py -v -m e2e",
+          env = {
+            CIRCULAR_TEST_ADDRESS = "${{ secrets.CIRCULAR_TEST_ADDRESS }}",
+            CIRCULAR_TEST_BLOCKCHAIN = "${{ secrets.CIRCULAR_TEST_BLOCKCHAIN }}",
+            CIRCULAR_NAG_URL = "${{ secrets.CIRCULAR_NAG_URL }}",
+            CIRCULAR_API_KEY = "${{ secrets.CIRCULAR_API_KEY }}",
+          },
+          continue-on-error = true,
         },
       ],
     },

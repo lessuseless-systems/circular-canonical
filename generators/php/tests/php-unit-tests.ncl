@@ -19,7 +19,7 @@ use PHPUnit\Framework\TestCase;
  *
  * Tests SDK basic functionality and configuration
  */
-class CircularProtocolAPITest extends TestCase
+class CircularProtocolUnitTest extends TestCase
 {
     private CircularProtocolAPI $api;
 

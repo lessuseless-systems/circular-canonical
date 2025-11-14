@@ -358,27 +358,301 @@ Non-breaking (MINOR/PATCH allowed):
 
 **Result**: 100% Nickel-first test infrastructure across all pyramid layers
 
+---
+
+## Test Automation Strategy
+
+### Comprehensive Automation Philosophy
+
+**Core Principle**: All tests run automatically with intelligent environment variable gating. No manual intervention or interactive prompts required.
+
+### Test Execution Matrix
+
+```
+┌──────────────────────────────────────────────────────────────────────────┐
+│ Test Pyramid Automation Matrix                                          │
+├─────────────────────┬─────────────────────┬───────────────────────────────┤
+│ Layer               │ Environment Vars    │ Execution Behavior            │
+├─────────────────────┼─────────────────────┼───────────────────────────────┤
+│ L1: Contracts       │ None                │ ✅ Always runs automatically  │
+│ L2: Unit            │ None                │ ✅ Always runs automatically  │
+│ L3: Integration     │ None (mock server)  │ ✅ Always runs automatically  │
+│ L4a: Cross-Lang     │ None                │ ✅ Always runs automatically  │
+│ L4b: Regression     │ None (git history)  │ ✅ Always runs automatically  │
+│ L5a: E2E (read)     │ CIRCULAR_TEST_      │ ✅ Runs if vars present,      │
+│                     │ ADDRESS             │    skips gracefully if missing│
+│ L5b: Manual (write) │ CIRCULAR_ALLOW_     │ ✅ Runs ONLY if explicitly    │
+│                     │ WRITE_TESTS=1       │    enabled (safety first)     │
+└─────────────────────┴─────────────────────┴───────────────────────────────┘
+```
+
+### Layer-by-Layer Execution Details
+
+#### Layer 1: Contract Validation (L1-contracts)
+**Execution**: Always runs automatically, no dependencies
+**Speed**: < 5 seconds
+**Command**: `just test-contracts` or `./dist/tests/run-contract-tests.sh`
+**Environment Variables**: None required
+**CI/CD**: Runs on every commit (pre-commit hook)
+
+#### Layer 2: Unit Tests (L2-unit)
+**Execution**: Always runs automatically, no dependencies
+**Speed**: < 30 seconds
+**Commands**:
+- TypeScript: `cd dist/typescript && npm test`
+- Python: `cd dist/python && pytest tests/test_unit.py`
+- All: `just test-sdk-unit`
+**Environment Variables**: None required
+**CI/CD**: Runs on every push to development/main
+
+#### Layer 3: Integration Tests (L3-integration)
+**Execution**: Always runs automatically with generated mock server
+**Speed**: < 2 minutes
+**Command**: `just test-integration`
+**Environment Variables**: None (uses generated mock server)
+**CI/CD**: Runs on every pull request
+
+#### Layer 4: Cross-Language & Regression (L4-crosslang, L4-regression)
+**Execution**: Always runs automatically
+**Speed**: < 5 minutes
+**Commands**:
+- Cross-language: `./dist/tests/run-crosslang-tests.py`
+- Regression: `./dist/tests/detect-breaking-changes.sh`
+- All: `just test-cross-lang`
+**Environment Variables**: None required
+**CI/CD**: Runs before merge to main
+
+#### Layer 5a: E2E Tests (L5-e2e) - Read-Only Operations
+**Execution**: Runs automatically IF environment variables are present, **skips gracefully** if missing
+**Speed**: Variable (depends on real NAG response time)
+**Commands**:
+- TypeScript: `just test-e2e-ts` or `cd dist/typescript && npm run test:e2e`
+- Python: `just test-e2e-py` or `cd dist/python && pytest tests/test_e2e.py -v -m e2e`
+- All: `just test-e2e`
+
+**Environment Variables** (Read-Only Tests):
+```bash
+# Required for read-only E2E tests
+export CIRCULAR_TEST_ADDRESS="0xd55872dbe508fd27445889b9d81bbc9411bb0f1353153a249f2fb34ef2690310"
+
+# Optional
+export CIRCULAR_NAG_URL="https://nag.circularlabs.io/NAG.php?cep="  # default
+export CIRCULAR_TEST_BLOCKCHAIN="0x8a20baa40c45dc5055aeb26197c203e576ef389d9acb171bd62da11dc5ad72b2"  # SandBox
+export CIRCULAR_API_KEY="..."  # if using authenticated NAG
+export CIRCULAR_E2E_TIMEOUT="30000"  # timeout in milliseconds
+```
+
+**Graceful Skip Behavior**:
+- If `CIRCULAR_TEST_ADDRESS` is NOT set: Tests skip gracefully with informative message
+- TypeScript: Uses `test.skip()` and exits with code 0
+- Python: Uses `pytest.skip(allow_module_level=True)`
+- No errors, no failures, just clear skip message
+
+**Implementation**:
+- TypeScript generator: `generators/typescript/tests/typescript-e2e-tests.ncl:226-244`
+- Python generator: `generators/python/tests/python-e2e-tests.ncl:259-277`
+
+**CI/CD**: Runs on scheduled nightly builds (if env vars configured in CI secrets)
+
+#### Layer 5b: Manual Write Tests (L5-manual) - Blockchain Write Operations
+**Execution**: Runs ONLY if explicitly enabled via `CIRCULAR_ALLOW_WRITE_TESTS=1` environment variable
+**Speed**: Variable (depends on blockchain confirmation time)
+**Command**: `just test-manual-write` or `python3 dist/tests/manual/manual-test-registerWallet.py`
+
+**Environment Variables** (Write Operation Tests):
+```bash
+# Safety flag - REQUIRED to enable write tests
+export CIRCULAR_ALLOW_WRITE_TESTS=1
+
+# Credentials - REQUIRED for signing transactions
+export CIRCULAR_PRIVATE_KEY="0f55c0c43496a9c3e1813180bec90e610769e15354771aebe7e28e83b3f89e8a"
+export CIRCULAR_PUBLIC_KEY="04..."  # derived from private key
+
+# Blockchain - REQUIRED (whitelisted to SandBox only)
+export CIRCULAR_TEST_BLOCKCHAIN="0x8a20baa40c45dc5055aeb26197c203e576ef389d9acb171bd62da11dc5ad72b2"
+
+# Optional
+export CIRCULAR_NAG_URL="https://nag.circularlabs.io/NAG.php?cep="
+```
+
+**Safety Features**:
+1. **Explicit Enable Flag**: Must set `CIRCULAR_ALLOW_WRITE_TESTS=1` (disabled by default)
+2. **Blockchain Whitelist**: Only SandBox blockchain allowed (0x8a20baa...)
+3. **No Interactive Prompts**: Fully automated (no `input()` calls)
+4. **Clear Error Messages**: If disabled, shows exactly how to enable
+
+**Implementation**:
+- Spec: `tests/L5-manual/manual-tests.test.ncl:42-48`
+- Generator: `generators/python/tests/python-manual-tests.ncl:87-100`
+
+**CI/CD**: NOT run in CI (too risky for automated pipelines)
+
+### Running Tests in Different Contexts
+
+#### Local Development (Fast Feedback Loop)
+```bash
+# Quick validation (< 5s)
+just validate
+
+# Unit tests only (< 30s)
+just test-sdk-unit
+
+# Pre-commit (< 2m)
+just test
+```
+
+#### Pre-Push (Comprehensive but Fast)
+```bash
+# Run full pyramid without E2E/manual (< 5m)
+just test-pyramid
+```
+
+#### Pre-Release (Complete Validation)
+```bash
+# Run everything including E2E tests
+export CIRCULAR_TEST_ADDRESS="0x..."
+just test-pyramid
+
+# Optionally test write operations (SandBox only!)
+export CIRCULAR_ALLOW_WRITE_TESTS=1
+export CIRCULAR_PRIVATE_KEY="..."
+export CIRCULAR_PUBLIC_KEY="..."
+just test-manual-write
+```
+
+#### CI/CD Pipeline (Automated)
+```yaml
+# .github/workflows/test.yml
+- name: Run L1-L4 tests (always)
+  run: |
+    just test-contracts
+    just test-sdk-unit
+    just test-integration
+    just test-cross-lang
+
+- name: Run E2E tests (conditional on secrets)
+  if: secrets.CIRCULAR_TEST_ADDRESS != ''
+  env:
+    CIRCULAR_TEST_ADDRESS: ${{ secrets.CIRCULAR_TEST_ADDRESS }}
+  run: just test-e2e
+```
+
+### Test Execution Flowchart
+
+```
+┌─────────────────────────────────────────────────┐
+│ User runs: just test-e2e                        │
+└────────────────┬────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────┐
+│ Check: CIRCULAR_TEST_ADDRESS set?               │
+└────────┬────────────────────────────────┬───────┘
+         │ YES                            │ NO
+         ▼                                ▼
+┌─────────────────────────┐  ┌──────────────────────────┐
+│ Run E2E tests           │  │ Print skip message:      │
+│ - checkWallet           │  │ "⏭️  Skipping E2E tests" │
+│ - getWallet             │  │ "Set CIRCULAR_TEST_      │
+│ - getWalletBalance      │  │  ADDRESS=0x..."          │
+│ - getBlockchains        │  │                          │
+│ - ...                   │  │ Exit code: 0 (success)   │
+└─────────────────────────┘  └──────────────────────────┘
+```
+
+```
+┌─────────────────────────────────────────────────┐
+│ User runs: just test-manual-write               │
+└────────────────┬────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────┐
+│ Check: CIRCULAR_ALLOW_WRITE_TESTS == 1?         │
+└────────┬────────────────────────────────┬───────┘
+         │ YES                            │ NO
+         ▼                                ▼
+┌─────────────────────────┐  ┌──────────────────────────┐
+│ Check: Blockchain       │  │ Print error message:     │
+│ in whitelist?           │  │ "❌ Write tests disabled"│
+└────┬────────────────────┘  │ "To enable:              │
+     │ YES                   │  export CIRCULAR_ALLOW_  │
+     ▼                       │  WRITE_TESTS=1"          │
+┌─────────────────────────┐  │                          │
+│ Run write tests:        │  │ Exit code: 1 (error)     │
+│ - registerWallet        │  └──────────────────────────┘
+│ - Verify with           │
+│   checkWallet           │
+│ - Verify with           │
+│   getWallet             │
+└─────────────────────────┘
+```
+
+### Key Design Decisions
+
+1. **No Interactive Prompts**: All tests use environment variables, never `input()` or prompts
+   - **Why**: Breaks CI/CD automation
+   - **Example Violation**: `response = input("Continue? [y/N]:")` ❌
+   - **Correct Approach**: `if os.getenv('CIRCULAR_ALLOW_WRITE_TESTS') == '1':` ✅
+
+2. **Graceful Skipping**: E2E tests skip gracefully when env vars missing, don't fail
+   - **Why**: Allows local development without live blockchain access
+   - **Implementation**: TypeScript uses `test.skip()`, Python uses `pytest.skip(allow_module_level=True)`
+
+3. **Explicit Enable for Write Operations**: Write tests require explicit flag
+   - **Why**: Safety first - prevents accidental blockchain writes
+   - **Implementation**: `CIRCULAR_ALLOW_WRITE_TESTS=1` must be set
+
+4. **Blockchain Whitelist**: Write tests only allow SandBox blockchain
+   - **Why**: Prevent accidental writes to production blockchain
+   - **Implementation**: Hardcoded whitelist in test spec
+
+5. **Zero Configuration for L1-L4**: First 4 layers require no setup
+   - **Why**: Fast feedback loop for developers
+   - **Result**: Can run `just test` immediately after clone
+
 ## Running Tests
+
+### Quick Reference Table
+
+| Command                  | Layers    | Speed  | Env Vars Required | Use Case                          |
+|--------------------------|-----------|--------|-------------------|-----------------------------------|
+| `just validate`          | L1        | < 5s   | None              | Quick type checking               |
+| `just test-contracts`    | L1        | < 5s   | None              | Contract validation only          |
+| `just test-sdk-unit`     | L2        | < 30s  | None              | Unit tests only                   |
+| `just test-integration`  | L3        | < 2m   | None (mock)       | Integration tests only            |
+| `just test-cross-lang`   | L4        | < 5m   | None              | Cross-language & regression       |
+| `just test`              | L1-L2     | < 30s  | None              | Pre-commit checks                 |
+| `just test-pyramid`      | L1-L5     | < 10m  | None (L1-L4)      | Complete pyramid (E2E conditional)|
+| `just test-e2e`          | L5a       | Varies | Optional          | E2E tests (skips if no env vars)  |
+| `just test-manual-write` | L5b       | Varies | **Required**      | Write operations (SandBox only)   |
 
 ### Individual Test Layers
 ```bash
 # Layer 1: Contract validation (fastest)
+just test-contracts
+# Or manually:
 ./dist/tests/run-contract-tests.sh
 
-# Layer 2a: Syntax validation
-./dist/tests/syntax-validation.sh
-
-# Layer 2b: Snapshot tests
-./dist/tests/snapshot-test.sh
-
-# Layer 2c: Unit tests
-just test-unit
+# Layer 2: Unit tests
+just test-sdk-unit
+# Or per language:
+just test-sdk-unit-ts    # TypeScript only
+just test-sdk-unit-py    # Python only
 
 # Layer 3: Integration tests (requires mock server)
 just test-integration
 
-# Layer 4: Full suite (slow)
-just test-all
+# Layer 4: Cross-language & regression
+just test-cross-lang
+
+# Layer 5a: E2E tests (gracefully skips if env vars missing)
+just test-e2e
+# Or per language:
+just test-e2e-ts         # TypeScript only
+just test-e2e-py         # Python only
+
+# Layer 5b: Manual write tests (requires explicit enable)
+just test-manual-write
 ```
 
 ### Development Workflow
@@ -387,13 +661,23 @@ just test-all
 just validate
 
 # Fast feedback loop (< 30 seconds)
-just test-unit
+just test-sdk-unit
 
 # Pre-commit checks (< 2 minutes)
 just test
 
-# Full suite before PR (< 5 minutes)
-just test-all
+# Pre-push validation (< 10 minutes)
+just test-pyramid
+
+# E2E testing with live blockchain (conditional)
+export CIRCULAR_TEST_ADDRESS="0x..."
+just test-e2e
+
+# Write operation testing (requires explicit enable, SandBox only!)
+export CIRCULAR_ALLOW_WRITE_TESTS=1
+export CIRCULAR_PRIVATE_KEY="..."
+export CIRCULAR_PUBLIC_KEY="..."
+just test-manual-write
 ```
 
 ## Creating New Tests

@@ -52,12 +52,48 @@ let workflow = {
           run = "npx tsc --noEmit",
         },
         {
-          name = "Run tests",
+          name = "Run unit tests",
           run = "npm test",
         },
         {
           name = "Build package",
           run = "npm run build",
+        },
+      ],
+    },
+
+    e2e-tests = {
+      "runs-on" = "ubuntu-latest",
+      needs = "test",
+      "if" = "github.event_name == 'push' || github.event_name == 'schedule'",
+
+      steps = [
+        {
+          name = "Checkout code",
+          uses = "actions/checkout@v4",
+        },
+        {
+          name = "Setup Node.js",
+          uses = "actions/setup-node@v4",
+          "with" = {
+            "node-version" = "20.x",
+            cache = "npm",
+          },
+        },
+        {
+          name = "Install dependencies",
+          run = "npm ci",
+        },
+        {
+          name = "Run E2E tests (read-only)",
+          run = "npm run test:e2e",
+          env = {
+            CIRCULAR_TEST_ADDRESS = "${{ secrets.CIRCULAR_TEST_ADDRESS }}",
+            CIRCULAR_TEST_BLOCKCHAIN = "${{ secrets.CIRCULAR_TEST_BLOCKCHAIN }}",
+            CIRCULAR_NAG_URL = "${{ secrets.CIRCULAR_NAG_URL }}",
+            CIRCULAR_API_KEY = "${{ secrets.CIRCULAR_API_KEY }}",
+          },
+          continue-on-error = true,
         },
       ],
     },

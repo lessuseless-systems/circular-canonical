@@ -9,6 +9,7 @@ let contract = import "../../src/api/contract.ncl" in
 let asset = import "../../src/api/asset.ncl" in
 let domain = import "../../src/api/domain.ncl" in
 let network = import "../../src/api/network.ncl" in
+let convenience_methods = import "../../src/api/convenience-methods.ncl" in
 let helpers = import "../shared/helpers.ncl" in
 let helpers_crypto = import "../shared/helpers-crypto.ncl" in
 let helpers_encoding = import "../shared/helpers-encoding.ncl" in
@@ -174,14 +175,67 @@ let generate_method = fun endpoint =>
         return self._make_request('%{path_to_endpoint_name endpoint.path}', data)"
 in
 
-# Collect all endpoints
+# Helper: Generate convenience method (wraps API calls)
+let generate_convenience_method = fun method_name spec =>
+  "    def %{method_name}(self, blockchain: str, public_key: str) -> dict:
+        \"\"\"
+        %{spec.summary} (Convenience Method)
+        %{spec.description}
+
+        This is a convenience method that wraps %{spec.wraps}().
+        It handles transaction construction internally.
+
+        Args:
+            blockchain: Blockchain where the wallet will be registered
+            public_key: Wallet public key (128 hex characters)
+
+        Returns:
+            dict: Same as send_transaction response
+        \"\"\"
+        from ._crypto import hash_string, get_public_key
+        from ._encoding import string_to_hex, get_formatted_timestamp
+        import json
+
+        # Derive addresses from public key
+        from_addr = hash_string(public_key)
+        to_addr = from_addr
+        nonce = '%{spec.implementation.nonce}'
+        tx_type = '%{spec.implementation.transaction_type}'
+
+        # Build payload
+        payload_obj = {
+            'Action': '%{spec.implementation.payload_structure.Action}',
+            'PublicKey': public_key
+        }
+        payload = string_to_hex(json.dumps(payload_obj, separators=(',', ':')))
+        timestamp = get_formatted_timestamp()
+
+        # Calculate transaction ID
+        tx_id = hash_string(blockchain + from_addr + to_addr + payload + nonce + timestamp)
+        signature = '%{spec.implementation.signature}'
+
+        # Call send_transaction
+        return self.send_transaction(
+            blockchain=blockchain,
+            from_wallet=from_addr,
+            to_wallet=to_addr,
+            timestamp=timestamp,
+            type=tx_type,
+            payload=payload,
+            nonce=nonce,
+            signature=signature,
+            id=tx_id
+        )"
+in
+
+# Collect all endpoints (real API endpoints only - no convenience methods)
 let all_endpoints = [
   wallet.checkWallet,
   wallet.getWallet,
   wallet.getLatestTransactions,
   wallet.getWalletBalance,
   wallet.getWalletNonce,
-  wallet.registerWallet,
+  # Note: registerWallet removed - it's now a convenience method, not an endpoint
   transaction.sendTransaction,
   transaction.getPendingTransaction,
   transaction.getTransactionbyID,
@@ -204,6 +258,16 @@ let all_endpoints = [
 
 # Generate all methods
 let methods = std.array.map generate_method all_endpoints in
+
+# Generate convenience methods
+let convenience_method_specs = [
+  { name = "register_wallet", spec = convenience_methods.registerWallet },
+  # Future convenience methods can be added here
+] in
+let convenience_methods_code = std.array.map
+  (fun item => generate_convenience_method item.name item.spec)
+  convenience_method_specs
+in
 
 # Generate TypedDict classes for all endpoints
 let generate_response_typedicts = fun endpoint =>
@@ -344,6 +408,13 @@ class CircularProtocolAPI:
     # ============================================================================
 
 %{std.string.join "\n\n" methods}
+
+    # ============================================================================
+    # Convenience Methods
+    # ============================================================================
+    # These methods wrap underlying API calls to simplify common workflows
+
+%{std.string.join "\n\n" convenience_methods_code}
 
     # ============================================================================
     # Helper Methods - Cryptography

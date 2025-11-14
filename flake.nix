@@ -123,6 +123,12 @@
             php83
             php83Packages.composer
 
+            # Go ecosystem
+            go
+
+            # Dart ecosystem
+            dart
+
             # Build tools
             just
             jq
@@ -146,6 +152,8 @@
             echo "  maven:      $(mvn --version | head -1)"
             echo "  php:        $(php --version | head -1)"
             echo "  composer:   $(composer --version)"
+            echo "  go:         $(go version)"
+            echo "  dart:       $(dart --version 2>&1 | head -1)"
             echo "  just:       $(just --version)"
             echo ""
             echo "Git hooks enabled:"
@@ -153,13 +161,16 @@
             echo "  ✓ pre-push: prevent numbered/typo repos"
             echo ""
             echo "Quick start:"
-            echo "  just help           - Show all available commands"
-            echo "  just dev            - Validate + generate artifacts"
-            echo "  just test           - Run all tests"
-            echo "  just generate-ts    - Generate TypeScript SDK"
-            echo "  just generate-py    - Generate Python SDK"
-            echo "  just generate-java  - Generate Java SDK"
-            echo "  just generate-php   - Generate PHP SDK"
+            echo "  just help             - Show all available commands"
+            echo "  just dev              - Validate + generate artifacts"
+            echo "  just test             - Run all tests"
+            echo "  just generate-packages - Generate all SDKs (TS, Python, Java, PHP, Go, Dart, Rust)"
+            echo "  just generate-ts-package    - Generate TypeScript SDK"
+            echo "  just generate-py-package    - Generate Python SDK"
+            echo "  just generate-java-package  - Generate Java SDK"
+            echo "  just generate-php-package   - Generate PHP SDK"
+            echo "  just generate-go-package    - Generate Go SDK"
+            echo "  just generate-dart-package  - Generate Dart SDK"
             echo ""
             echo "📚 Documentation: docs/"
             echo "✨ Happy hacking!"
