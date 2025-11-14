@@ -537,7 +537,7 @@ generate-openapi:
 generate-agents-md:
     @echo "Generating AGENTS.md for AI agent consumption"
     @mkdir -p docs
-    @nickel export generators/shared/agents-md.ncl --field agents_md --format raw > docs/AGENTS.md
+    @nickel export generators/shared/docs/agents-md.ncl --field agents_md --format raw > docs/AGENTS.md
     @echo "[OK] Generated AGENTS.md in docs/"
     @wc -l docs/AGENTS.md
 
@@ -989,3 +989,77 @@ generate-manual-tests:
     @echo "  2. Run test:"
     @echo "     python3 dist/tests/manual/manual-test-registerWallet.py"
     @echo ""
+
+# ===========================================================================
+# Enhanced Package Generation: Include all new components
+# ===========================================================================
+
+# Generate enhanced TypeScript package with all new components
+generate-ts-package-enhanced: generate-ts-package
+    @echo "Adding enhanced components to TypeScript package..."
+    @nickel export generators/typescript/docs/typescript-contributing.ncl --field contributing_content --format raw > dist/typescript/CONTRIBUTING.md
+    @nickel export generators/typescript/docs/typescript-changelog.ncl --field changelog_content --format raw > dist/typescript/CHANGELOG.md
+    @nickel export generators/shared/docs/agents-md.ncl --field agents_md --format raw > dist/typescript/AGENTS.md
+    @nickel export generators/typescript/ci-cd/typescript-renovate.ncl --field renovate_json --format json > dist/typescript/renovate.json
+    @echo "[OK] Enhanced TypeScript package complete"
+
+# Generate enhanced Python package with all new components
+generate-py-package-enhanced: generate-py-package
+    @echo "Adding enhanced components to Python package..."
+    @nickel export generators/python/docs/python-contributing.ncl --field contributing_content --format raw > dist/python/CONTRIBUTING.md
+    @nickel export generators/python/docs/python-changelog.ncl --field changelog_content --format raw > dist/python/CHANGELOG.md
+    @nickel export generators/shared/docs/agents-md.ncl --field agents_md --format raw > dist/python/AGENTS.md
+    @nickel export generators/python/ci-cd/python-renovate.ncl --field renovate_json --format json > dist/python/renovate.json
+    @echo "[OK] Enhanced Python package complete"
+
+# Generate enhanced Go package with all new components
+generate-go-package-enhanced: generate-go-package
+    @echo "Adding enhanced components to Go package..."
+    @nickel export generators/go/docs/go-contributing.ncl --field contributing_content --format raw > dist/go/CONTRIBUTING.md
+    @nickel export generators/go/docs/go-changelog.ncl --field changelog_content --format raw > dist/go/CHANGELOG.md
+    @nickel export generators/shared/docs/agents-md.ncl --field agents_md --format raw > dist/go/AGENTS.md
+    @nickel export generators/go/ci-cd/go-renovate.ncl --field renovate_json --format json > dist/go/renovate.json
+    @echo "[OK] Enhanced Go package complete"
+
+# Generate enhanced PHP package with all new components
+generate-php-package-enhanced: generate-php-package
+    @echo "Adding enhanced components to PHP package..."
+    @nickel export generators/php/docs/php-contributing.ncl --field contributing_content --format raw > dist/php/CONTRIBUTING.md
+    @nickel export generators/php/docs/php-changelog.ncl --field changelog_content --format raw > dist/php/CHANGELOG.md
+    @nickel export generators/shared/docs/agents-md.ncl --field agents_md --format raw > dist/php/AGENTS.md
+    @nickel export generators/php/ci-cd/php-renovate.ncl --field renovate_json --format json > dist/php/renovate.json
+    @echo "[OK] Enhanced PHP package complete"
+
+# Generate enhanced Dart package with all new components
+generate-dart-package-enhanced: generate-dart-package
+    @echo "Adding enhanced components to Dart package..."
+    @nickel export generators/dart/docs/dart-contributing.ncl --field contributing_content --format raw > dist/dart/CONTRIBUTING.md
+    @nickel export generators/shared/docs/agents-md.ncl --field agents_md --format raw > dist/dart/AGENTS.md
+    @nickel export generators/dart/ci-cd/dart-renovate.ncl --field renovate_json --format json > dist/dart/renovate.json
+    @echo "[OK] Enhanced Dart package complete (CHANGELOG.md already included in base)"
+
+# Generate all enhanced packages (5 SDKs with all new components)
+generate-all-enhanced: generate-ts-package-enhanced generate-py-package-enhanced generate-go-package-enhanced generate-php-package-enhanced generate-dart-package-enhanced
+    @echo ""
+    @echo "================================================================"
+    @echo "  [OK] All 5 enhanced SDK packages generated"
+    @echo "================================================================"
+    @echo "  Each package now includes:"
+    @echo "    - CONTRIBUTING.md (contribution guidelines)"
+    @echo "    - CHANGELOG.md (version history)"
+    @echo "    - AGENTS.md (AI agent guidance)"
+    @echo "    - renovate.json (automated dependency updates)"
+    @echo "    - All existing components (tests, CI/CD, docs)"
+    @echo "================================================================"
+    @echo ""
+    @echo "Generated packages:"
+    @echo "  - TypeScript: dist/typescript/"
+    @echo "  - Python: dist/python/"
+    @echo "  - Go: dist/go/"
+    @echo "  - PHP: dist/php/"
+    @echo "  - Dart: dist/dart/"
+    @echo ""
+    @echo "Next steps:"
+    @echo "  1. Review generated files"
+    @echo "  2. Test packages: just verify-packages"
+    @echo "  3. Commit changes"
