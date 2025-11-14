@@ -629,12 +629,12 @@ test-ts-all: test-ts-unit test-ts-integration test-ts-e2e
 # Python: Unit tests (no dependencies)
 test-py-unit:
     @echo "🧪 Python: Unit tests"
-    @cd dist/circular-py && python3 -m pip install -e . --quiet 2>/dev/null && python3 -m pytest tests/test_unit.py -v
+    @cd dist/circular-py && PYTHONPATH=src:$$PYTHONPATH python3 -m pytest tests/test_unit.py -v --override-ini="addopts="
 
 # Python: Integration tests (with mock server)
 test-py-integration:
     @echo "🧪 Python: Integration tests"
-    @cd dist/circular-py && python3 -m pip install -e . --quiet 2>/dev/null && python3 -m pytest tests/test_integration.py -v 2>/dev/null || echo "⏭️  Integration tests not configured"
+    @cd dist/circular-py && PYTHONPATH=src:$$PYTHONPATH python3 -m pytest tests/test_integration.py -v --override-ini="addopts=" 2>/dev/null || echo "⏭️  Integration tests not configured"
 
 # Python: E2E tests (requires ENV vars)
 test-py-e2e:
@@ -642,7 +642,7 @@ test-py-e2e:
     @if [ -z "$$CIRCULAR_TEST_ADDRESS" ]; then \
         echo "⏭️  Skipping - set CIRCULAR_TEST_ADDRESS=0x... to run"; \
     else \
-        cd dist/circular-py && python3 -m pip install -e . --quiet 2>/dev/null && python3 -m pytest tests/test_e2e.py -v -m e2e; \
+        cd dist/circular-py && PYTHONPATH=src:$$PYTHONPATH python3 -m pytest tests/test_e2e.py -v -m e2e --override-ini="addopts="; \
     fi
 
 # Python: All tests
