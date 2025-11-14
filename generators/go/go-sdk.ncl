@@ -10,6 +10,10 @@ let contract = import "../../src/api/contract.ncl" in
 let asset = import "../../src/api/asset.ncl" in
 let domain = import "../../src/api/domain.ncl" in
 let network = import "../../src/api/network.ncl" in
+let convenience_methods = import "../../src/api/convenience-methods.ncl" in
+let helpers_crypto = import "../shared/helpers-crypto.ncl" in
+let helpers_encoding = import "../shared/helpers-encoding.ncl" in
+let helpers_advanced = import "../shared/helpers-advanced.ncl" in
 
 # Helper: Convert Nickel type to Go type
 let nickel_type_to_go = fun type_str =>
@@ -47,6 +51,58 @@ let path_to_endpoint_name = fun path =>
   let first_char = std.string.substring 0 1 without_slash in
   let rest = std.string.substring 1 (std.string.length without_slash) without_slash in
   (std.string.uppercase first_char) ++ rest
+in
+
+# Helper: Generate convenience method (wraps API calls)
+let generate_convenience_method = fun method_name spec =>
+  m%"
+// %{spec.summary} (Convenience Method)
+// %{spec.description}
+//
+// This is a convenience method that wraps %{spec.wraps}().
+// It handles transaction construction internally.
+func (c *Client) %{method_name}(ctx context.Context, blockchain string, publicKey string) (map[string]interface{}, error) {
+	// Derive addresses from public key
+	from := hashString(publicKey)
+	to := from
+	nonce := "%{spec.implementation.nonce}"
+	txType := "%{spec.implementation.transaction_type}"
+
+	// Build payload
+	payloadObj := map[string]string{
+		"Action":    "%{spec.implementation.payload_structure.Action}",
+		"PublicKey": publicKey,
+	}
+
+	payloadJSON, err := json.Marshal(payloadObj)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal payload: %w", err)
+	}
+	payload := stringToHex(string(payloadJSON))
+	timestamp := GetFormattedTimestamp()
+
+	// Calculate transaction ID
+	id := hashString(blockchain + from + to + payload + nonce + timestamp)
+	signature := "%{spec.implementation.signature}"
+
+	// Build request
+	request := map[string]interface{}{
+		"ID":         id,
+		"From":       from,
+		"To":         to,
+		"Timestamp":  timestamp,
+		"Type":       txType,
+		"Payload":    payload,
+		"Nonce":      nonce,
+		"Signature":  signature,
+		"Blockchain": blockchain,
+		"Version":    "%{config.version}",
+	}
+
+	// Call SendTransaction
+	return c.SendTransaction(ctx, request)
+}
+"%
 in
 
 # Helper: Generate method
@@ -92,6 +148,16 @@ let all_endpoints = [
 # Generate all methods
 let methods = std.array.map generate_method all_endpoints in
 
+# Generate convenience methods
+let convenience_method_specs = [
+  { name = "RegisterWallet", spec = convenience_methods.registerWallet },
+  # Future convenience methods can be added here
+] in
+let convenience_methods_code = std.array.map
+  (fun item => generate_convenience_method item.name item.spec)
+  convenience_method_specs
+in
+
 # Assemble the complete SDK
 {
   sdk_code = m%"
@@ -128,6 +194,7 @@ type Client struct {
 	nagKey     string
 	httpClient *http.Client
 	headers    map[string]string
+	%{helpers_advanced.go.errorField}
 }
 
 // Config holds client configuration options
@@ -309,6 +376,48 @@ func (c *Client) makeRequest(ctx context.Context, endpoint string, data map[stri
 // API Methods
 // ============================================================================
 %{std.string.join "\n" methods}
+
+// ============================================================================
+// Convenience Methods
+// ============================================================================
+// These methods wrap underlying API calls to simplify common workflows
+
+%{std.string.join "\n" convenience_methods_code}
+
+// ============================================================================
+// Helper Methods - Cryptography
+// ============================================================================
+%{helpers_crypto.go.signMessage}
+
+%{helpers_crypto.go.verifySignature}
+
+%{helpers_crypto.go.getPublicKey}
+
+%{helpers_crypto.go.hashString}
+
+%{helpers_crypto.go.getFormattedTimestamp}
+
+// ============================================================================
+// Helper Methods - Encoding
+// ============================================================================
+%{helpers_encoding.go.hexFix}
+
+%{helpers_encoding.go.stringToHex}
+
+%{helpers_encoding.go.hexToString}
+
+%{helpers_encoding.go.padNumber}
+
+%{helpers_encoding.go.getFormattedTimestamp}
+
+// ============================================================================
+// Helper Methods - Advanced
+// ============================================================================
+%{helpers_advanced.go.GetError}
+
+%{helpers_advanced.go.handleError}
+
+%{helpers_advanced.go.getTransactionOutcome}
 "%,
 
   # Metadata

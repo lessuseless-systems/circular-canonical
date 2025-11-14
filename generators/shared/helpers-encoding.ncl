@@ -310,4 +310,299 @@
 "%,
 
   },
+
+  # Go implementation of encoding helpers
+  go = {
+
+    # Remove or add 0x prefix to normalize hex strings
+    hexFix = m%"
+// hexFix normalizes hex strings (removes 0x prefix if present)
+// This is a package-level helper function
+func hexFix(hexString string) string {
+	if len(hexString) >= 2 && (hexString[:2] == "0x" || hexString[:2] == "0X") {
+		return hexString[2:]
+	}
+	return hexString
+}
+"%,
+
+    # Convert string to hex encoding
+    stringToHex = m%"
+// StringToHex converts string to hex encoding
+func (c *Client) StringToHex(str string) string {
+	return hex.EncodeToString([]byte(str))
+}
+"%,
+
+    # Convert hex to string
+    hexToString = m%"
+// HexToString converts hex encoding to string
+func (c *Client) HexToString(hexStr string) (string, error) {
+	normalized := hexFix(hexStr)
+	bytes, err := hex.DecodeString(normalized)
+	if err != nil {
+		return "", fmt.Errorf("invalid hex string: %w", err)
+	}
+	return string(bytes), nil
+}
+"%,
+
+    # Pad number with leading zero if single digit
+    padNumber = m%%"
+// padNumber pads number with leading zero if single digit
+// This is a package-level helper function
+func padNumber(num int) string {
+	if num < 10 {
+		return fmt.Sprintf("0%d", num)
+	}
+	return fmt.Sprintf("%d", num)
+}
+"%%,
+
+    # Get formatted timestamp for Circular Protocol
+    getFormattedTimestamp = m%%"
+// GetFormattedTimestamp returns current timestamp in Circular Protocol format
+// Format: YYYY:MM:DD-hh:mm:ss (UTC)
+func (c *Client) GetFormattedTimestamp() string {
+	now := time.Now().UTC()
+	return fmt.Sprintf("%d:%s:%s-%s:%s:%s",
+		now.Year(),
+		padNumber(int(now.Month())),
+		padNumber(now.Day()),
+		padNumber(now.Hour()),
+		padNumber(now.Minute()),
+		padNumber(now.Second()))
+}
+"%%,
+
+  },
+
+  # Java implementation of encoding helpers
+  java = {
+
+    # Remove or add 0x prefix to normalize hex strings
+    hexFix = m%"
+    /**
+     * Normalize hex strings (remove 0x prefix if present)
+     *
+     * @param hexString Hex string with or without 0x prefix
+     * @return Normalized hex string without 0x prefix
+     */
+    private String hexFix(String hexString) {
+        if (hexString.startsWith("0x") || hexString.startsWith("0X")) {
+            return hexString.substring(2);
+        }
+        return hexString;
+    }
+"%,
+
+    # Convert string to hex encoding
+    stringToHex = m%%"
+    /**
+     * Convert string to hex encoding
+     *
+     * @param str String to convert
+     * @return Hex-encoded string
+     * @throws UnsupportedEncodingException if UTF-8 encoding is not supported
+     */
+    public String stringToHex(String str) throws UnsupportedEncodingException {
+        byte[] bytes = str.getBytes("UTF-8");
+        StringBuilder hex = new StringBuilder();
+        for (byte b : bytes) {
+            hex.append(String.format("%02x", b));
+        }
+        return hex.toString();
+    }
+"%%,
+
+    # Convert hex to string
+    hexToString = m%"
+    /**
+     * Convert hex encoding to string
+     *
+     * @param hexString Hex-encoded string
+     * @return Decoded string
+     * @throws UnsupportedEncodingException if UTF-8 encoding is not supported
+     */
+    public String hexToString(String hexString) throws UnsupportedEncodingException {
+        String normalized = hexFix(hexString);
+        byte[] bytes = new byte[normalized.length() / 2];
+        for (int i = 0; i < bytes.length; i++) {
+            int index = i * 2;
+            bytes[i] = (byte) Integer.parseInt(normalized.substring(index, index + 2), 16);
+        }
+        return new String(bytes, "UTF-8");
+    }
+"%,
+
+    # Pad number with leading zero if single digit
+    padNumber = m%"
+    /**
+     * Pad number with leading zero if single digit
+     *
+     * @param num Number to pad
+     * @return Padded string
+     */
+    private String padNumber(int num) {
+        return num < 10 ? "0" + num : String.valueOf(num);
+    }
+"%,
+
+    # Get formatted timestamp for Circular Protocol
+    getFormattedTimestamp = m%%"
+    /**
+     * Get current timestamp in Circular Protocol format
+     * Format: YYYY:MM:DD-hh:mm:ss (UTC)
+     *
+     * @return Formatted timestamp string
+     */
+    public String getFormattedTimestamp() {
+        java.time.ZonedDateTime now = java.time.ZonedDateTime.now(java.time.ZoneOffset.UTC);
+        return String.format("%d:%s:%s-%s:%s:%s",
+            now.getYear(),
+            padNumber(now.getMonthValue()),
+            padNumber(now.getDayOfMonth()),
+            padNumber(now.getHour()),
+            padNumber(now.getMinute()),
+            padNumber(now.getSecond()));
+    }
+"%%,
+
+  },
+
+  # PHP implementation of encoding helpers
+  php = {
+
+    # Remove or add 0x prefix to normalize hex strings
+    hexFix = m%"
+    /**
+     * Normalize hex strings (remove 0x prefix if present)
+     *
+     * @param string $hexString Hex string with or without 0x prefix
+     * @return string Normalized hex string without 0x prefix
+     */
+    private function hexFix(string $hexString): string {
+        if (str_starts_with($hexString, '0x') || str_starts_with($hexString, '0X')) {
+            return substr($hexString, 2);
+        }
+        return $hexString;
+    }
+"%,
+
+    # Convert string to hex encoding
+    stringToHex = m%"
+    /**
+     * Convert string to hex encoding
+     *
+     * @param string $str String to convert
+     * @return string Hex-encoded string
+     */
+    public function stringToHex(string $str): string {
+        return bin2hex($str);
+    }
+"%,
+
+    # Convert hex to string
+    hexToString = m%"
+    /**
+     * Convert hex encoding to string
+     *
+     * @param string $hexString Hex-encoded string
+     * @return string Decoded string
+     */
+    public function hexToString(string $hexString): string {
+        $normalized = $this->hexFix($hexString);
+        return hex2bin($normalized);
+    }
+"%,
+
+    # Pad number with leading zero if single digit
+    padNumber = m%"
+    /**
+     * Pad number with leading zero if single digit
+     *
+     * @param int $num Number to pad
+     * @return string Padded string
+     */
+    private function padNumber(int $num): string {
+        return str_pad((string)$num, 2, '0', STR_PAD_LEFT);
+    }
+"%,
+
+    # Get formatted timestamp for Circular Protocol
+    getFormattedTimestamp = m%%"
+    /**
+     * Get current timestamp in Circular Protocol format
+     * Format: YYYY:MM:DD-hh:mm:ss (UTC)
+     *
+     * @return string Formatted timestamp string
+     */
+    public function getFormattedTimestamp(): string {
+        $now = new \DateTime('now', new \DateTimeZone('UTC'));
+        return sprintf('%d:%s:%s-%s:%s:%s',
+            $now->format('Y'),
+            $this->padNumber((int)$now->format('m')),
+            $this->padNumber((int)$now->format('d')),
+            $this->padNumber((int)$now->format('H')),
+            $this->padNumber((int)$now->format('i')),
+            $this->padNumber((int)$now->format('s')));
+    }
+"%%,
+
+  },
+
+  # Dart implementation of encoding helpers
+  dart = {
+
+    # Remove or add 0x prefix to normalize hex strings
+    hexFix = m%"
+  /// Normalize hex strings (remove 0x prefix if present)
+  String _hexFix(String hexString) {
+    if (hexString.startsWith('0x') || hexString.startsWith('0X')) {
+      return hexString.substring(2);
+    }
+    return hexString;
+  }
+"%,
+
+    # Convert string to hex encoding
+    stringToHex = m%"
+  /// Convert string to hex encoding
+  String stringToHex(String str) {
+    return str.codeUnits.map((c) => c.toRadixString(16).padLeft(2, '0')).join();
+  }
+"%,
+
+    # Convert hex to string
+    hexToString = m%"
+  /// Convert hex encoding to string
+  String hexToString(String hexString) {
+    final normalized = _hexFix(hexString);
+    final List<int> bytes = [];
+    for (int i = 0; i < normalized.length; i += 2) {
+      bytes.add(int.parse(normalized.substring(i, i + 2), radix: 16));
+    }
+    return String.fromCharCodes(bytes);
+  }
+"%,
+
+    # Pad number with leading zero if single digit
+    padNumber = m%"
+  /// Pad number with leading zero if single digit
+  String _padNumber(int num) {
+    return num < 10 ? '0$num' : num.toString();
+  }
+"%,
+
+    # Get formatted timestamp for Circular Protocol
+    getFormattedTimestamp = m%"
+  /// Get current timestamp in Circular Protocol format
+  /// Format: YYYY:MM:DD-hh:mm:ss (UTC)
+  String getFormattedTimestamp() {
+    final now = DateTime.now().toUtc();
+    return '${now.year}:${_padNumber(now.month)}:${_padNumber(now.day)}-${_padNumber(now.hour)}:${_padNumber(now.minute)}:${_padNumber(now.second)}';
+  }
+"%,
+
+  },
 }

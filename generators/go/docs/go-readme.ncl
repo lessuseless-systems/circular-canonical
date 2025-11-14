@@ -2,6 +2,7 @@
 # Generates README.md for Go SDK package
 
 let config = import "../../../src/config.ncl" in
+let api_reference = import "../../shared/api-reference-template.ncl" in
 
 let go_config = {
   language = "Go",
@@ -83,25 +84,11 @@ The **Circular Protocol Go SDK** is the official Go library for seamless integra
 
 ## 📜 API Reference
 
-For detailed information on all available methods, parameters, and return types, refer to the **[Go SDK Documentation](https://circular-protocol.gitbook.io/circular-sdk/api-docs/go)**.
+The Circular Protocol Go SDK provides **39 methods** across multiple categories for comprehensive blockchain interaction.
 
-### Available Methods
+%{api_reference.api_reference_markdown}
 
-**Wallet Operations**: `CheckWallet`, `GetWallet`, `GetWalletBalance`, `GetWalletNonce`, `GetLatestTransactions`
-
-**Transaction Operations**: `SendTransaction`, `GetTransactionbyID`, `GetTransactionbyNode`, `GetTransactionbyAddress`, `GetTransactionbyDate`, `GetPendingTransaction`
-
-**Asset Operations**: `GetAssetList`, `GetAsset`, `GetAssetSupply`, `GetVoucher`
-
-**Block Operations**: `GetBlock`, `GetBlockRange`, `GetBlockCount`, `GetAnalytics`
-
-**Contract Operations**: `TestContract`, `CallContract`
-
-**Domain Operations**: `GetDomain`
-
-**Network Operations**: `GetBlockchains`
-
-**Cryptographic Helpers**: `GetFormattedTimestamp`, `HashString`, `GetPublicKey`, `SignMessage`, `GetKeysFromString`
+> **Note**: For detailed parameter types, response structures, and advanced usage examples, refer to the **[Go SDK Documentation](https://circular-protocol.gitbook.io/circular-sdk/api-docs/go)**.
 
 ## 🤝 Contributing
 

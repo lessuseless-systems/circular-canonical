@@ -2,6 +2,7 @@
 # Generates README.md for Java/Maven SDK package
 
 let config = import "../../../src/config.ncl" in
+let api_reference = import "../../shared/api-reference-template.ncl" in
 
 let java_config = {
   language = "Java",
@@ -91,25 +92,11 @@ The **Circular Protocol Java SDK** is the official Java library for seamless int
 
 ## 📜 API Reference
 
-For detailed information on all available methods, parameters, and return types, refer to the **[Java SDK Documentation](https://circular-protocol.gitbook.io/circular-sdk/api-docs/java)**.
+The Circular Protocol Java SDK provides **39 methods** across multiple categories for comprehensive blockchain interaction.
 
-### Available Methods
+%{api_reference.api_reference_markdown}
 
-**Wallet Operations**: `checkWallet`, `getWallet`, `getWalletBalance`, `getWalletNonce`, `getLatestTransactions`
-
-**Transaction Operations**: `sendTransaction`, `getTransactionbyID`, `getTransactionbyNode`, `getTransactionbyAddress`, `getTransactionbyDate`, `getPendingTransaction`
-
-**Asset Operations**: `getAssetList`, `getAsset`, `getAssetSupply`, `getVoucher`
-
-**Block Operations**: `getBlock`, `getBlockRange`, `getBlockCount`, `getAnalytics`
-
-**Contract Operations**: `testContract`, `callContract`
-
-**Domain Operations**: `getDomain`
-
-**Network Operations**: `getBlockchains`
-
-**Cryptographic Helpers**: `getFormattedTimestamp`, `hashString`, `getPublicKey`, `signMessage`, `getKeysFromString`
+> **Note**: For detailed parameter types, response structures, and advanced usage examples, refer to the **[Java SDK Documentation](https://circular-protocol.gitbook.io/circular-sdk/api-docs/java)**.
 
 ## 🤝 Contributing
 

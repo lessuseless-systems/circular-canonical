@@ -2,6 +2,7 @@
 # Generates README.md for Python/PyPI SDK package
 
 let config = import "../../../src/config.ncl" in
+let api_reference = import "../../shared/api-reference-template.ncl" in
 
 let python_config = {
   language = "Python",
@@ -90,25 +91,11 @@ The **Circular Protocol Python SDK** is the official Python library for seamless
 
 ## 📜 API Reference
 
-For detailed information on all available methods, parameters, and return types, refer to the **[Python SDK Documentation](https://circular-protocol.gitbook.io/circular-sdk/api-docs/python)**.
+The Circular Protocol Python SDK provides **39 methods** across multiple categories for comprehensive blockchain interaction.
 
-### Available Methods
+%{api_reference.api_reference_markdown}
 
-**Wallet Operations**: `check_wallet`, `get_wallet`, `get_wallet_balance`, `get_wallet_nonce`, `get_latest_transactions`
-
-**Transaction Operations**: `send_transaction`, `get_transaction_by_id`, `get_transaction_by_node`, `get_transaction_by_address`, `get_transaction_by_date`, `get_pending_transaction`
-
-**Asset Operations**: `get_asset_list`, `get_asset`, `get_asset_supply`, `get_voucher`
-
-**Block Operations**: `get_block`, `get_block_range`, `get_block_count`, `get_analytics`
-
-**Contract Operations**: `test_contract`, `call_contract`
-
-**Domain Operations**: `get_domain`
-
-**Network Operations**: `get_blockchains`
-
-**Cryptographic Helpers**: `get_formatted_timestamp`, `hash_string`, `get_public_key`, `sign_message`, `get_keys_from_string`
+> **Note**: For detailed parameter types, response structures, and advanced usage examples, refer to the **[Python SDK Documentation](https://circular-protocol.gitbook.io/circular-sdk/api-docs/python)**.
 
 ## 🤝 Contributing
 

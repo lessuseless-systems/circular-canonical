@@ -293,6 +293,7 @@ public class CircularProtocolAPI {
     private final Map<String, String> headers;
     private String nagUrl;
     private String nagKey;
+%{helpers_advanced.java.errorField}
 
     /**
      * Create a new Circular Protocol API client
@@ -436,6 +437,42 @@ public class CircularProtocolAPI {
     // These methods wrap underlying API calls to simplify common workflows
 
 %{std.string.join "\n" convenience_methods_code}
+
+    // ============================================================================
+    // Helper Methods - Cryptography
+    // ============================================================================
+
+%{helpers_crypto.java.signMessage}
+
+%{helpers_crypto.java.verifySignature}
+
+%{helpers_crypto.java.getPublicKey}
+
+%{helpers_crypto.java.hashString}
+
+    // ============================================================================
+    // Helper Methods - Encoding
+    // ============================================================================
+
+%{helpers_encoding.java.hexFix}
+
+%{helpers_encoding.java.stringToHex}
+
+%{helpers_encoding.java.hexToString}
+
+%{helpers_encoding.java.padNumber}
+
+%{helpers_encoding.java.getFormattedTimestamp}
+
+    // ============================================================================
+    // Helper Methods - Advanced
+    // ============================================================================
+
+%{helpers_advanced.java.GetError}
+
+%{helpers_advanced.java.handleError}
+
+%{helpers_advanced.java.getTransactionOutcome}
 
     // ============================================================================
     // Request/Response Classes

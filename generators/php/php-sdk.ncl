@@ -11,6 +11,9 @@ let asset = import "../../src/api/asset.ncl" in
 let domain = import "../../src/api/domain.ncl" in
 let network = import "../../src/api/network.ncl" in
 let convenience_methods = import "../../src/api/convenience-methods.ncl" in
+let helpers_crypto = import "../shared/helpers-crypto.ncl" in
+let helpers_encoding = import "../shared/helpers-encoding.ncl" in
+let helpers_advanced = import "../shared/helpers-advanced.ncl" in
 
 # Helper: Convert Nickel type to PHP type hint
 let nickel_type_to_php = fun type_str =>
@@ -203,6 +206,7 @@ class CircularProtocolAPI
 
     /** @var array<string, string> HTTP headers */
     private array $headers;
+%{helpers_advanced.php.errorField}
 
     /**
      * Create a new Circular Protocol API client
@@ -358,6 +362,42 @@ class CircularProtocolAPI
     // These methods wrap underlying API calls to simplify common workflows
 
 %{std.string.join "\n" convenience_methods_code}
+
+    // ============================================================================
+    // Helper Methods - Cryptography
+    // ============================================================================
+
+%{helpers_crypto.php.signMessage}
+
+%{helpers_crypto.php.verifySignature}
+
+%{helpers_crypto.php.getPublicKey}
+
+%{helpers_crypto.php.hashString}
+
+    // ============================================================================
+    // Helper Methods - Encoding
+    // ============================================================================
+
+%{helpers_encoding.php.hexFix}
+
+%{helpers_encoding.php.stringToHex}
+
+%{helpers_encoding.php.hexToString}
+
+%{helpers_encoding.php.padNumber}
+
+%{helpers_encoding.php.getFormattedTimestamp}
+
+    // ============================================================================
+    // Helper Methods - Advanced
+    // ============================================================================
+
+%{helpers_advanced.php.GetError}
+
+%{helpers_advanced.php.handleError}
+
+%{helpers_advanced.php.getTransactionOutcome}
 }
 
 /**
