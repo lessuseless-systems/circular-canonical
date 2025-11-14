@@ -122,7 +122,7 @@ in
  *   npm test
  */
 
-import { CircularProtocolAPI } from '../../dist/typescript/src/index'
+import { CircularProtocolAPI } from '../../dist/circular-ts/src/index'
 
 const API_URL = process.env.CIRCULAR_API_URL || '%{test_spec.mock_server_url}'
 const API_VERSION = '%{config.version}'

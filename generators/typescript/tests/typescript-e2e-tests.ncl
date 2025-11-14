@@ -209,7 +209,7 @@ let generate_write_test = fun test_name test_def =>
 
 %{std.string.join "\n" assertions}
 
-    console.log('  ✅ Contract call executed (may have failed if contract doesn\\'t exist)')
+    console.log('  ✅ Contract call executed (may have failed if contract does not exist)')
     console.log('  📊 Result:', result.Result)
       "%
     else
