@@ -6,3 +6,15 @@
 	path = dist/circular-py
 	url = git@github.com:lessuseless-systems/circular-py.git
 	branch = development
+[submodule "dist/circular-go"]
+	path = dist/circular-go
+	url = git@github.com:lessuseless-systems/circular-go.git
+	branch = development
+[submodule "dist/circular-dart"]
+	path = dist/circular-dart
+	url = git@github.com:lessuseless-systems/circular-dart.git
+	branch = development
+[submodule "dist/circular-php"]
+	path = dist/circular-php
+	url = git@github.com:lessuseless-systems/circular-php.git
+	branch = development
