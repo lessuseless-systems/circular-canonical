@@ -275,7 +275,7 @@ All endpoints follow this pattern:
 {
   "Blockchain": "hex-encoded-blockchain-id",
   "Address": "hex-encoded-address",
-  "Version": "%{config.version}"
+  "Version": "%%{config.version}"
 }
 ```
 
