@@ -191,8 +191,12 @@ generate-ts-package:
     @nickel export generators/typescript/config/typescript-webpack-cjs.ncl --format raw > dist/circular-ts/webpack.config.cjs.js
     @echo "webpack.config.esm.js"
     @nickel export generators/typescript/config/typescript-webpack-esm.ncl --format raw > dist/circular-ts/webpack.config.esm.js
-    @echo "README file"
+    @echo "README.md"
     @nickel export generators/typescript/docs/typescript-readme.ncl --field readme_content --format raw > dist/circular-ts/README.md
+    @echo "CONTRIBUTING.md"
+    @nickel export generators/typescript/docs/typescript-contributing.ncl --field contributing_content --format raw > dist/circular-ts/CONTRIBUTING.md
+    @echo "CHANGELOG.md"
+    @nickel export generators/typescript/docs/typescript-changelog.ncl --field changelog_content --format raw > dist/circular-ts/CHANGELOG.md
     @echo "SDK code (src/index.ts)"
     @nickel export generators/typescript/typescript-sdk.ncl --field sdk_code --format raw > dist/circular-ts/src/index.ts
     @echo "Unit tests"
