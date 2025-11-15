@@ -343,7 +343,86 @@ generate-packages: generate-ts-package generate-py-package generate-java-package
     @echo "================================================================"
 
 # ===========================================================================
-# Multi-Repo Workflow: Fork setup and sync to submodules
+# Multi-Repo Workflow: SDK submodules (5 languages)
+# ===========================================================================
+
+# Setup all 5 SDK repositories as submodules (ONE-TIME SETUP)
+setup-all-submodules:
+    @echo "Setting up all 5 SDK repositories as submodules"
+    @echo ""
+    @echo "This will:"
+    @echo "  1. Create GitHub repositories (if they don't exist)"
+    @echo "  2. Initialize development branches"
+    @echo "  3. Add as submodules to circular-canonical"
+    @echo "  4. Generate initial SDK packages"
+    @echo ""
+    @if ! command -v gh >/dev/null 2>&1; then \
+        echo "[ERROR] GitHub CLI (gh) not found"; \
+        echo "  Install: https://cli.github.com/"; \
+        exit 1; \
+    fi
+    @echo "Step 1: Creating GitHub repositories..."
+    @gh repo create lessuseless-systems/circular-ts --public --description "TypeScript SDK for Circular Protocol blockchain" 2>/dev/null || echo "  circular-ts already exists"
+    @gh repo create lessuseless-systems/circular-go --public --description "Go SDK for Circular Protocol blockchain" 2>/dev/null || echo "  circular-go already exists"
+    @gh repo create lessuseless-systems/circular-php --public --description "PHP SDK for Circular Protocol blockchain" 2>/dev/null || echo "  circular-php already exists"
+    @gh repo create lessuseless-systems/circular-dart --public --description "Dart SDK for Circular Protocol blockchain" 2>/dev/null || echo "  circular-dart already exists"
+    @echo "  circular-py already exists (skipping)"
+    @echo ""
+    @echo "Step 2: Initializing development branches in temporary clones..."
+    @rm -rf /tmp/circular-sdk-init
+    @mkdir -p /tmp/circular-sdk-init
+    @cd /tmp/circular-sdk-init && \
+        for repo in circular-ts circular-go circular-php circular-dart; do \
+            echo "  Initializing $$repo..."; \
+            gh repo clone lessuseless-systems/$$repo 2>/dev/null || true; \
+            cd $$repo 2>/dev/null || continue; \
+            git checkout -b development 2>/dev/null || git checkout development; \
+            echo "# Circular Protocol $${repo#circular-} SDK" > README.md; \
+            git add README.md 2>/dev/null || true; \
+            git diff --cached --quiet || git commit -m "chore: initialize development branch" 2>/dev/null || true; \
+            git push -u origin development 2>/dev/null || echo "    Branch already exists"; \
+            cd ..; \
+        done
+    @echo ""
+    @echo "Step 3: Adding submodules (if not already added)..."
+    @git submodule add -b development git@github.com:lessuseless-systems/circular-ts.git dist/typescript 2>/dev/null || echo "  dist/typescript already added"
+    @git submodule add -b development git@github.com:lessuseless-systems/circular-go.git dist/go 2>/dev/null || echo "  dist/go already added"
+    @git submodule add -b development git@github.com:lessuseless-systems/circular-php.git dist/php 2>/dev/null || echo "  dist/php already added"
+    @git submodule add -b development git@github.com:lessuseless-systems/circular-dart.git dist/dart 2>/dev/null || echo "  dist/dart already added"
+    @echo "  dist/python already added (skipping)"
+    @git submodule init
+    @git submodule update --remote --merge
+    @echo ""
+    @echo "Step 4: Generating initial SDK packages..."
+    @just generate-all-enhanced
+    @echo ""
+    @echo "Step 5: Committing initial SDK packages to submodules..."
+    @for dir in typescript python go php dart; do \
+        echo "  Committing dist/$$dir..."; \
+        cd dist/$$dir && \
+        git add -A && \
+        (git diff --cached --quiet || git commit -m "chore: initial SDK generation from circular-canonical") && \
+        cd ../..; \
+    done
+    @echo ""
+    @echo "================================================================"
+    @echo "  [OK] All 5 SDK submodules set up successfully"
+    @echo "================================================================"
+    @echo ""
+    @echo "Submodules:"
+    @git submodule status
+    @echo ""
+    @echo "Next steps:"
+    @echo "  1. Review submodules: just check-all-submodules"
+    @echo "  2. Push to remotes: just push-all-sdks"
+    @echo "  3. Update parent repo: git add .gitmodules dist/"
+    @echo "  4. Commit parent: git commit -m 'chore: add all SDK submodules'"
+    @echo ""
+    @echo "Clean up temp directory:"
+    @echo "  rm -rf /tmp/circular-sdk-init"
+
+# ===========================================================================
+# Multi-Repo Workflow: Fork setup and sync to submodules (LEGACY - for circular-js-npm/circular-py forks)
 # ===========================================================================
 
 # Setup forks: Create forks on GitHub and add as submodules (ONE-TIME SETUP)
@@ -476,7 +555,7 @@ sync-python: verify-repos
     @echo "  Branch: development"
     @cd dist/circular-py && git log -1 --oneline
 
-# Sync both TypeScript and Python packages
+# Sync both TypeScript and Python packages (LEGACY)
 sync-all: sync-typescript sync-python
     @echo ""
     @echo "================================================================"
@@ -487,6 +566,79 @@ sync-all: sync-typescript sync-python
     @echo "  *Review changes: cd dist/circular-ts && git status"
     @echo "  *Push to fork: just push-forks"
     @echo "  *Create PRs to upstream circular-protocol repos"
+
+# ===========================================================================
+# Enhanced Multi-SDK Sync Commands (All 5 Languages)
+# ===========================================================================
+
+# Sync Go package to submodule
+sync-go: verify-repos
+    @echo "Syncing Go package to dist/go/ submodule"
+    @if [ ! -e dist/go/.git ]; then \
+        echo "[ERROR] dist/go/ is not a git submodule"; \
+        echo "  Run setup-all-submodules to configure submodules"; \
+        exit 1; \
+    fi
+    @echo "Generating Go package"
+    @just generate-go-package-enhanced
+    @cd dist/go && \
+        git add -A && \
+        git diff --cached --quiet || \
+        git commit -m "chore: sync generated Go SDK from circular-canonical"
+    @echo "[OK] Go package synced to dist/go/"
+    @echo "  Branch: development"
+    @cd dist/go && git log -1 --oneline
+
+# Sync PHP package to submodule
+sync-php: verify-repos
+    @echo "Syncing PHP package to dist/php/ submodule"
+    @if [ ! -e dist/php/.git ]; then \
+        echo "[ERROR] dist/php/ is not a git submodule"; \
+        echo "  Run setup-all-submodules to configure submodules"; \
+        exit 1; \
+    fi
+    @echo "Generating PHP package"
+    @just generate-php-package-enhanced
+    @cd dist/php && \
+        git add -A && \
+        git diff --cached --quiet || \
+        git commit -m "chore: sync generated PHP SDK from circular-canonical"
+    @echo "[OK] PHP package synced to dist/php/"
+    @echo "  Branch: development"
+    @cd dist/php && git log -1 --oneline
+
+# Sync Dart package to submodule
+sync-dart: verify-repos
+    @echo "Syncing Dart package to dist/dart/ submodule"
+    @if [ ! -e dist/dart/.git ]; then \
+        echo "[ERROR] dist/dart/ is not a git submodule"; \
+        echo "  Run setup-all-submodules to configure submodules"; \
+        exit 1; \
+    fi
+    @echo "Generating Dart package"
+    @just generate-dart-package-enhanced
+    @cd dist/dart && \
+        git add -A && \
+        git diff --cached --quiet || \
+        git commit -m "chore: sync generated Dart SDK from circular-canonical"
+    @echo "[OK] Dart package synced to dist/dart/"
+    @echo "  Branch: development"
+    @cd dist/dart && git log -1 --oneline
+
+# Sync all 5 SDK packages to submodules
+sync-all-sdks: sync-typescript sync-python sync-go sync-php sync-dart
+    @echo ""
+    @echo "================================================================"
+    @echo "  [OK] All 5 SDK packages synced to submodules"
+    @echo "================================================================"
+    @echo ""
+    @echo "Synced repositories:"
+    @git submodule status
+    @echo ""
+    @echo "Next steps:"
+    @echo "  1. Review changes: just check-all-submodules"
+    @echo "  2. Push to remotes: just push-all-sdks"
+    @echo "  3. Update parent repo to track new submodule commits"
 
 # Push development branches to lessuseless-systems forks
 push-forks:
@@ -507,7 +659,49 @@ push-forks:
     @echo ""
     @echo "Next: Create PRs from lessuseless-systems tocircular-protocol"
 
-# Check status of all submodules
+# Push all 5 SDK development branches to remotes
+push-all-sdks:
+    @echo "Pushing all 5 SDK development branches to lessuseless-systems"
+    @echo ""
+    @for dir in typescript python go php dart; do \
+        if [ -e dist/$$dir/.git ]; then \
+            echo "Pushing $$dir (dist/$$dir)..."; \
+            cd dist/$$dir && git push origin development 2>&1 | grep -v "^Everything up-to-date" || echo "  ✓ Up to date"; \
+            cd ../..; \
+        else \
+            echo "  [WARNING] Skipping $$dir: not a submodule"; \
+        fi; \
+    done
+    @echo ""
+    @echo "[OK] All SDK branches pushed to lessuseless-systems"
+    @echo ""
+    @echo "Repository URLs:"
+    @echo "  - TypeScript: https://github.com/lessuseless-systems/circular-ts"
+    @echo "  - Python: https://github.com/lessuseless-systems/circular-py"
+    @echo "  - Go: https://github.com/lessuseless-systems/circular-go"
+    @echo "  - PHP: https://github.com/lessuseless-systems/circular-php"
+    @echo "  - Dart: https://github.com/lessuseless-systems/circular-dart"
+
+# Check status of all 5 SDK submodules
+check-all-submodules:
+    @echo "Checking status of all 5 SDK submodules"
+    @echo "========================================"
+    @echo ""
+    @for dir in typescript python go php dart; do \
+        if [ -e dist/$$dir/.git ]; then \
+            echo "$$dir (dist/$$dir):"; \
+            cd dist/$$dir && git status -sb && cd ../..; \
+            echo ""; \
+        else \
+            echo "$$dir: Not a submodule"; \
+            echo ""; \
+        fi; \
+    done
+    @echo "========================================"
+    @echo "Submodule commit tracking:"
+    @git submodule status
+
+# Check status of all submodules (LEGACY - 2 SDKs only)
 check-submodules:
     @echo "Checking submodule status"
     @echo ""
@@ -537,7 +731,7 @@ generate-openapi:
 generate-agents-md:
     @echo "Generating AGENTS.md for AI agent consumption"
     @mkdir -p docs
-    @nickel export generators/shared/agents-md.ncl --field agents_md --format raw > docs/AGENTS.md
+    @nickel export generators/shared/docs/agents-md.ncl --field agents_md --format raw > docs/AGENTS.md
     @echo "[OK] Generated AGENTS.md in docs/"
     @wc -l docs/AGENTS.md
 
@@ -1089,3 +1283,77 @@ generate-manual-tests:
     @echo "  2. Run test:"
     @echo "     python3 dist/tests/manual/manual-test-registerWallet.py"
     @echo ""
+
+# ===========================================================================
+# Enhanced Package Generation: Include all new components
+# ===========================================================================
+
+# Generate enhanced TypeScript package with all new components
+generate-ts-package-enhanced: generate-ts-package
+    @echo "Adding enhanced components to TypeScript package..."
+    @nickel export generators/typescript/docs/typescript-contributing.ncl --field contributing_content --format raw > dist/typescript/CONTRIBUTING.md
+    @nickel export generators/typescript/docs/typescript-changelog.ncl --field changelog_content --format raw > dist/typescript/CHANGELOG.md
+    @nickel export generators/shared/docs/agents-md.ncl --field agents_md --format raw > dist/typescript/AGENTS.md
+    @nickel export generators/typescript/ci-cd/typescript-renovate.ncl --field renovate_json --format json > dist/typescript/renovate.json
+    @echo "[OK] Enhanced TypeScript package complete"
+
+# Generate enhanced Python package with all new components
+generate-py-package-enhanced: generate-py-package
+    @echo "Adding enhanced components to Python package..."
+    @nickel export generators/python/docs/python-contributing.ncl --field contributing_content --format raw > dist/python/CONTRIBUTING.md
+    @nickel export generators/python/docs/python-changelog.ncl --field changelog_content --format raw > dist/python/CHANGELOG.md
+    @nickel export generators/shared/docs/agents-md.ncl --field agents_md --format raw > dist/python/AGENTS.md
+    @nickel export generators/python/ci-cd/python-renovate.ncl --field renovate_json --format json > dist/python/renovate.json
+    @echo "[OK] Enhanced Python package complete"
+
+# Generate enhanced Go package with all new components
+generate-go-package-enhanced: generate-go-package
+    @echo "Adding enhanced components to Go package..."
+    @nickel export generators/go/docs/go-contributing.ncl --field contributing_content --format raw > dist/go/CONTRIBUTING.md
+    @nickel export generators/go/docs/go-changelog.ncl --field changelog_content --format raw > dist/go/CHANGELOG.md
+    @nickel export generators/shared/docs/agents-md.ncl --field agents_md --format raw > dist/go/AGENTS.md
+    @nickel export generators/go/ci-cd/go-renovate.ncl --field renovate_json --format json > dist/go/renovate.json
+    @echo "[OK] Enhanced Go package complete"
+
+# Generate enhanced PHP package with all new components
+generate-php-package-enhanced: generate-php-package
+    @echo "Adding enhanced components to PHP package..."
+    @nickel export generators/php/docs/php-contributing.ncl --field contributing_content --format raw > dist/php/CONTRIBUTING.md
+    @nickel export generators/php/docs/php-changelog.ncl --field changelog_content --format raw > dist/php/CHANGELOG.md
+    @nickel export generators/shared/docs/agents-md.ncl --field agents_md --format raw > dist/php/AGENTS.md
+    @nickel export generators/php/ci-cd/php-renovate.ncl --field renovate_json --format json > dist/php/renovate.json
+    @echo "[OK] Enhanced PHP package complete"
+
+# Generate enhanced Dart package with all new components
+generate-dart-package-enhanced: generate-dart-package
+    @echo "Adding enhanced components to Dart package..."
+    @nickel export generators/dart/docs/dart-contributing.ncl --field contributing_content --format raw > dist/dart/CONTRIBUTING.md
+    @nickel export generators/shared/docs/agents-md.ncl --field agents_md --format raw > dist/dart/AGENTS.md
+    @nickel export generators/dart/ci-cd/dart-renovate.ncl --field renovate_json --format json > dist/dart/renovate.json
+    @echo "[OK] Enhanced Dart package complete (CHANGELOG.md already included in base)"
+
+# Generate all enhanced packages (5 SDKs with all new components)
+generate-all-enhanced: generate-ts-package-enhanced generate-py-package-enhanced generate-go-package-enhanced generate-php-package-enhanced generate-dart-package-enhanced
+    @echo ""
+    @echo "================================================================"
+    @echo "  [OK] All 5 enhanced SDK packages generated"
+    @echo "================================================================"
+    @echo "  Each package now includes:"
+    @echo "    - CONTRIBUTING.md (contribution guidelines)"
+    @echo "    - CHANGELOG.md (version history)"
+    @echo "    - AGENTS.md (AI agent guidance)"
+    @echo "    - renovate.json (automated dependency updates)"
+    @echo "    - All existing components (tests, CI/CD, docs)"
+    @echo "================================================================"
+    @echo ""
+    @echo "Generated packages:"
+    @echo "  - TypeScript: dist/typescript/"
+    @echo "  - Python: dist/python/"
+    @echo "  - Go: dist/go/"
+    @echo "  - PHP: dist/php/"
+    @echo "  - Dart: dist/dart/"
+    @echo ""
+    @echo "Next steps:"
+    @echo "  1. Review generated files"
+    @echo "  2. Test packages: just verify-packages"
+    @echo "  3. Commit changes"
