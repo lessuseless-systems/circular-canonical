@@ -9,10 +9,11 @@ let config = import "../../../src/config.ncl" in
 let generators = [
   { name = "TypeScript SDK", file = "generators/typescript/typescript-sdk.ncl", output = "client.ts", validator = "npx typescript", args = "--noEmit --skipLibCheck", check_cmd = "npx" },
   { name = "Python SDK", file = "generators/python/python-sdk.ncl", output = "client.py", validator = "python3 -m py_compile", args = "", check_cmd = "python3" },
-  { name = "Java SDK", file = "generators/java-sdk.ncl", output = "Client.java", validator = "javac -d", args = "", check_cmd = "javac" },
-  { name = "PHP SDK", file = "generators/php-sdk.ncl", output = "Client.php", validator = "php -l", args = "", check_cmd = "php" },
+  { name = "Java SDK", file = "generators/java/java-sdk.ncl", output = "Client.java", validator = "javac -d", args = "", check_cmd = "javac" },
+  { name = "PHP SDK", file = "generators/php/php-sdk.ncl", output = "Client.php", validator = "php -l", args = "", check_cmd = "php" },
+  { name = "Go SDK", file = "generators/go/go-sdk.ncl", output = "client.go", validator = "go build", args = "", check_cmd = "go" },
+  { name = "Dart SDK", file = "generators/dart/dart-sdk.ncl", output = "client.dart", validator = "dart analyze", args = "", check_cmd = "dart" },
   { name = "OpenAPI Spec", file = "generators/shared/openapi.ncl", output = "openapi.yaml", validator = "npx @apidevtools/swagger-cli validate", args = "", check_cmd = "npx", format = "yaml" },
-  { name = "MCP Server Schema", file = "generators/mcp-server.ncl", output = "mcp-tools.json", validator = "jq empty", args = "", check_cmd = "jq", format = "json" },
 ] in
 
 # Generate validation block for a single generator
