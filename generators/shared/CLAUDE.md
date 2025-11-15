@@ -10,7 +10,11 @@ Guidance for working with shared generator utilities and templates.
 generators/shared/
 ├── CLAUDE.md                  # This file
 ├── openapi.ncl                # OpenAPI 3.0 generator (language-agnostic)
-├── helpers.ncl                # Common helper functions
+├── helpers.ncl                # Common helper functions (naming, types)
+├── helpers-crypto.ncl         # Cryptographic helper generators (ALL languages)
+├── helpers-encoding.ncl       # Encoding helper generators (ALL languages)
+├── helpers-advanced.ncl       # Advanced utility generators (ALL languages)
+├── helpers-config.ncl         # Configuration method generators (ALL languages)
 ├── test-data.ncl              # Shared test data
 └── templates/                 # Shared templates for cross-language consistency
     ├── readme-header.todo.ncl      # Common README header
@@ -34,6 +38,226 @@ generators/shared/
 2. **Build configurations**: package.json, pyproject.toml, pom.xml
 3. **Language-specific tests**: Unit tests in target language syntax
 4. **Language tooling**: ESLint, Black, Checkstyle configs
+
+## ⚠️ CRITICAL: Helper Generators
+
+**Helper generators produce SDK helper methods for ALL languages - NEVER hand-code helpers!**
+
+The shared helper generators (`helpers-*.ncl`) generate **15 helper/utility methods** included in every SDK:
+
+### helpers-crypto.ncl (5 methods)
+
+Generates cryptographic operations for all languages:
+
+```nickel
+{
+  typescript = {
+    signMessage = m%"
+      signMessage(message: string, privateKey: string): string {
+        // TypeScript implementation using crypto library
+      }
+    "%,
+
+    verifySignature = m%"
+      verifySignature(message: string, signature: string, publicKey: string): boolean {
+        // TypeScript implementation
+      }
+    "%,
+
+    getPublicKey = m%"/* TypeScript implementation */"%,
+    hashString = m%"/* TypeScript implementation */"%,
+    getFormattedTimestamp = m%"/* TypeScript implementation */"%,
+  },
+
+  python = {
+    signMessage = m%"
+      def sign_message(self, message: str, private_key: str) -> str:
+          # Python implementation using cryptography library
+    "%,
+    # ... other methods
+  },
+
+  # ... go, dart, php, java, rust implementations
+}
+```
+
+**Generated methods:**
+1. `signMessage` / `sign_message` - Sign a message with private key
+2. `verifySignature` / `verify_signature` - Verify signature with public key
+3. `getPublicKey` / `get_public_key` - Derive public key from private key
+4. `hashString` / `hash_string` - Hash a string (SHA-256)
+5. `getFormattedTimestamp` / `get_formatted_timestamp` - Get ISO 8601 timestamp
+
+### helpers-encoding.ncl (4 methods)
+
+Generates encoding conversion utilities:
+
+```nickel
+{
+  typescript = {
+    hexFix = m%"
+      hexFix(hex: string): string {
+        // Ensure hex string has 0x prefix
+      }
+    "%,
+
+    stringToHex = m%"/* Convert string to hex */"%,
+    hexToString = m%"/* Convert hex to string */"%,
+    padNumber = m%"/* Pad number to fixed length */"%,
+  },
+
+  python = { /* ... */ },
+  # ... other languages
+}
+```
+
+**Generated methods:**
+1. `hexFix` / `hex_fix` - Ensure hex string has 0x prefix
+2. `stringToHex` / `string_to_hex` - Convert string to hexadecimal
+3. `hexToString` / `hex_to_string` - Convert hexadecimal to string
+4. `padNumber` / `pad_number` - Pad number to fixed length with zeros
+
+### helpers-advanced.ncl (3 methods)
+
+Generates advanced utility methods:
+
+```nickel
+{
+  typescript = {
+    getTransactionOutcome = m%"
+      getTransactionOutcome(tx: Transaction): string {
+        // Parse transaction result to determine outcome
+      }
+    "%,
+
+    GetError = m%"/* Extract error message from API response */"%,
+    handleError = m%"/* Handle API errors with logging */"%,
+  },
+
+  python = { /* ... */ },
+  # ... other languages
+}
+```
+
+**Generated methods:**
+1. `getTransactionOutcome` / `get_transaction_outcome` - Determine transaction success/failure
+2. `GetError` / `get_error` - Extract error message from API response
+3. `handleError` / `handle_error` - Centralized error handling with logging
+
+### helpers-config.ncl (3 methods)
+
+Generates configuration getter/setter methods:
+
+```nickel
+{
+  typescript = {
+    getNagUrl = m%"
+      getNagUrl(): string {
+        return this.baseURL;
+      }
+    "%,
+
+    setNagUrl = m%"
+      setNagUrl(url: string): void {
+        this.baseURL = url;
+      }
+    "%,
+
+    getNagKey = m%"/* Get API key */"%,
+    setNagKey = m%"/* Set API key */"%,
+  },
+
+  python = { /* ... */ },
+  # ... other languages
+}
+```
+
+**Generated methods:**
+1. `getNagUrl` / `get_nag_url` - Get current NAG (Node API Gateway) URL
+2. `setNagUrl` / `set_nag_url` - Update NAG URL
+3. `getNagKey` / `get_nag_key` - Get API key (if configured)
+
+**Note:** Some helper generators may provide 4 methods instead of 3 (e.g., getNagKey + setNagKey).
+
+### How Helper Generators Work
+
+**1. Language-specific SDK generators import helpers:**
+
+```nickel
+# generators/typescript/typescript-sdk.ncl
+let helpers_crypto = import "../shared/helpers-crypto.ncl" in
+let helpers_encoding = import "../shared/helpers-encoding.ncl" in
+let helpers_config = import "../shared/helpers-config.ncl" in
+let helpers_advanced = import "../shared/helpers-advanced.ncl" in
+```
+
+**2. SDK generator includes helper methods in output:**
+
+```nickel
+{
+  sdk_code = m%"
+    export class CircularProtocolAPI {
+      // ... API endpoints ...
+
+      // ========== HELPER METHODS ==========
+      %{helpers_crypto.typescript.signMessage}
+      %{helpers_crypto.typescript.verifySignature}
+      %{helpers_crypto.typescript.getPublicKey}
+      %{helpers_crypto.typescript.hashString}
+      %{helpers_encoding.typescript.hexFix}
+      %{helpers_encoding.typescript.stringToHex}
+      %{helpers_encoding.typescript.hexToString}
+      %{helpers_encoding.typescript.padNumber}
+      %{helpers_advanced.typescript.getTransactionOutcome}
+      %{helpers_advanced.typescript.GetError}
+      %{helpers_advanced.typescript.handleError}
+      %{helpers_config.typescript.getNagUrl}
+      %{helpers_config.typescript.setNagUrl}
+    }
+  "%
+}
+```
+
+**3. Result:** Complete SDK with all 39 methods (24 endpoints + 15 helpers)
+
+### Modifying Helper Methods
+
+**To update a helper method across ALL languages:**
+
+1. Edit the relevant helper generator in `generators/shared/helpers-*.ncl`
+2. Run `just generate-packages` to regenerate all SDKs
+3. **NEVER** manually edit helper implementations in `dist/circular-*/`
+
+**Example: Adding a new cryptographic helper**
+
+```nickel
+# Edit generators/shared/helpers-crypto.ncl
+{
+  typescript = {
+    # ... existing helpers ...
+
+    # New helper
+    encryptMessage = m%"
+      encryptMessage(message: string, publicKey: string): string {
+        // TypeScript encryption implementation
+      }
+    "%,
+  },
+
+  python = {
+    # ... existing helpers ...
+
+    encrypt_message = m%"
+      def encrypt_message(self, message: str, public_key: str) -> str:
+          # Python encryption implementation
+    "%,
+  },
+
+  # ... add to all other languages
+}
+```
+
+Then update language-specific SDK generators to include the new helper.
 
 ## OpenAPI Generator
 

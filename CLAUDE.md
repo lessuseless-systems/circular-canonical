@@ -210,24 +210,39 @@ nickel repl
 
 ## Official Repositories
 
-**⚠️ IMPORTANT:** Only these 3 repositories are official. All others are outdated/test repos.
+**⚠️ IMPORTANT:** Only these SDK repositories are official. All others are outdated/test repos.
 
 1. **circular-canonical** - THIS REPO (Single source of truth)
    - URL: `git@github.com:lessuseless-systems/circular-canonical.git`
    - Purpose: Nickel definitions, generators, canonical API spec
-   - Branch: `main`
+   - Branches: `main`, `development`
+   - **CRITICAL**: SDKs are 100% generated from Nickel definitions - DO NOT hand-code SDK repos
 
-2. **circular-js-npm** - TypeScript/NPM SDK (generated)
+2. **circular-js-npm** - TypeScript/NPM SDK (100% GENERATED)
    - URL: `git@github.com:lessuseless-systems/circular-js-npm.git`
-   - Purpose: Generated TypeScript SDK
+   - Purpose: Generated TypeScript SDK with all 39 methods (API endpoints + helpers)
    - Branch: `development`
    - Submodule at: `dist/circular-ts/`
+   - **DO NOT manually edit** - regenerate from canonical
 
-3. **circular-py** - Python SDK (generated)
+3. **circular-py** - Python SDK (100% GENERATED)
    - URL: `git@github.com:lessuseless-systems/circular-py.git`
-   - Purpose: Generated Python SDK
+   - Purpose: Generated Python SDK with complete implementation
    - Branch: `development`
    - Submodule at: `dist/circular-py/`
+   - **DO NOT manually edit** - regenerate from canonical
+
+4. **circular-go** - Go SDK (100% GENERATED)
+   - URL: `git@github.com:lessuseless-systems/circular-go.git`
+   - Submodule at: `dist/circular-go/`
+
+5. **circular-dart** - Dart SDK (100% GENERATED)
+   - URL: `git@github.com:lessuseless-systems/circular-dart.git`
+   - Submodule at: `dist/circular-dart/`
+
+6. **circular-php** - PHP SDK (100% GENERATED)
+   - URL: `git@github.com:lessuseless-systems/circular-php.git`
+   - Submodule at: `dist/circular-php/`
 
 **Never push to:**
 - `circular-canonicle` (typo)
@@ -235,6 +250,28 @@ nickel repl
 - `circular-js-npm-1`, `circular-js-npm-2` (numbered test repos)
 
 Git hooks will automatically prevent pushes to wrong repositories.
+
+## SDK Generation Philosophy
+
+**EVERYTHING is generated from Nickel - NEVER hand-code SDKs!**
+
+The generators produce COMPLETE SDKs including:
+- ✅ All API endpoint methods (24 endpoints)
+- ✅ Cryptographic helpers (signMessage, verifySignature, getPublicKey, hashString, getFormattedTimestamp)
+- ✅ Encoding helpers (hexFix, stringToHex, hexToString, padNumber)
+- ✅ Advanced helpers (getTransactionOutcome, GetError, handleError)
+- ✅ Configuration methods (getNagUrl, setNagUrl, getNagKey, setNagKey)
+- ✅ Convenience methods (registerWallet)
+- ✅ Type definitions and interfaces
+- ✅ Tests (unit, integration, e2e)
+- ✅ Build configuration
+- ✅ Documentation
+
+**To update an SDK:**
+1. Edit Nickel definitions in `src/` or generators in `generators/`
+2. Run `just generate-packages` or `just generate-ts-package`
+3. Commit and push generated changes to SDK repos
+4. **NEVER** manually edit generated SDK code
 
 ## Version and Compatibility
 

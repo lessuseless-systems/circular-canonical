@@ -5,6 +5,30 @@ Guidance for working with the generator system in the `generators/` directory.
 > **Parent Context**: See `/CLAUDE.md` for project overview and essential commands.
 > **Language-Specific Guides**: See subdirectory CLAUDE.md files for language-specific patterns.
 
+## ⚠️ CRITICAL: Complete SDK Generation
+
+**Generators produce COMPLETE, PRODUCTION-READY SDKs - NEVER hand-code SDK implementations!**
+
+Each SDK generator creates:
+- ✅ All 24 API endpoint methods (wallet, transaction, asset, block, contract, domain, network)
+- ✅ Cryptographic helpers (signMessage, verifySignature, getPublicKey, hashString, getFormattedTimestamp)
+- ✅ Encoding helpers (hexFix, stringToHex, hexToString, padNumber)
+- ✅ Advanced helpers (getTransactionOutcome, GetError, handleError)
+- ✅ Configuration methods (getNagUrl, setNagUrl, getNagKey, setNagKey)
+- ✅ Convenience methods (registerWallet)
+- ✅ Type definitions and interfaces
+- ✅ Tests (unit, integration, e2e)
+- ✅ Build configuration (tsconfig, webpack, pytest.ini, etc.)
+- ✅ Package manifests (package.json, pyproject.toml, etc.)
+- ✅ Documentation (README, API reference)
+
+**Total: 39 methods per SDK** (24 endpoints + 15 helpers/utilities)
+
+**To modify SDK behavior:**
+1. Edit Nickel generators in `generators/<language>/` or shared helpers in `generators/shared/`
+2. Run `just generate-<lang>-package` or `just generate-packages`
+3. **NEVER** manually edit generated SDK code in `dist/circular-*/`
+
 ## Directory Structure
 
 ```
@@ -12,14 +36,18 @@ generators/
 ├── shared/
 │   ├── CLAUDE.md              # Shared utilities guidance
 │   ├── openapi.ncl            # OpenAPI 3.0 generator
-│   ├── helpers.ncl            # Common helper functions
+│   ├── helpers.ncl            # Common helper functions (naming, types)
+│   ├── helpers-crypto.ncl     # Cryptographic helpers (ALL languages)
+│   ├── helpers-encoding.ncl   # Encoding helpers (ALL languages)
+│   ├── helpers-advanced.ncl   # Advanced utilities (ALL languages)
+│   ├── helpers-config.ncl     # Config methods (ALL languages)
 │   ├── test-data.ncl          # Shared test data
 │   └── templates/             # Shared templates for cross-language consistency
 │       ├── readme-header.todo.ncl
 │       └── readme-security.todo.ncl
 ├── typescript/
 │   ├── CLAUDE.md              # TypeScript-specific guidance
-│   ├── typescript-sdk.ncl     # Main SDK generator
+│   ├── typescript-sdk.ncl     # Main SDK generator (imports all helpers)
 │   ├── tests/                 # Test generators
 │   ├── config/                # Config generators (tsconfig, webpack, jest)
 │   ├── docs/                  # Documentation generators
@@ -28,7 +56,7 @@ generators/
 │   └── ci-cd/                 # CI/CD workflow generators
 └── python/
     ├── CLAUDE.md              # Python-specific guidance
-    ├── python-sdk.ncl         # Main SDK generator
+    ├── python-sdk.ncl         # Main SDK generator (imports all helpers)
     ├── tests/                 # Test generators
     ├── config/                # Config generators (pytest.ini, etc.)
     ├── docs/                  # Documentation generators
@@ -48,11 +76,43 @@ Generators are organized **by target language** rather than by generator type. T
 3. **Debug issues**: When TypeScript SDK has issues, all related generators are in same directory
 4. **Track completion**: Clear checklist per language (SDK + tests + config + docs + CI/CD)
 
+### Helper Generator System
+
+**CRITICAL**: Helper methods are generated from shared generators in `generators/shared/helpers-*.ncl`.
+
+Each language-specific SDK generator imports these helpers:
+
+```nickel
+# generators/typescript/typescript-sdk.ncl
+let helpers_crypto = import "../shared/helpers-crypto.ncl" in
+let helpers_encoding = import "../shared/helpers-encoding.ncl" in
+let helpers_config = import "../shared/helpers-config.ncl" in
+let helpers_advanced = import "../shared/helpers-advanced.ncl" in
+
+# Then includes them in the generated SDK:
+%{helpers_crypto.typescript.signMessage}
+%{helpers_crypto.typescript.verifySignature}
+%{helpers_crypto.typescript.getPublicKey}
+%{helpers_crypto.typescript.hashString}
+%{helpers_encoding.typescript.hexFix}
+%{helpers_encoding.typescript.stringToHex}
+# ... etc
+```
+
+**Helper categories:**
+1. **helpers-crypto.ncl**: Cryptographic operations (sign, verify, hash, publicKey, timestamp)
+2. **helpers-encoding.ncl**: Encoding conversions (hex, string, padding)
+3. **helpers-advanced.ncl**: Advanced utilities (transaction outcomes, error handling)
+4. **helpers-config.ncl**: Configuration getters/setters (NAG URL, NAG key)
+
+Each helper generator provides implementations for **all target languages** (TypeScript, Python, Go, Dart, PHP, Java, Rust).
+
 ### Shared vs Language-Specific
 
 **Use `generators/shared/` when:**
 - Generator output is language-agnostic (OpenAPI, MCP server schema)
-- Common functions used across multiple languages (helpers.ncl)
+- Common functions used across multiple languages (helpers.ncl for naming/types)
+- Helper method implementations needed in ALL languages (helpers-crypto, helpers-encoding, etc.)
 - Test data used by all language generators
 - Templates for cross-language consistency (README structure)
 

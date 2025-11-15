@@ -4,6 +4,19 @@ Guidance for working with TypeScript SDK generators.
 
 > **Parent Context**: See `generators/CLAUDE.md` for generator system overview.
 
+## ⚠️ CRITICAL: Complete SDK Generation
+
+**The TypeScript generator produces a COMPLETE, PRODUCTION-READY SDK - NEVER hand-code!**
+
+`typescript-sdk.ncl` generates **all 39 methods**:
+- 24 API endpoint methods (imported from `src/api/*.ncl`)
+- 15 helper/utility methods (imported from `generators/shared/helpers-*.ncl`)
+
+**To modify TypeScript SDK:**
+1. Edit `generators/typescript/typescript-sdk.ncl` or helper generators in `generators/shared/`
+2. Run `just generate-ts-package`
+3. **NEVER** manually edit `dist/circular-ts/src/index.ts`
+
 ## Directory Structure
 
 ```
@@ -31,9 +44,19 @@ generators/typescript/
 
 ## TypeScript SDK Generator
 
-### Main SDK Structure
+### Complete SDK Structure
 
-The TypeScript SDK generator (`typescript-sdk.ncl`) produces:
+The TypeScript SDK generator (`typescript-sdk.ncl`) imports helper generators and produces a complete SDK:
+
+```nickel
+# generators/typescript/typescript-sdk.ncl (lines 13-16)
+let helpers_crypto = import "../shared/helpers-crypto.ncl" in
+let helpers_encoding = import "../shared/helpers-encoding.ncl" in
+let helpers_config = import "../shared/helpers-config.ncl" in
+let helpers_advanced = import "../shared/helpers-advanced.ncl" in
+```
+
+**Generated output** (`dist/circular-ts/src/index.ts` - 917 lines):
 
 ```typescript
 // Generated SDK structure
@@ -46,12 +69,63 @@ export class CircularProtocolAPI {
     this.headers = config.headers || {};
   }
 
+  // ========== API ENDPOINTS (24 methods) ==========
   // Wallet operations
   async checkWallet(address: string): Promise<WalletCheckResponse> { }
   async getWallet(address: string): Promise<WalletResponse> { }
-  // ... more endpoints
+  async getWalletBalance(address: string): Promise<BalanceResponse> { }
+  async getWalletNonce(address: string): Promise<NonceResponse> { }
+  async getLatestTransactions(address: string): Promise<TransactionListResponse> { }
+  async registerWallet(params: RegisterWalletParams): Promise<WalletResponse> { }
+
+  // Transaction operations (6 methods)
+  async sendTransaction(params: TransactionParams): Promise<TransactionResponse> { }
+  // ... more transaction methods
+
+  // Asset operations (4 methods)
+  async getAssetList(): Promise<AssetListResponse> { }
+  // ... more asset methods
+
+  // Block operations (4 methods)
+  async getBlock(height: number): Promise<BlockResponse> { }
+  // ... more block methods
+
+  // Contract operations (2 methods)
+  async testContract(params: ContractParams): Promise<ContractTestResponse> { }
+  async callContract(params: ContractParams): Promise<ContractCallResponse> { }
+
+  // Domain operations (1 method)
+  async resolveDomain(domain: string): Promise<DomainResponse> { }
+
+  // Network operations (1 method)
+  async getBlockchains(): Promise<BlockchainListResponse> { }
+
+  // ========== HELPER METHODS (15 methods) ==========
+  // Cryptographic helpers (from helpers-crypto.ncl)
+  signMessage(message: string, privateKey: string): string { }
+  verifySignature(message: string, signature: string, publicKey: string): boolean { }
+  getPublicKey(privateKey: string): string { }
+  hashString(input: string): string { }
+  getFormattedTimestamp(): string { }
+
+  // Encoding helpers (from helpers-encoding.ncl)
+  hexFix(hex: string): string { }
+  stringToHex(str: string): string { }
+  hexToString(hex: string): string { }
+  padNumber(num: number, length: number): string { }
+
+  // Advanced helpers (from helpers-advanced.ncl)
+  getTransactionOutcome(tx: Transaction): string { }
+  GetError(error: any): string { }
+  handleError(error: any): void { }
+
+  // Configuration helpers (from helpers-config.ncl)
+  getNagUrl(): string { }
+  setNagUrl(url: string): void { }
 }
 ```
+
+**Total: 39 methods** - 100% generated from Nickel
 
 ### Type Mappings
 
