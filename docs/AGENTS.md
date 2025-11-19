@@ -1,6 +1,6 @@
 # Circular Protocol API - AI Agent Guide
 
-> **Version**: 2.0.0-alpha.1
+> **Version**: 1.0.8
 > **Generated**: Automatically from Nickel definitions
 > **Purpose**: Comprehensive API reference optimized for AI agent consumption
 
